@@ -1,0 +1,70 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/chrstnList/:path*",
+      "destination": "http://el.h2nbiz.or.kr/api/chrstnList/:path*"
+    },
+    {
+      "source": "/map-api/:path*",
+      "destination": "https://naveropenapi.apigw.ntruss.com/:path*"
+    },
+    {
+      "source": "/api/geocode",
+      "destination": "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/map-api/(.*)",
+      "headers": [
+        {
+          "key": "X-NCP-APIGW-API-KEY-ID",
+          "value": "${NEXT_PUBLIC_NCP_CLIENT_ID}"
+        },
+        {
+          "key": "X-NCP-APIGW-API-KEY",
+          "value": "${NCP_CLIENT_SECRET}"
+        }
+      ]
+    },
+    {
+      "source": "/api/geocode",
+      "headers": [
+        {
+          "key": "X-NCP-APIGW-API-KEY-ID",
+          "value": "${NEXT_PUBLIC_NCP_CLIENT_ID}"
+        },
+        {
+          "key": "X-NCP-APIGW-API-KEY",
+          "value": "${NCP_CLIENT_SECRET}"
+        }
+      ]
+    },
+    {
+      "source": "/api/chrstnList/(.*)",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "${H2_API_KEY}"
+        }
+      ]
+    }
+  ]
+}
