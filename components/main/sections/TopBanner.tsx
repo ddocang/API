@@ -1,20 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import Image from 'next/image';
 
-const BannerContainer = styled.section<{ $bgImage: string }>`
+const BannerContainer = styled.section`
   position: relative;
   width: 100%;
   height: 100vh;
-  background: url(${(props) => props.$bgImage}) no-repeat center center;
-  background-size: cover;
+  overflow: hidden;
   padding: 0 16.7vw;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   user-select: none;
+  background-color: black;
 
   @media (max-width: 1024px) {
     padding: 0 2rem;
   }
+`;
+
+const FadeBackgroundImage = styled.img<{ $isActive: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: ${(props) => (props.$isActive ? 1 : 0)};
+  transition: opacity 1s ease-in-out;
+  z-index: 0;
 `;
 
 const GNB = styled.nav`
@@ -25,6 +39,8 @@ const GNB = styled.nav`
   align-items: flex-start;
   padding-top: clamp(20px, 2.08vw, 40px);
   user-select: none;
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -105,8 +121,29 @@ const UserMenu = styled.div`
   }
 `;
 
+const FadeContent = styled.div<{ $isActive: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 16.7vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateY(-100px);
+
+  opacity: ${(props) => (props.$isActive ? 1 : 0)};
+  transition: opacity 0.8s ease-in-out;
+  transition-delay: ${(props) => (props.$isActive ? '0.3s' : '0s')};
+  z-index: 1;
+
+  @media (max-width: 1024px) {
+    padding: 0 2rem;
+  }
+`;
+
 const MainTitle = styled.div`
-  margin-top: clamp(80px, 8.33vw, 160px);
   max-width: clamp(360px, 37.5vw, 720px);
   width: 100%;
   user-select: none;
@@ -169,13 +206,22 @@ const TopBanner: React.FC = () => {
     const interval = setInterval(() => {
       setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
       setCurrentPage((prev) => (prev % totalPages) + 1);
-    }, 5000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <BannerContainer $bgImage={backgroundImages[currentBgIndex]}>
+    <BannerContainer>
+      {backgroundImages.map((img, idx) => (
+        <FadeBackgroundImage
+          key={idx}
+          src={img}
+          alt={`bg-${idx}`}
+          $isActive={idx === currentBgIndex}
+        />
+      ))}
+
       <GNB>
         <Logo>
           <img src="/images/logo.png" alt="HyGE Logo" />
@@ -193,51 +239,41 @@ const TopBanner: React.FC = () => {
         </UserMenu>
       </GNB>
 
-      {currentBgIndex === 0 && (
-        <>
-          <MainTitle>
-            <TitleText>SAFETY AS STANDARD</TitleText>
-            <TitleText>EFFICIENCY AS EXTRA</TitleText>
-          </MainTitle>
+      <FadeContent $isActive={currentBgIndex === 0}>
+        <MainTitle>
+          <TitleText>SAFETY AS STANDARD</TitleText>
+          <TitleText>EFFICIENCY AS EXTRA</TitleText>
+        </MainTitle>
+        <Description>
+          수소생산시설 안전모니터링 시스템으로 미래 에너지의 안전을 선도하세요.
+          위험을 예측하고, 이상을 감지해 빠르게 대응하는 스마트한 솔루션으로
+          고객과 직원 모두에게 안심을 드립니다.
+        </Description>
+      </FadeContent>
 
-          <Description>
-            수소생산시설 안전모니터링 시스템으로 미래 에너지의 안전을
-            선도하세요. 위험을 예측하고, 이상을 감지해 빠르게 대응하는 스마트한
-            솔루션으로 고객과 직원 모두에게 안심을 드립니다.
-          </Description>
-        </>
-      )}
+      <FadeContent $isActive={currentBgIndex === 1}>
+        <MainTitle>
+          <TitleText>HYDROGEN STATION</TitleText>
+          <TitleText>BOOKING AND</TitleText>
+          <TitleText>PAYMENT SYSTEM</TitleText>
+        </MainTitle>
+        <Description>
+          수소충전소 예약 및 결제 시스템으로 더 편리한 충전 서비스를 경험하세요.
+          실시간 예약 현황 간편한 결제로 기다림 없는 충전이 가능합니다.
+        </Description>
+      </FadeContent>
 
-      {currentBgIndex === 1 && (
-        <>
-          <MainTitle>
-            <TitleText>HYDROGEN STATION</TitleText>
-            <TitleText>BOOKING AND</TitleText>
-            <TitleText>PAYMENT SYSTEM</TitleText>
-          </MainTitle>
-
-          <Description>
-            수소충전소 예약 및 결제 시스템으로 더 편리한 충전 서비스를
-            경험하세요. 실시간 예약 현황 간편한 결제로 기다림 없는 충전이
-            가능합니다.
-          </Description>
-        </>
-      )}
-
-      {currentBgIndex === 2 && (
-        <>
-          <MainTitle>
-            <TitleText>INNOVATION AND SAFETY</TitleText>
-            <TitleText>IN HARMONY</TitleText>
-          </MainTitle>
-
-          <Description>
-            혁신적인 기술과 안전한 운영이 조화를 이루는 수소 에너지의 미래를
-            만들어갑니다. 지속 가능한 에너지 솔루션으로 더 나은 내일을 향해
-            나아갑니다.
-          </Description>
-        </>
-      )}
+      <FadeContent $isActive={currentBgIndex === 2}>
+        <MainTitle>
+          <TitleText>INNOVATION AND SAFETY</TitleText>
+          <TitleText>IN HARMONY</TitleText>
+        </MainTitle>
+        <Description>
+          혁신적인 기술과 안전한 운영이 조화를 이루는 수소 에너지의 미래를
+          만들어갑니다. 지속 가능한 에너지 솔루션으로 더 나은 내일을 향해
+          나아갑니다.
+        </Description>
+      </FadeContent>
 
       <PageNumber>
         {String(currentPage).padStart(2, '0')}/

@@ -75,7 +75,7 @@ const Copy02: React.FC = () => {
           <br />
           혁신적인 <span>기술로</span> 미래를 선도
           <br />
-          미래 산업의 <span>표준을</span> 만들어 갑니다
+          모니터링의 <span>표준을</span> 만들어 갑니다
         </Title>
         <Description>
           지이는 수소 에너지 기술의 혁신을 통해 더 깨끗하고 안전한 미래를

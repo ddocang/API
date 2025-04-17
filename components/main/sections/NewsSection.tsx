@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Image from 'next/image';
 
 const Container = styled.section`
   width: 100%;
@@ -38,11 +39,18 @@ const NewsCard = styled.div`
   background: #ffffff;
   border-radius: 24px;
   overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
 `;
 
-const NewsImage = styled.div`
+const NewsImageContainer = styled.div`
   width: 100%;
   height: 240px;
+  position: relative;
   background-color: #e0e0e0;
 `;
 
@@ -65,6 +73,11 @@ const NewsTitle = styled.h3`
   color: #000000;
   margin: 0;
   margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const NewsDescription = styled.p`
@@ -73,6 +86,11 @@ const NewsDescription = styled.p`
   line-height: 24px;
   color: #767676;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const NewsSection: React.FC = () => {
@@ -84,38 +102,110 @@ const NewsSection: React.FC = () => {
       </SectionTitle>
 
       <NewsGrid>
-        <NewsCard>
-          <NewsImage />
+        <NewsCard
+          onClick={() =>
+            window.open(
+              'http://www.engjournal.co.kr/news/articleView.html?idxno=3220',
+              '_blank'
+            )
+          }
+        >
+          <NewsImageContainer>
+            <Image
+              src="/images/news/news1.png"
+              alt="수소안전플랫폼"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'top center',
+                backgroundColor: '#ffffff',
+              }}
+              priority
+            />
+          </NewsImageContainer>
           <NewsContent>
-            <NewsDate>2024.03.15</NewsDate>
-            <NewsTitle>수소충전소 안전관리 시스템 고도화 완료</NewsTitle>
+            <NewsDate>2025.04.11</NewsDate>
+            <NewsTitle>
+              '수소안전플랫폼' 통해, 실시간 감시·예지보전으로 수소 안전성
+              강화한다
+            </NewsTitle>
             <NewsDescription>
-              지이는 전국 수소충전소의 안전관리 시스템을 고도화하여 더욱
-              안전하고 효율적인 운영이 가능해졌습니다.
+              지이(GE)는 강원테크노파크와 함께 차세대 수소안전플랫폼 개발에
+              착수했다. 단순한 모니터링을 넘어 데이터를 기반으로 실시간 감시와
+              예지보전을 가능하게 한 이 플랫폼은 수소 설비의 고장 위험을 사전에
+              파악하고, 주민의 불안감을 해소하는 데 핵심 역할을 하게 될
+              전망이다.
             </NewsDescription>
           </NewsContent>
         </NewsCard>
 
-        <NewsCard>
-          <NewsImage />
+        <NewsCard
+          onClick={() =>
+            window.open(
+              'https://www.energy-news.co.kr/news/articleView.html?idxno=212859',
+              '_blank'
+            )
+          }
+        >
+          <NewsImageContainer>
+            <Image
+              src="/images/news/news2.png"
+              alt="수소 트레일러 안전 모니터링"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'top center',
+                backgroundColor: '#ffffff',
+              }}
+              loading="lazy"
+            />
+          </NewsImageContainer>
           <NewsContent>
-            <NewsDate>2024.03.10</NewsDate>
-            <NewsTitle>강원도 수소 모빌리티 확대 사업 참여</NewsTitle>
+            <NewsDate>2025.04.17</NewsDate>
+            <NewsTitle>수소 트레일러, 폭발 대신 '안전'을 싣는다</NewsTitle>
             <NewsDescription>
-              강원도의 수소 모빌리티 인프라 구축 사업에 참여하여 친환경 교통
-              체계 구축에 기여하게 되었습니다.
+              강원테크노파크 에너지센터에서는 수소트레일러 안전장치 모니터링
+              실증사업을 진행, 수소 튜브트레일러 사고 발생 미연 방지를 위한 방안
+              모색에 나섰다. 충전-운송-활용 시 안전 모니터링 실증을 통해
+              안전불감증 해소가 기대된다.
             </NewsDescription>
           </NewsContent>
         </NewsCard>
 
-        <NewsCard>
-          <NewsImage />
+        <NewsCard
+          onClick={() =>
+            window.open(
+              'http://www.engjournal.co.kr/news/articleView.html?idxno=3224',
+              '_blank'
+            )
+          }
+        >
+          <NewsImageContainer>
+            <Image
+              src="/images/news/news3.png"
+              alt="삼척시 CCUS 전략"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'top center',
+                backgroundColor: '#ffffff',
+              }}
+              priority
+            />
+          </NewsImageContainer>
           <NewsContent>
-            <NewsDate>2024.03.05</NewsDate>
-            <NewsTitle>수소 에너지 기술 혁신 포럼 개최</NewsTitle>
+            <NewsDate>2025.04.15</NewsDate>
+            <NewsTitle>
+              삼척시, 수소산업 견인할 CCUS 전략 실행 모드 돌입
+            </NewsTitle>
             <NewsDescription>
-              수소 에너지 산업의 발전 방향과 기술 혁신에 대한 논의의 장을
-              마련했습니다.
+              삼척시는 CCUS 산업을 수소산업을 견인할 전략산업으로 판단하고
+              본격적인 인프라 구축과 실증사업에 나서며 청정에너지 도시로의
+              전환에 박차를 가하고 있다. 과학기술정보통신부의 'CCU 메가프로젝트'
+              사업지로 선정되어 예비타당성조사 대상사업으로 확정되었다.
             </NewsDescription>
           </NewsContent>
         </NewsCard>
