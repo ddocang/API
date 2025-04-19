@@ -29,6 +29,7 @@ dist-ssr
 !.env.example
 
 .next/
+.next/cache/**
 
 # Vercel output directory
 !.vercel/output/**
