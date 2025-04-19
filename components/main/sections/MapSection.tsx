@@ -382,7 +382,7 @@ const MapSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredStations, setFilteredStations] = useState<Station[]>([]);
   let isInitialized = false;
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5;
   const RETRY_DELAY = 500;
   let initialMarker: any = null;
   let currentInfoWindow: any = null;
