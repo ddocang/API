@@ -415,8 +415,8 @@ const MapSection = () => {
       try {
         // 초기 좌표 직접 설정
         const initialLocation = {
-          lat: 37.4160459,
-          lng: 126.8841192,
+          lat: 37.42405,
+          lng: 126.88702,
         };
 
         const mapOptions = {
@@ -424,7 +424,7 @@ const MapSection = () => {
             initialLocation.lat,
             initialLocation.lng
           ),
-          zoom: 17,
+          zoom: 16,
           zoomControl: true,
           zoomControlOptions: {
             position: (window.naver.maps as any).Position.TOP_RIGHT as number,
@@ -512,7 +512,7 @@ const MapSection = () => {
                     font-size: 15px;
                     color: #333333;
                     line-height: 1.4;
-                  ">경기도 광명시 일직동 501-4</div>
+                  ">경기도 광명시 일직로 43 광명역M클러스터</div>
                 </div>
               </div>
             `,

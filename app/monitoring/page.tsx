@@ -173,7 +173,7 @@ export default function MonitoringPage() {
             src="/images/monitoring/monitoring-bg.jpg"
             alt="수소 생산 시설 전경"
             fill
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 882px"
             quality={100}
             style={{ objectFit: 'cover', objectPosition: 'center' }}
             priority
@@ -189,6 +189,7 @@ export default function MonitoringPage() {
                 fill
                 sizes="32px"
                 style={{ objectFit: 'contain' }}
+                priority
               />
             </LogoImageWrapper>
             <span>HyGE</span>
@@ -277,7 +278,20 @@ export default function MonitoringPage() {
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 882px"
                 quality={100}
-                style={{ objectFit: 'cover' }}
+                style={{
+                  objectFit: 'cover',
+                  objectPosition:
+                    selectedFacility.name === '삼척 수소충전소'
+                      ? 'center center'
+                      : selectedFacility.name === '원주 수소충전소'
+                      ? 'center center'
+                      : selectedFacility.name === '속초 수소충전소'
+                      ? 'center center'
+                      : selectedFacility.name === '동해 휴게소 수소충전소'
+                      ? 'center center'
+                      : 'center center',
+                  transition: 'all 0.3s ease-in-out',
+                }}
                 priority
               />
             </MapView>
