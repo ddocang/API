@@ -4,8 +4,8 @@ import StyledComponentsRegistry from '@/lib/registry';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'Cursor Talk to Figma',
-  description: 'Cursor Talk to Figma Application',
+  title: 'HyGE',
+  description: 'Hydrogen platform',
 };
 
 export default function RootLayout({

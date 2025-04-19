@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Link from 'next/link';
 
 const Container = styled.section`
   width: 100%;
@@ -149,23 +150,25 @@ const ViewMore = styled.div`
 const ServiceSection: React.FC = () => {
   return (
     <Container>
-      <ServiceCard>
-        <CardImage $image="/images/service1.png">
-          <CardContent>
-            <CardTitle>안전모니터링</CardTitle>
-            <CardSubtitle>청정에너지를 안전하게</CardSubtitle>
-            <TagContainer>
-              <Tag>#수소충전소</Tag>
-              <Tag>#수소생산시설</Tag>
-              <Tag>#튜브트레일러</Tag>
-            </TagContainer>
-            <ViewMore>
-              <span>View more</span>
-              <div className="circle">→</div>
-            </ViewMore>
-          </CardContent>
-        </CardImage>
-      </ServiceCard>
+      <Link href="/monitoring" passHref>
+        <ServiceCard>
+          <CardImage $image="/images/service1.png">
+            <CardContent>
+              <CardTitle>안전모니터링</CardTitle>
+              <CardSubtitle>청정에너지를 안전하게</CardSubtitle>
+              <TagContainer>
+                <Tag>#수소충전소</Tag>
+                <Tag>#수소생산시설</Tag>
+                <Tag>#튜브트레일러</Tag>
+              </TagContainer>
+              <ViewMore>
+                <span>View more</span>
+                <div className="circle">→</div>
+              </ViewMore>
+            </CardContent>
+          </CardImage>
+        </ServiceCard>
+      </Link>
 
       <ServiceCard>
         <CardImage $image="/images/service2.png">

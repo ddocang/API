@@ -399,6 +399,12 @@ const MapSection = () => {
     },
   };
 
+  // 주소 수정이 필요한 충전소 목록
+  const addressCorrections: { [key: string]: string } = {
+    '삼척 교동 수소충전복합스테이션': '강원 삼척시 뒷나루길 137',
+    H국회수소충전소: '서울특별시 영등포구 국회대로 741',
+  };
+
   useEffect(() => {
     // 서버사이드에서 실행되지 않도록 체크
     if (typeof window === 'undefined') return;
@@ -650,17 +656,10 @@ const MapSection = () => {
               }
             }
 
-            // 삼척 교동 수소충전복합스테이션 주소 수정
-            if (station.chrstn_nm === '삼척 교동 수소충전복합스테이션') {
-              if (
-                station.road_nm_addr &&
-                station.road_nm_addr.includes('뒷나루길 153')
-              ) {
-                station.road_nm_addr = station.road_nm_addr.replace(
-                  '뒷나루길 153',
-                  '뒷나루길 137'
-                );
-              }
+            // 주소 수정이 필요한 경우 적용
+            const correctedAddress = addressCorrections[station.chrstn_nm];
+            if (correctedAddress) {
+              station.road_nm_addr = correctedAddress;
             }
 
             return {
