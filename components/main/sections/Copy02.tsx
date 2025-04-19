@@ -73,7 +73,7 @@ const Copy02: React.FC = () => {
         <Title>
           수소산업의 <span>새로운 플랫폼</span>
           <br />
-          혁신적인 <span>기술로</span> 미래를 선도
+          혁신적인 <span>기술로</span> 미래를 선도하며
           <br />
           모니터링의 <span>표준을</span> 만들어 갑니다
         </Title>
