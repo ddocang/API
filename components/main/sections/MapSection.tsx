@@ -382,8 +382,8 @@ const MapSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredStations, setFilteredStations] = useState<Station[]>([]);
   let isInitialized = false;
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY = 1000;
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 500;
   let initialMarker: any = null;
   let currentInfoWindow: any = null;
 
@@ -413,19 +413,10 @@ const MapSection = () => {
       if (!mapContainerRef.current || !window.naver?.maps) return false;
 
       try {
-        // 광명시 일직동 501-4 좌표로 초기화
-        const response = await fetch('/api/geocode?query=광명시 일직동 501-4');
-
-        const data = await response.json();
-
-        if (!data.addresses || data.addresses.length === 0) {
-          console.error('초기 위치 좌표를 찾을 수 없습니다.');
-          return false;
-        }
-
+        // 초기 좌표 직접 설정
         const initialLocation = {
-          lat: parseFloat(data.addresses[0].y),
-          lng: parseFloat(data.addresses[0].x),
+          lat: 37.4160459,
+          lng: 126.8841192,
         };
 
         const mapOptions = {
@@ -559,26 +550,8 @@ const MapSection = () => {
       }
     };
 
-    const loadNaverMapsScript = () => {
-      return new Promise((resolve) => {
-        // 이미 스크립트가 로드되어 있는지 확인
-        if (window.naver && window.naver.maps) {
-          resolve(undefined);
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NCP_CLIENT_ID}&submodules=geocoder`;
-        script.async = true;
-        script.onload = resolve;
-        document.head.appendChild(script);
-      });
-    };
-
     const initializeMapWithRetry = async () => {
       if (isInitialized) return;
-
-      await loadNaverMapsScript();
 
       let retryCount = 0;
       const tryInitialize = async () => {
@@ -751,7 +724,6 @@ const MapSection = () => {
           position: position,
           map: mapRef.current,
           title: station.chrstn_nm,
-          animation: window.naver.maps.Animation.DROP, // 마커 생성 시 드롭 애니메이션
         });
 
         // 마커 클릭 이벤트
@@ -818,17 +790,11 @@ const MapSection = () => {
             position: point,
             map: mapRef.current,
             title: selectedStation.chrstn_nm,
-            animation: window.naver.maps.Animation.DROP,
           });
 
           // 기존 마커 제거
           markersRef.current.forEach((m) => m.setMap(null));
           markersRef.current = [marker];
-
-          // 2.1초 후 마커 애니메이션 중지
-          setTimeout(() => {
-            marker.setAnimation(null);
-          }, 2100);
         })
         .catch((error) => {
           console.error('지도 이동 중 오류 발생:', error);
