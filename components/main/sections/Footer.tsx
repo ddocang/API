@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const Container = styled.footer`
   width: 100%;
   background-color: #111111;
-  padding: clamp(40px, 4.17vw, 80px) clamp(1rem, 8.33vw, 160px);
+  padding: clamp(40px, 2.08vw, 40px) clamp(1rem, 8.33vw, 160px);
   color: #ffffff;
   user-select: none;
 

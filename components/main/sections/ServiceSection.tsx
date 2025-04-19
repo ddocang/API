@@ -176,9 +176,9 @@ const ServiceSection: React.FC = () => {
             <CardTitle>수소 충전소</CardTitle>
             <CardSubtitle>탄소 없는 내일을 위한 충전 허브</CardSubtitle>
             <TagContainer>
-              <Tag>#모빌리티혁신</Tag>
-              <Tag>#에너지전환</Tag>
-              <Tag>#친환경</Tag>
+              <Tag>#충전 예약</Tag>
+              <Tag>#결제 등록</Tag>
+              <Tag>#CCTV 확인</Tag>
             </TagContainer>
             <ViewMore>
               <span>View more</span>

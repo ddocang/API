@@ -2,12 +2,14 @@
 
 import Image from 'next/image';
 import styled from '@emotion/styled';
+import { MdLocationOn, MdPhone } from 'react-icons/md';
+import { BsCircleFill } from 'react-icons/bs';
 
 interface FacilityInfoCardProps {
   name: string;
   type: string;
   address: string;
-  status: 'open' | 'closed';
+  status: 'open' | 'closed' | 'preparing';
   phone: string;
   imageUrl: string;
 }
@@ -20,6 +22,32 @@ export default function FacilityInfoCard({
   phone,
   imageUrl,
 }: FacilityInfoCardProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return '#00AB75';
+      case 'closed':
+        return '#FF4D4D';
+      case 'preparing':
+        return '#FFB800';
+      default:
+        return '#767676';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'open':
+        return '영업 중';
+      case 'closed':
+        return '영업 종료';
+      case 'preparing':
+        return '준비 중';
+      default:
+        return '상태 미확인';
+    }
+  };
+
   return (
     <Container>
       <ImageContainer>
@@ -27,35 +55,37 @@ export default function FacilityInfoCard({
           src={imageUrl}
           alt={name}
           fill
-          sizes="(max-width: 378px) 100vw, 378px"
           style={{ objectFit: 'cover' }}
+          sizes="(max-width: 378px) 100vw, 378px"
+          quality={100}
           priority
         />
       </ImageContainer>
-
-      <InfoContent>
-        <TypeText>{type}</TypeText>
-        <FacilityName>{name}</FacilityName>
-
+      <InfoContainer>
+        <Type>{type}</Type>
+        <Name>{name}</Name>
         <Divider />
-
         <InfoRow>
-          <LocationIcon />
-          <AddressText>{address}</AddressText>
+          <IconWrapper>
+            <MdLocationOn size={16} color="#767676" />
+          </IconWrapper>
+          <Text>{address}</Text>
         </InfoRow>
-
         <InfoRow>
-          <StatusDot status={status} />
-          <StatusText status={status}>
-            {status === 'open' ? '영업 중' : '영업 종료'}
+          <IconWrapper>
+            <BsCircleFill size={13} color={getStatusColor(status)} />
+          </IconWrapper>
+          <StatusText color={getStatusColor(status)}>
+            {getStatusText(status)}
           </StatusText>
         </InfoRow>
-
         <InfoRow>
-          <PhoneIcon />
-          <PhoneText>{phone}</PhoneText>
+          <IconWrapper>
+            <MdPhone size={16} color="#767676" />
+          </IconWrapper>
+          <Text>{phone}</Text>
         </InfoRow>
-      </InfoContent>
+      </InfoContainer>
     </Container>
   );
 }
@@ -74,75 +104,60 @@ const ImageContainer = styled.div`
   height: 358px;
 `;
 
-const InfoContent = styled.div`
-  padding: 30px;
+const InfoContainer = styled.div`
+  padding: 32px;
 `;
 
-const TypeText = styled.p`
+const Type = styled.div`
   font-family: 'Pretendard';
   font-size: 16px;
   color: #767676;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 `;
 
-const FacilityName = styled.h2`
+const Name = styled.h2`
   font-family: 'Pretendard';
   font-weight: 600;
   font-size: 32px;
   color: #111111;
-  margin-bottom: 20px;
+  margin: 0;
 `;
 
-const Divider = styled.div`
-  width: 100%;
+const Divider = styled.hr`
+  border: none;
   height: 1px;
-  background: #767676;
-  margin: 20px 0;
+  background-color: #767676;
+  margin: 28px 0;
 `;
 
 const InfoRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 11px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
-const LocationIcon = styled.div`
-  width: 12px;
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
   height: 16px;
-  background: #111111;
-  // 실제 아이콘으로 교체 필요
 `;
 
-const AddressText = styled.p`
+const Text = styled.span`
   font-family: 'Pretendard';
   font-size: 16px;
   color: #111111;
 `;
 
-const StatusDot = styled.div<{ status: 'open' | 'closed' }>`
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: ${(props) => (props.status === 'open' ? '#00AB75' : '#FF4D4D')};
-`;
-
-const StatusText = styled.p<{ status: 'open' | 'closed' }>`
+const StatusText = styled.span<{ color: string }>`
   font-family: 'Pretendard';
   font-weight: 600;
   font-size: 16px;
-  color: ${(props) => (props.status === 'open' ? '#00AB75' : '#FF4D4D')};
-`;
-
-const PhoneIcon = styled.div`
-  width: 13px;
-  height: 13px;
-  background: #111111;
-  // 실제 아이콘으로 교체 필요
-`;
-
-const PhoneText = styled.p`
-  font-family: 'Pretendard';
-  font-size: 16px;
-  color: #111111;
+  color: ${(props) => props.color};
 `;
