@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
+import Image from 'next/image';
 
 declare global {
   interface Window {
@@ -386,6 +387,7 @@ const MapSection = () => {
   const RETRY_DELAY = 500;
   let initialMarker: any = null;
   let currentInfoWindow: any = null;
+  const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // 수동으로 추가한 충전소 좌표 정보
   const manualCoordinates: { [key: string]: { la: string; lo: string } } = {
@@ -456,13 +458,17 @@ const MapSection = () => {
               justify-content: center;
               box-shadow: 0 2px 6px rgba(0,0,0,0.3);
               border: 2px solid rgba(255, 255, 255, 0.5);
+              position: relative;
+              overflow: hidden;
             ">
-              <div style="
-                width: 36px;
-                height: 36px;
-                background: url('/images/ge_logo.png') no-repeat center center;
-                background-size: contain;
-              "></div>
+              <img 
+                src="/images/ge_logo.png"
+                alt="GE Logo"
+                width="36"
+                height="36"
+                style="object-fit: contain;"
+                loading="eager"
+              />
             </div>`,
           size: new window.naver.maps.Size(48, 48),
           anchor: new window.naver.maps.Point(24, 24),
@@ -592,19 +598,27 @@ const MapSection = () => {
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const operationResponse = await fetch('/api/chrstnList/operationInfo', {
-          headers: {
-            Authorization: process.env.NEXT_PUBLIC_HYDROGEN_API_KEY || '',
-          },
-        });
-        const operationData = await operationResponse.json();
+        const [operationResponse, currentResponse] = await Promise.all([
+          fetch('/api/chrstnList/operationInfo', {
+            headers: {
+              Authorization: process.env.NEXT_PUBLIC_HYDROGEN_API_KEY || '',
+            },
+          }),
+          fetch('/api/chrstnList/currentInfo', {
+            headers: {
+              Authorization: process.env.NEXT_PUBLIC_HYDROGEN_API_KEY || '',
+            },
+          }),
+        ]);
 
-        const currentResponse = await fetch('/api/chrstnList/currentInfo', {
-          headers: {
-            Authorization: process.env.NEXT_PUBLIC_HYDROGEN_API_KEY || '',
-          },
-        });
-        const currentData = await currentResponse.json();
+        if (!operationResponse.ok || !currentResponse.ok) {
+          throw new Error('API 요청 실패');
+        }
+
+        const [operationData, currentData] = await Promise.all([
+          operationResponse.json(),
+          currentResponse.json(),
+        ]);
 
         const realTimeData = currentData.reduce((acc: any, item: any) => {
           if (item.chrstn_nm) {
@@ -620,7 +634,6 @@ const MapSection = () => {
 
         const allStations = operationData
           .map((station: any, index: number) => {
-            // 수동 좌표 정보가 있는 경우 적용
             const manualCoords = manualCoordinates[station.chrstn_nm];
             if (!station.la || !station.lo) {
               if (manualCoords) {
@@ -629,7 +642,6 @@ const MapSection = () => {
               }
             }
 
-            // 주소 수정이 필요한 경우 적용
             const correctedAddress = addressCorrections[station.chrstn_nm];
             if (correctedAddress) {
               station.road_nm_addr = correctedAddress;
@@ -641,11 +653,9 @@ const MapSection = () => {
               realTimeInfo: realTimeData[station.chrstn_nm] || {},
             };
           })
-          .sort((a: Station, b: Station) => {
-            if (a.chrstn_nm < b.chrstn_nm) return -1;
-            if (a.chrstn_nm > b.chrstn_nm) return 1;
-            return 0;
-          });
+          .sort((a: Station, b: Station) =>
+            a.chrstn_nm.localeCompare(b.chrstn_nm)
+          );
 
         setStations(allStations);
         if (mapRef.current) {
@@ -653,6 +663,8 @@ const MapSection = () => {
         }
       } catch (error) {
         console.error('Error fetching stations:', error);
+        // 에러 상태 처리
+        setStations([]);
       } finally {
         setLoading(false);
       }
@@ -660,29 +672,6 @@ const MapSection = () => {
 
     fetchStations();
   }, []);
-
-  useEffect(() => {
-    const filtered = stations.filter((station) => {
-      const searchLower = searchTerm.toLowerCase().replace(/\s/g, '');
-      const stationName = (station.chrstn_nm || '')
-        .toLowerCase()
-        .replace(/\s/g, '');
-      const stationAddress = (station.road_nm_addr || station.lotno_addr || '')
-        .toLowerCase()
-        .replace(/\s/g, '');
-
-      return (
-        stationName.includes(searchLower) ||
-        stationAddress.includes(searchLower)
-      );
-    });
-    setFilteredStations(filtered);
-
-    if (filtered.length > 0 && searchTerm) {
-      const firstStation = filtered[0];
-      handleStationClick(firstStation.id);
-    }
-  }, [searchTerm, stations]);
 
   useEffect(() => {
     // 현재 위치 가져오기
@@ -736,77 +725,99 @@ const MapSection = () => {
     });
   };
 
-  const handleStationClick = async (stationId: number) => {
-    setActiveStation(activeStation === stationId ? null : stationId);
-
-    const selectedStation = stations.find(
-      (station) => station.id === stationId
-    );
-    if (!selectedStation || !mapRef.current) return;
-
-    try {
-      // 주소 정보 가져오기
-      const address =
-        selectedStation.road_nm_addr || selectedStation.lotno_addr;
-      if (!address) {
-        return;
-      }
-
-      // 네이버 지도 검색 API를 사용하여 주소 검색
-      const encodedAddress = encodeURIComponent(address);
-      fetch(`/api/geocode?query=${encodedAddress}`)
-        .then((response) => response.json())
-        .then((data) => {
-          // meta 객체가 없는 경우 처리
-          if (!data.meta) {
-            console.error('API 응답에 메타 데이터가 없습니다:', data);
-            return;
-          }
-
-          if (data.meta.totalCount === 0) {
-            console.log('검색 결과가 없습니다:', address);
-            return;
-          }
-
-          // 검색 결과가 없는 경우 처리
-          if (!data.addresses || data.addresses.length === 0) {
-            console.log('주소 정보가 없습니다:', address);
-            return;
-          }
-
-          // 첫 번째 검색 결과의 좌표로 이동
-          const item = data.addresses[0];
-          const point = new window.naver.maps.LatLng(
-            parseFloat(item.y),
-            parseFloat(item.x)
-          );
-
-          // 지도 이동
-          mapRef.current.setCenter(point);
-          mapRef.current.setZoom(19);
-
-          // 해당 위치에 마커 표시
-          const marker = new window.naver.maps.Marker({
-            position: point,
-            map: mapRef.current,
-            title: selectedStation.chrstn_nm,
-          });
-
-          // 기존 마커 제거
-          markersRef.current.forEach((m) => m.setMap(null));
-          markersRef.current = [marker];
-        })
-        .catch((error) => {
-          console.error('지도 이동 중 오류 발생:', error);
-        });
-    } catch (error) {
-      console.error('지도 이동 중 오류 발생:', error);
-    }
-  };
-
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // 디바운스 처리
+    if (searchDebounceTimer.current) {
+      clearTimeout(searchDebounceTimer.current);
+    }
+
+    searchDebounceTimer.current = setTimeout(() => {
+      const filtered = stations.filter((station) => {
+        const searchLower = value.toLowerCase().replace(/\s/g, '');
+        const stationName = (station.chrstn_nm || '')
+          .toLowerCase()
+          .replace(/\s/g, '');
+        const stationAddress = (
+          station.road_nm_addr ||
+          station.lotno_addr ||
+          ''
+        )
+          .toLowerCase()
+          .replace(/\s/g, '');
+
+        return (
+          stationName.includes(searchLower) ||
+          stationAddress.includes(searchLower)
+        );
+      });
+
+      setFilteredStations(filtered);
+      if (filtered.length > 0 && value) {
+        handleStationClick(filtered[0].id);
+      }
+    }, 300);
   };
+
+  // 메모이제이션된 필터링 결과
+  const filteredStationsResult = useMemo(() => {
+    return searchTerm ? filteredStations : stations;
+  }, [searchTerm, filteredStations, stations]);
+
+  // useCallback으로 이벤트 핸들러 최적화
+  const handleStationClick = useCallback(
+    async (stationId: number) => {
+      setActiveStation(activeStation === stationId ? null : stationId);
+
+      const selectedStation = stations.find(
+        (station) => station.id === stationId
+      );
+      if (!selectedStation || !mapRef.current) return;
+
+      try {
+        const address =
+          selectedStation.road_nm_addr || selectedStation.lotno_addr;
+        if (!address) return;
+
+        const encodedAddress = encodeURIComponent(address);
+        const response = await fetch(`/api/geocode?query=${encodedAddress}`);
+        const data = await response.json();
+
+        if (
+          !data.meta ||
+          data.meta.totalCount === 0 ||
+          !data.addresses ||
+          data.addresses.length === 0
+        ) {
+          console.log('주소 정보를 찾을 수 없습니다:', address);
+          return;
+        }
+
+        const item = data.addresses[0];
+        const point = new window.naver.maps.LatLng(
+          parseFloat(item.y),
+          parseFloat(item.x)
+        );
+
+        mapRef.current.setCenter(point);
+        mapRef.current.setZoom(19);
+
+        const marker = new window.naver.maps.Marker({
+          position: point,
+          map: mapRef.current,
+          title: selectedStation.chrstn_nm,
+        });
+
+        markersRef.current.forEach((m) => m.setMap(null));
+        markersRef.current = [marker];
+      } catch (error) {
+        console.error('지도 이동 중 오류 발생:', error);
+      }
+    },
+    [activeStation, stations]
+  );
 
   const handleDirectionClick = async (address: string) => {
     try {
@@ -877,7 +888,7 @@ const MapSection = () => {
             </SearchContainer>
           </SectionTitle>
           <StationList>
-            {(searchTerm ? filteredStations : stations).map((station) => (
+            {filteredStationsResult.map((station) => (
               <StationItem
                 key={station.id}
                 $isActive={activeStation === station.id}
