@@ -160,6 +160,11 @@ const MainTitle = styled.div`
   flex-direction: column;
   gap: 0.2em;
 
+  @media (max-width: 1366px) {
+    max-width: 100%;
+    gap: 0.1em;
+  }
+
   @media (max-width: 768px) {
     margin-bottom: 1.5rem;
     gap: 0.3em;
@@ -169,17 +174,22 @@ const MainTitle = styled.div`
 const TitleText = styled.h1`
   font-family: 'Pretendard';
   font-weight: 800;
-  font-size: clamp(40px, 4.17vw, 80px);
+  font-size: clamp(40px, 3.5vw, 80px);
   color: #ffffff;
   line-height: 1.25;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   user-select: none;
-  white-space: nowrap;
+  word-break: keep-all;
+
+  @media (max-width: 1366px) {
+    font-size: clamp(32px, 2.8vw, 40px);
+    line-height: 1.3;
+  }
 
   @media (max-width: 768px) {
-    font-size: clamp(32px, 6vw, 40px);
-    white-space: pre-line;
+    font-size: clamp(28px, 5vw, 32px);
+    line-height: 1.4;
   }
 `;
 
@@ -258,12 +268,6 @@ const TopBanner: React.FC = () => {
           </div>
           <span>HyGE</span>
         </Logo>
-        <MainMenu>
-          <a href="#about">About</a>
-          <a href="#solution">Solution</a>
-          <a href="#service">Service</a>
-          <a href="#contact">Contact</a>
-        </MainMenu>
         <UserMenu>
           <button>로그인</button>
           <button>회원가입</button>
@@ -272,8 +276,8 @@ const TopBanner: React.FC = () => {
 
       <FadeContent $isActive={currentBgIndex === 0}>
         <MainTitle>
-          <TitleText>SAFETY AS STANDARD</TitleText>
-          <TitleText>EFFICIENCY AS EXTRA</TitleText>
+          <TitleText>SAFETY AS{'\u00A0'}STANDARD</TitleText>
+          <TitleText>EFFICIENCY AS{'\u00A0'}EXTRA</TitleText>
         </MainTitle>
         <Description>
           수소생산시설 안전모니터링 시스템으로 미래 에너지의 안전을 선도하세요.
@@ -284,9 +288,9 @@ const TopBanner: React.FC = () => {
 
       <FadeContent $isActive={currentBgIndex === 1}>
         <MainTitle>
-          <TitleText>HYDROGEN STATION</TitleText>
-          <TitleText>BOOKING AND</TitleText>
-          <TitleText>PAYMENT SYSTEM</TitleText>
+          <TitleText>HYDROGEN{'\u00A0'}STATION</TitleText>
+          <TitleText>BOOKING{'\u00A0'}AND</TitleText>
+          <TitleText>PAYMENT{'\u00A0'}SYSTEM</TitleText>
         </MainTitle>
         <Description>
           수소충전소 예약 및 결제 시스템으로 더 편리한 충전 서비스를 경험하세요.
@@ -296,8 +300,8 @@ const TopBanner: React.FC = () => {
 
       <FadeContent $isActive={currentBgIndex === 2}>
         <MainTitle>
-          <TitleText>INNOVATION AND SAFETY</TitleText>
-          <TitleText>IN HARMONY</TitleText>
+          <TitleText>INNOVATION AND{'\u00A0'}SAFETY</TitleText>
+          <TitleText>IN{'\u00A0'}HARMONY</TitleText>
         </MainTitle>
         <Description>
           혁신적인 기술과 안전한 운영이 조화를 이루는 수소 에너지의 미래를
