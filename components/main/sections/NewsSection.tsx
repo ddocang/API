@@ -4,7 +4,8 @@ import Image from 'next/image';
 
 const Container = styled.section`
   width: 100%;
-  height: 500px;
+  min-height: 500px;
+  height: auto;
   padding: clamp(40px, 2.08vw, 40px) clamp(1rem, 8.33vw, 160px);
   background-color: #ffffff;
 
@@ -14,12 +15,13 @@ const Container = styled.section`
 
   @media (max-width: 768px) {
     padding: 32px 20px;
+    min-height: auto;
   }
 `;
 
 const Content = styled.div`
   max-width: 1280px;
-  height: 100%;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -84,6 +86,7 @@ const NewsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(16px, 0.83vw, 16px);
+  margin-bottom: 40px;
 
   @media (max-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
@@ -92,10 +95,12 @@ const NewsGrid = styled.div`
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+    margin-bottom: 32px;
   }
 
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
+    margin-bottom: 24px;
   }
 `;
 
@@ -103,6 +108,9 @@ const NewsCard = styled.div`
   position: relative;
   cursor: pointer;
   transition: transform 0.2s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   &:hover {
     transform: translateY(-4px);
@@ -116,6 +124,7 @@ const ImageWrapper = styled.div`
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 
   @media (max-width: 768px) {
     margin-bottom: 0.75rem;
@@ -145,6 +154,7 @@ const NewsTitle = styled.h3`
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: keep-all;
+  flex-grow: 1;
 
   @media (max-width: 768px) {
     font-size: 14px;

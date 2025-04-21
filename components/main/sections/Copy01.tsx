@@ -19,7 +19,7 @@ const Container = styled.section`
 `;
 
 const Contents = styled.div`
-  max-width: clamp(320px, 55.8vw, 1071px);
+  max-width: clamp(320px, 66.7vw, 1280px);
   width: 100%;
   user-select: none;
 `;
@@ -27,7 +27,7 @@ const Contents = styled.div`
 const Title = styled.h2`
   font-family: 'Pretendard';
   font-weight: 700;
-  font-size: clamp(32px, 4.17vw, 80px);
+  font-size: clamp(32px, min(4.17vw, 80px), 80px);
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #000000;
@@ -43,6 +43,10 @@ const Title = styled.h2`
 
   span {
     color: #0c6de5;
+  }
+
+  @media (min-width: 2000px) {
+    font-size: 80px;
   }
 
   @media (max-width: 768px) {

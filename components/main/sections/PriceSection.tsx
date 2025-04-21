@@ -235,21 +235,19 @@ const InfoContainer = styled.div`
   }
 
   @media (max-width: 768px) {
-    gap: 16px;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
     margin-top: 16px;
   }
 `;
 
 const PriceInfoArea = styled.div`
-  width: 391px;
+  width: 100%;
+  max-width: 391px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-
-  @media (max-width: 1366px) {
-    width: 100%;
-    max-width: 391px;
-  }
 
   @media (max-width: 768px) {
     gap: 12px;
@@ -257,20 +255,20 @@ const PriceInfoArea = styled.div`
 `;
 
 const MapArea = styled.div`
-  width: 346px;
+  width: 100%;
+  max-width: 346px;
   height: 440px;
   display: flex;
   justify-content: center;
   align-items: center;
 
   @media (max-width: 1366px) {
-    width: 100%;
-    max-width: 346px;
     height: 380px;
   }
 
   @media (max-width: 768px) {
     height: 300px;
+    margin-top: 16px;
   }
 `;
 
