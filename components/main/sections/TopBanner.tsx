@@ -16,16 +16,20 @@ const BannerContainer = styled.section`
 
   @media (max-width: 1024px) {
     padding: 0 2rem;
+    height: 100vh;
   }
 `;
 
-const FadeBackgroundImage = styled.img<{ $isActive: boolean }>`
+const BackgroundSlide = styled.div<{ $isActive: boolean; $bgImage: string }>`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background-image: url(${(props) => props.$bgImage});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   transition: opacity 1s ease-in-out;
   z-index: 0;
@@ -131,8 +135,7 @@ const FadeContent = styled.div<{ $isActive: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  transform: translateY(-100px);
-
+  transform: translateY(0);
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   transition: opacity 0.8s ease-in-out;
   transition-delay: ${(props) => (props.$isActive ? '0.3s' : '0s')};
@@ -141,12 +144,26 @@ const FadeContent = styled.div<{ $isActive: boolean }>`
   @media (max-width: 1024px) {
     padding: 0 2rem;
   }
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    padding-top: 180px;
+  }
 `;
 
 const MainTitle = styled.div`
   max-width: clamp(360px, 37.5vw, 720px);
   width: 100%;
   user-select: none;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+    gap: 0.3em;
+  }
 `;
 
 const TitleText = styled.h1`
@@ -156,13 +173,13 @@ const TitleText = styled.h1`
   color: #ffffff;
   line-height: 1.25;
   margin: 0;
-  white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   user-select: none;
+  white-space: nowrap;
 
   @media (max-width: 768px) {
     font-size: clamp(32px, 6vw, 40px);
-    white-space: normal;
-    word-break: keep-all;
+    white-space: pre-line;
   }
 `;
 
@@ -173,7 +190,13 @@ const Description = styled.p`
   margin-top: clamp(16px, 1.25vw, 24px);
   max-width: clamp(360px, 37.5vw, 720px);
   line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   user-select: none;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    margin-top: 1rem;
+  }
 `;
 
 const PageNumber = styled.div`
@@ -214,17 +237,25 @@ const TopBanner: React.FC = () => {
   return (
     <BannerContainer>
       {backgroundImages.map((img, idx) => (
-        <FadeBackgroundImage
+        <BackgroundSlide
           key={idx}
-          src={img}
-          alt={`bg-${idx}`}
           $isActive={idx === currentBgIndex}
+          $bgImage={img}
         />
       ))}
 
       <GNB>
         <Logo>
-          <img src="/images/logo.png" alt="HyGE Logo" />
+          <div style={{ position: 'relative', width: '32px', height: '32px' }}>
+            <Image
+              src="/images/logo.png"
+              alt="HyGE Logo"
+              fill
+              sizes="32px"
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
           <span>HyGE</span>
         </Logo>
         <MainMenu>

@@ -36,20 +36,25 @@ const Title = styled.h2`
   text-align: center;
   word-break: keep-all;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
 
   span {
     color: #0c6de5;
   }
 
-  br {
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
-
   @media (max-width: 768px) {
+    font-size: clamp(24px, 4.17vw, 32px);
     letter-spacing: -0.01em;
+    line-height: 1.3;
+    gap: 0.3em;
   }
+`;
+
+const TitleLine = styled.div`
+  width: 100%;
 `;
 
 const Description = styled.p`
@@ -71,11 +76,15 @@ const Copy02: React.FC = () => {
     <Container>
       <Contents>
         <Title>
-          수소산업의 <span>새로운 플랫폼</span>
-          <br />
-          혁신적인 <span>기술로</span> 미래를 선도하며
-          <br />
-          모니터링의 <span>표준을</span> 만들어 갑니다
+          <TitleLine>
+            수소산업의 <span>새로운 플랫폼</span>
+          </TitleLine>
+          <TitleLine>
+            혁신적인 <span>기술로</span> 미래를 선도하며
+          </TitleLine>
+          <TitleLine>
+            모니터링의 <span>표준을</span> 만들어 갑니다
+          </TitleLine>
         </Title>
         <Description>
           지이는 수소 에너지 기술의 혁신을 통해 더 깨끗하고 안전한 미래를

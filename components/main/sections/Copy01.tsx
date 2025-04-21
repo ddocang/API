@@ -36,20 +36,25 @@ const Title = styled.h2`
   text-align: center;
   word-break: keep-all;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
 
   span {
     color: #0c6de5;
   }
 
-  br {
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
-
   @media (max-width: 768px) {
+    font-size: clamp(24px, 4.17vw, 32px);
     letter-spacing: -0.01em;
+    line-height: 1.3;
+    gap: 0.3em;
   }
+`;
+
+const TitleLine = styled.div`
+  width: 100%;
 `;
 
 const Description = styled.p`
@@ -71,11 +76,15 @@ const Copy01: React.FC = () => {
     <Container>
       <Contents>
         <Title>
-          <span>수소</span>로 여는 지속 가능한 내일
-          <br />
-          지구를 위한 <span>스마트 에너지</span> 플랫폼
-          <br />
-          <span>미래</span>로 향하는 길을 밝혀줍니다
+          <TitleLine>
+            <span>수소</span>로 여는 지속 가능한 내일
+          </TitleLine>
+          <TitleLine>
+            지구를 위한 <span>스마트 에너지</span> 플랫폼
+          </TitleLine>
+          <TitleLine>
+            <span>미래</span>로 향하는 길을 밝혀줍니다
+          </TitleLine>
         </Title>
         <Description>
           지이는 친환경 수소 에너지 솔루션을 제공하며, 탄소 중립 사회로의 전환을
