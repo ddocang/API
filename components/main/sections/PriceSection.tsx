@@ -114,6 +114,8 @@ const EnvironmentCard = styled.div`
   background: #ffffff;
   border-radius: 36px;
   padding: 28px;
+  position: relative;
+  z-index: 2;
 
   @media (max-width: 1366px) {
     width: 100%;
@@ -210,8 +212,9 @@ const UpdateTime = styled.p`
   line-height: 19.2px;
   color: #6d6d6d;
   position: absolute;
-  right: 115px;
+  right: 110px;
   top: 34px;
+  z-index: 2;
 
   @media (max-width: 1366px) {
     right: 32px;
@@ -219,8 +222,10 @@ const UpdateTime = styled.p`
 
   @media (max-width: 768px) {
     position: static;
-    margin: 8px 0 0 0;
+    margin: 0;
     font-size: 14px;
+    text-align: center;
+    order: 2;
   }
 `;
 
@@ -230,6 +235,8 @@ const InfoContainer = styled.div`
   margin-top: 22px;
   flex-wrap: wrap;
   justify-content: center;
+  position: relative;
+  overflow: visible;
 
   @media (max-width: 1366px) {
     gap: 24px;
@@ -250,14 +257,18 @@ const MapArea = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 1366px) {
     height: 380px;
   }
 
   @media (max-width: 768px) {
-    height: 250px;
-    margin: 16px 0;
+    height: auto;
+    min-height: 280px;
+    margin: 24px 0 32px;
     order: 2;
   }
 `;
@@ -1097,8 +1108,8 @@ const PriceSection: React.FC = () => {
                 onChange={handleSearch}
               />
             </SearchContainer>
+            <UpdateTime>{lastUpdate} 기준</UpdateTime>
           </TitleContainer>
-          <UpdateTime>{lastUpdate} 기준</UpdateTime>
           <InfoContainer>
             <PriceInfoArea>
               <PriceBox $isActive={true}>

@@ -12,9 +12,15 @@ interface StyledPathProps {
 
 const Svg = styled.svg`
   width: 100%;
-  height: auto;
-  max-width: 346px;
-  max-height: 440px;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 398/630;
+  display: block;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    max-width: 280px;
+  }
 `;
 
 const Path = styled.path<StyledPathProps>`

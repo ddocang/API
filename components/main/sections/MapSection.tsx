@@ -251,34 +251,40 @@ const SearchContainer = styled.div`
 `;
 
 const SearchInput = styled.input`
-  width: 285px;
-  height: 40px;
-  padding: 0 15px;
-  border: 2px solid #27afe9;
-  border-radius: 20px;
+  width: 100%;
+  height: 44px;
+  padding: 0 20px;
+  border: 2px solid rgba(39, 175, 233, 0.2);
+  border-radius: 22px;
   font-family: 'Pretendard';
-  font-size: 16px;
+  font-size: 15px;
   outline: none;
-  text-align: center;
+  transition: all 0.3s ease;
+  background: #ffffff;
 
   @media (max-width: 768px) {
-    width: 100%;
-    height: 36px;
+    height: 40px;
     font-size: 14px;
   }
 
   &::placeholder {
     color: #999;
   }
+
+  &:focus {
+    border-color: #27afe9;
+    box-shadow: 0 0 0 4px rgba(39, 175, 233, 0.1);
+  }
 `;
 
 const StationList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   max-height: 600px;
   overflow-y: auto;
-  padding-right: 16px;
+  padding: 4px;
+  margin-top: 20px;
 
   @media (max-width: 1366px) {
     max-height: 500px;
@@ -289,56 +295,121 @@ const StationList = styled.div`
   }
 
   @media (max-width: 768px) {
-    padding-right: 12px;
-    gap: 12px;
+    padding: 2px;
+    gap: 8px;
   }
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #27afe9;
-    border-radius: 4px;
+    background: rgba(39, 175, 233, 0.3);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(39, 175, 233, 0.5);
+    }
+  }
+`;
+
+const InfoDetails = styled.div<{ $isActive?: boolean }>`
+  display: flex;
+  flex: 1;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
   }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background: #1e8dbb;
+  div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: ${(props) =>
+      props.$isActive
+        ? 'rgba(255, 255, 255, 0.15)'
+        : 'rgba(39, 175, 233, 0.05)'};
+    padding: 8px 12px;
+    border-radius: 8px;
+
+    span {
+      font-family: 'Pretendard';
+      font-size: 14px;
+      font-weight: 500;
+      color: ${(props) => (props.$isActive ? '#ffffff' : '#333333')};
+
+      @media (max-width: 768px) {
+        font-size: 13px;
+      }
+
+      &:first-child {
+        opacity: ${(props) => (props.$isActive ? '0.85' : '0.7')};
+        font-weight: 400;
+      }
+
+      &:last-child {
+        font-weight: 600;
+      }
+    }
   }
 `;
 
 const StationItem = styled.div<{ $isActive?: boolean }>`
   width: 100%;
-  background: ${(props) => (props.$isActive ? '#27AFE9' : '#F9F9F9')};
-  border-radius: 12px;
+  background: ${(props) =>
+    props.$isActive ? 'linear-gradient(135deg, #27AFE9, #1E8DBB)' : '#ffffff'};
+  border-radius: 16px;
   padding: 24px;
-  border: none;
+  border: 1px solid ${(props) => (props.$isActive ? 'transparent' : '#f0f0f0')};
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
   text-align: left;
   color: ${(props) => (props.$isActive ? '#FFFFFF' : '#000000')};
+  box-shadow: ${(props) =>
+    props.$isActive
+      ? '0 8px 16px rgba(39, 175, 233, 0.15)'
+      : '0 2px 8px rgba(0, 0, 0, 0.02)'};
 
   @media (max-width: 768px) {
-    padding: 16px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 12px;
   }
 
   &:hover {
-    background: ${(props) => (props.$isActive ? '#27AFE9' : '#f0f0f0')};
+    transform: translateY(-2px);
+    box-shadow: ${(props) =>
+      props.$isActive
+        ? '0 12px 20px rgba(39, 175, 233, 0.2)'
+        : '0 8px 16px rgba(0, 0, 0, 0.05)'};
   }
 
   .station-name {
     font-family: 'Pretendard';
     font-weight: ${(props) => (props.$isActive ? '700' : '600')};
-    font-size: 24px;
+    font-size: 20px;
+    margin-bottom: ${(props) => (props.$isActive ? '4px' : '0')};
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: ${(props) => (props.$isActive ? '#ffffff' : '#27AFE9')};
+      opacity: ${(props) => (props.$isActive ? '1' : '0.5')};
+    }
 
     @media (max-width: 768px) {
-      font-size: 18px;
+      font-size: 16px;
     }
   }
 
@@ -346,11 +417,15 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
     height: ${(props) => (props.$isActive ? 'auto' : '0')};
     opacity: ${(props) => (props.$isActive ? '1' : '0')};
     overflow: hidden;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease;
     margin-top: ${(props) => (props.$isActive ? '16px' : '0')};
+    border-top: ${(props) =>
+      props.$isActive ? '1px solid rgba(255, 255, 255, 0.15)' : 'none'};
+    padding-top: ${(props) => (props.$isActive ? '16px' : '0')};
 
     @media (max-width: 768px) {
       margin-top: ${(props) => (props.$isActive ? '12px' : '0')};
+      padding-top: ${(props) => (props.$isActive ? '12px' : '0')};
     }
 
     .address-row {
@@ -369,11 +444,11 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
 
       p {
         font-family: 'Pretendard';
-        font-size: 16px;
+        font-size: 15px;
         margin: 0;
-        opacity: 0.8;
+        opacity: 0.9;
         flex: 1;
-        line-height: 1.4;
+        line-height: 1.5;
 
         @media (max-width: 768px) {
           font-size: 14px;
@@ -381,62 +456,47 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
         }
       }
     }
-  }
-`;
 
-const InfoDetails = styled.div`
-  display: flex;
-  flex: 1;
-  gap: 24px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  div {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    span {
-      font-family: 'Pretendard';
-      font-size: 15px;
-
-      @media (max-width: 768px) {
-        font-size: 13px;
-      }
-
-      &:first-child {
-        opacity: 0.8;
-      }
+    ${InfoDetails} {
+      margin-top: 12px;
     }
   }
 `;
 
 const DirectionButton = styled.button`
   height: 36px;
-  padding: 0 16px;
-  background: #ffffff;
+  padding: 0 20px;
+  background: #27afe9;
   border: none;
-  border-radius: 8px;
-  color: #27afe9;
+  border-radius: 18px;
+  color: #ffffff;
   font-family: 'Pretendard';
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &::after {
+    content: '→';
+    font-size: 18px;
+    line-height: 1;
+  }
 
   @media (max-width: 768px) {
     width: 100%;
     height: 32px;
     font-size: 13px;
+    justify-content: center;
   }
 
   &:hover {
-    background: #f0f0f0;
+    transform: translateX(2px);
+    background: #1e8dbb;
   }
 `;
 
@@ -1053,7 +1113,7 @@ const MapSection = () => {
                       길찾기
                     </DirectionButton>
                   </div>
-                  <InfoDetails>
+                  <InfoDetails $isActive={activeStation === station.id}>
                     <div>
                       <span>판매가격</span>
                       <span>

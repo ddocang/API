@@ -34,6 +34,11 @@ const BackgroundSlide = styled.div<{ $isActive: boolean; $bgImage: string }>`
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   transition: opacity 1s ease-in-out;
   z-index: 0;
+
+  @media (max-width: 768px) {
+    background-image: url(${(props) =>
+      props.$bgImage.replace('main', 'mobile_bg')});
+  }
 `;
 
 const GNB = styled.nav`
@@ -265,6 +270,7 @@ const SliderNavigation = styled.div`
 
   @media (max-width: 768px) {
     padding: 0 1rem;
+    top: 65%;
   }
 `;
 
@@ -315,9 +321,12 @@ const NavButtons = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
   }
 `;
 
@@ -327,9 +336,7 @@ const NavButtonRow = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    gap: 8px;
     width: 100%;
-    justify-content: center;
   }
 `;
 
@@ -339,80 +346,36 @@ const StyledLink = styled(Link)`
 `;
 
 const NavigationButton = styled.button`
-  font-family: 'Pretendard';
-  font-size: 15px;
-  font-weight: 500;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 10px 18px;
+  border: none;
+  border-radius: 90px;
+  padding: 8px 16px;
+  color: #ffffff;
+  font-family: 'Pretendard';
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 108px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.1),
-      rgba(255, 255, 255, 0.05)
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
 
   svg {
-    font-size: 18px;
-    transition: transform 0.3s ease;
-    position: relative;
-    z-index: 1;
+    width: 18px;
+    height: 18px;
   }
 
   &:hover {
-    background: rgba(0, 0, 0, 0.75);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-
-    &::before {
-      opacity: 1;
-    }
-
-    svg {
-      transform: scale(1.1);
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
   }
 
   @media (max-width: 768px) {
-    font-size: 14px;
-    padding: 8px 14px;
-    min-width: 90px;
-    gap: 6px;
-    flex: 1;
-    max-width: 160px;
-
-    svg {
-      font-size: 16px;
-    }
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 13px;
   }
 `;
 
@@ -492,34 +455,30 @@ const TopBanner: React.FC = () => {
           <span>HyGE</span>
         </Logo>
         <NavButtons>
-          <NavButtonRow>
-            <StyledLink href="/login">
-              <NavigationButton>
-                <BiLogIn />
-                로그인
-              </NavigationButton>
-            </StyledLink>
-            <StyledLink href="/signup">
-              <NavigationButton>
-                <BiUserPlus />
-                회원가입
-              </NavigationButton>
-            </StyledLink>
-          </NavButtonRow>
-          <NavButtonRow>
-            <StyledLink href="/monitoring">
-              <NavigationButton>
-                <BiShieldAlt2 />
-                안전모니터링
-              </NavigationButton>
-            </StyledLink>
-            <StyledLink href="/hydrogen-station">
-              <NavigationButton>
-                <BiGasPump />
-                수소충전소
-              </NavigationButton>
-            </StyledLink>
-          </NavButtonRow>
+          <StyledLink href="/login">
+            <NavigationButton>
+              <BiLogIn />
+              로그인
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/signup">
+            <NavigationButton>
+              <BiUserPlus />
+              회원가입
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/monitoring">
+            <NavigationButton>
+              <BiShieldAlt2 />
+              안전모니터링
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/hydrogen-station">
+            <NavigationButton>
+              <BiGasPump />
+              수소충전소
+            </NavigationButton>
+          </StyledLink>
         </NavButtons>
       </GNB>
 

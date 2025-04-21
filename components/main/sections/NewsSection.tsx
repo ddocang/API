@@ -14,8 +14,7 @@ const Container = styled.section`
   }
 
   @media (max-width: 768px) {
-    padding: 32px 20px;
-    min-height: auto;
+    display: none;
   }
 `;
 

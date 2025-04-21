@@ -109,10 +109,7 @@ const MenuSection = styled.div`
   }
 
   @media (max-width: 768px) {
-    width: 100%;
-    flex: none;
-    gap: 1rem;
-    justify-content: flex-start;
+    display: none;
   }
 `;
 
@@ -120,8 +117,7 @@ const MenuColumn = styled.div`
   flex: 1;
 
   @media (max-width: 768px) {
-    flex: 0 0 auto;
-    width: calc(33.33% - 0.67rem);
+    display: none;
   }
 
   h3 {
