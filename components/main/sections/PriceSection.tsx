@@ -41,8 +41,11 @@ const Container = styled.section`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 80px;
-  padding-bottom: 80px;
+  padding: 80px 20px;
+
+  @media (max-width: 768px) {
+    padding: 40px 16px;
+  }
 `;
 
 const CardContainer = styled.div`
@@ -51,7 +54,18 @@ const CardContainer = styled.div`
   margin-top: 40px;
   flex-wrap: wrap;
   justify-content: center;
-  padding: 0 20px;
+  max-width: 1280px;
+  width: 100%;
+
+  @media (max-width: 1366px) {
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-top: 24px;
+  }
 `;
 
 const SectionTitle = styled.div`
@@ -64,6 +78,16 @@ const MainTitle = styled.h1`
   font-size: 48px;
   line-height: 57.6px;
   color: #ffffff;
+
+  @media (max-width: 1366px) {
+    font-size: 40px;
+    line-height: 48px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+    line-height: 38.4px;
+  }
 `;
 
 const PriceCard = styled.div`
@@ -73,9 +97,15 @@ const PriceCard = styled.div`
   padding: 28px 44px;
   position: relative;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
     width: 100%;
+    max-width: 894px;
+    padding: 24px 32px;
+  }
+
+  @media (max-width: 768px) {
     padding: 20px;
+    border-radius: 24px;
   }
 `;
 
@@ -85,8 +115,14 @@ const EnvironmentCard = styled.div`
   border-radius: 36px;
   padding: 28px;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
     width: 100%;
+    max-width: 362px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    border-radius: 24px;
   }
 `;
 
@@ -102,6 +138,12 @@ const Title = styled.h2`
     margin-left: 0;
     text-align: center;
   }
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+    line-height: 28.8px;
+    margin-left: 0;
+  }
 `;
 
 const TitleContainer = styled.div`
@@ -111,10 +153,15 @@ const TitleContainer = styled.div`
   margin-bottom: 20px;
   padding: 0 35px;
 
-  @media (max-width: 960px) {
-    flex-direction: column;
-    gap: 16px;
+  @media (max-width: 1366px) {
     padding: 0 20px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 0;
   }
 `;
 
@@ -124,8 +171,12 @@ const SearchContainer = styled.div`
   gap: 10px;
   margin-right: 365px;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
     margin-right: 0;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
@@ -144,8 +195,10 @@ const SearchInput = styled.input`
     color: #999;
   }
 
-  @media (max-width: 960px) {
+  @media (max-width: 768px) {
     width: 100%;
+    height: 36px;
+    font-size: 14px;
   }
 `;
 
@@ -159,9 +212,14 @@ const UpdateTime = styled.p`
   right: 115px;
   top: 34px;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
+    right: 32px;
+  }
+
+  @media (max-width: 768px) {
     position: static;
-    margin-top: 8px;
+    margin: 8px 0 0 0;
+    font-size: 14px;
   }
 `;
 
@@ -171,6 +229,15 @@ const InfoContainer = styled.div`
   margin-top: 22px;
   flex-wrap: wrap;
   justify-content: center;
+
+  @media (max-width: 1366px) {
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-top: 16px;
+  }
 `;
 
 const PriceInfoArea = styled.div`
@@ -179,8 +246,13 @@ const PriceInfoArea = styled.div`
   flex-direction: column;
   gap: 16px;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
     width: 100%;
+    max-width: 391px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 12px;
   }
 `;
 
@@ -191,8 +263,13 @@ const MapArea = styled.div`
   justify-content: center;
   align-items: center;
 
-  @media (max-width: 960px) {
+  @media (max-width: 1366px) {
     width: 100%;
+    max-width: 346px;
+    height: 380px;
+  }
+
+  @media (max-width: 768px) {
     height: 300px;
   }
 `;
@@ -206,6 +283,12 @@ const PriceBox = styled.div<StyledProps>`
   padding: 24px;
   border: ${(props: StyledProps) =>
     props.$isActive ? '1px solid #00B5D8' : 'none'};
+
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 180px;
+    padding: 20px;
+  }
 `;
 
 const BoxTitle = styled.div`
@@ -220,6 +303,11 @@ const BoxTitleText = styled.span`
   font-size: 20px;
   line-height: 24px;
   color: #373737;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    line-height: 21.6px;
+  }
 `;
 
 const RegionText = styled(BoxTitleText)`
@@ -242,6 +330,17 @@ const Price = styled.span`
   color: #111111;
   text-align: right;
   min-width: 150px;
+
+  @media (max-width: 1366px) {
+    font-size: 48px;
+    line-height: 57.6px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 40px;
+    line-height: 48px;
+    min-width: 120px;
+  }
 `;
 
 const Unit = styled.span`
@@ -322,6 +421,15 @@ const StationList = styled.div`
   overflow-y: auto;
   padding-right: 10px;
 
+  @media (max-width: 1366px) {
+    max-height: 350px;
+  }
+
+  @media (max-width: 768px) {
+    max-height: 300px;
+    padding-right: 8px;
+  }
+
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -346,6 +454,11 @@ const StationItem = styled.div`
   &:last-child {
     margin-bottom: 0;
   }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
 `;
 
 const StationName = styled.div`
@@ -354,6 +467,11 @@ const StationName = styled.div`
   font-size: 16px;
   line-height: 19.2px;
   color: #111111;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    line-height: 16.8px;
+  }
 `;
 
 const StationInfo = styled.div`
@@ -363,6 +481,11 @@ const StationInfo = styled.div`
   line-height: 16.8px;
   color: #666666;
   margin-bottom: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    line-height: 14.4px;
+  }
 `;
 
 const StationPrice = styled.div`
@@ -372,6 +495,12 @@ const StationPrice = styled.div`
   line-height: 19.2px;
   color: #00b5d8;
   margin: 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    line-height: 16.8px;
+    margin: 6px 0;
+  }
 `;
 
 const StationStatus = styled.div<{ $isOperating?: boolean }>`

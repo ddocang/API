@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
+import Link from 'next/link';
+import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
 
 const BannerContainer = styled.section`
   position: relative;
@@ -16,7 +18,6 @@ const BannerContainer = styled.section`
 
   @media (max-width: 1024px) {
     padding: 0 2rem;
-    height: 100vh;
   }
 `;
 
@@ -44,7 +45,7 @@ const GNB = styled.nav`
   padding-top: clamp(20px, 2.08vw, 40px);
   user-select: none;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -58,10 +59,10 @@ const Logo = styled.div`
   align-items: center;
   gap: 1rem;
   user-select: none;
-  height: 32px;
+  height: 36px;
 
   img {
-    height: 32px;
+    height: 36px;
     width: auto;
     object-fit: contain;
     pointer-events: none;
@@ -70,9 +71,9 @@ const Logo = styled.div`
   span {
     font-family: 'Pretendard';
     font-weight: 600;
-    font-size: 20px;
+    font-size: 24px;
     color: #ffffff;
-    line-height: 32px;
+    line-height: 36px;
   }
 
   @media (max-width: 768px) {
@@ -127,7 +128,7 @@ const UserMenu = styled.div`
 
 const FadeContent = styled.div<{ $isActive: boolean }>`
   position: absolute;
-  top: 0;
+  top: -30px;
   left: 0;
   width: 100%;
   height: 100%;
@@ -139,7 +140,8 @@ const FadeContent = styled.div<{ $isActive: boolean }>`
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   transition: opacity 0.8s ease-in-out;
   transition-delay: ${(props) => (props.$isActive ? '0.3s' : '0s')};
-  z-index: 1;
+  z-index: 0;
+  pointer-events: none;
 
   @media (max-width: 1024px) {
     padding: 0 2rem;
@@ -147,7 +149,7 @@ const FadeContent = styled.div<{ $isActive: boolean }>`
 
   @media (max-width: 768px) {
     justify-content: flex-start;
-    padding-top: 180px;
+    padding-top: 150px;
   }
 `;
 
@@ -159,37 +161,61 @@ const MainTitle = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.2em;
+  white-space: nowrap;
+
+  @media (min-width: 2000px) {
+    max-width: 840px;
+    gap: 0.3em;
+  }
+
+  @media (max-width: 1920px) {
+    max-width: 720px;
+    gap: 0.2em;
+  }
 
   @media (max-width: 1366px) {
-    max-width: 100%;
-    gap: 0.1em;
+    max-width: 600px;
+    gap: 0.15em;
   }
 
   @media (max-width: 768px) {
     margin-bottom: 1.5rem;
     gap: 0.3em;
+    white-space: normal;
   }
 `;
 
 const TitleText = styled.h1`
   font-family: 'Pretendard';
   font-weight: 800;
-  font-size: clamp(40px, 3.5vw, 80px);
+  font-size: clamp(40px, 3vw, 64px);
   color: #ffffff;
   line-height: 1.25;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   user-select: none;
-  word-break: keep-all;
+  white-space: nowrap;
+
+  @media (min-width: 2000px) {
+    font-size: 72px;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 1920px) {
+    font-size: 64px;
+    line-height: 1.25;
+  }
 
   @media (max-width: 1366px) {
-    font-size: clamp(32px, 2.8vw, 40px);
+    font-size: 48px;
     line-height: 1.3;
   }
 
   @media (max-width: 768px) {
     font-size: clamp(28px, 5vw, 32px);
     line-height: 1.4;
+    white-space: normal;
+    word-break: keep-all;
   }
 `;
 
@@ -224,10 +250,160 @@ const PageNumber = styled.div`
   }
 `;
 
+const SliderNavigation = styled.div`
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4rem;
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
+`;
+
+const SliderButton = styled.button<{ $direction: 'prev' | 'next' }>`
+  width: 50px;
+  height: 50px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  &:before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(${(props) =>
+      props.$direction === 'prev' ? '135deg' : '-45deg'});
+    margin-${(props) => (props.$direction === 'prev' ? 'left' : 'right')}: 4px;
+  }
+
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+
+    &:before {
+      width: 10px;
+      height: 10px;
+    }
+  }
+`;
+
+const NavButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
+`;
+
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+`;
+
+const NavigationButton = styled.button`
+  font-family: 'Pretendard';
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.05)
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  svg {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.75);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    &::before {
+      opacity: 1;
+    }
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 16px;
+    min-width: 100px;
+    gap: 6px;
+
+    svg {
+      font-size: 16px;
+    }
+  }
+`;
+
 const TopBanner: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 3;
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [isAutoplay, setIsAutoplay] = useState(true);
 
   const backgroundImages = [
     '/images/main1.png',
@@ -236,13 +412,30 @@ const TopBanner: React.FC = () => {
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
-      setCurrentPage((prev) => (prev % totalPages) + 1);
-    }, 6000);
+    let interval: NodeJS.Timeout;
+
+    if (isAutoplay) {
+      interval = setInterval(() => {
+        setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
+        setCurrentPage((prev) => (prev % totalPages) + 1);
+      }, 6000);
+    }
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isAutoplay]);
+
+  const handleSlideNavigation = (direction: 'prev' | 'next') => {
+    setIsAutoplay(false);
+    if (direction === 'prev') {
+      setCurrentBgIndex((prev) =>
+        prev === 0 ? backgroundImages.length - 1 : prev - 1
+      );
+      setCurrentPage((prev) => (prev === 1 ? totalPages : prev - 1));
+    } else {
+      setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
+      setCurrentPage((prev) => (prev % totalPages) + 1);
+    }
+  };
 
   return (
     <BannerContainer>
@@ -254,24 +447,59 @@ const TopBanner: React.FC = () => {
         />
       ))}
 
+      <SliderNavigation>
+        <SliderButton
+          $direction="prev"
+          onClick={() => handleSlideNavigation('prev')}
+          aria-label="Previous slide"
+        />
+        <SliderButton
+          $direction="next"
+          onClick={() => handleSlideNavigation('next')}
+          aria-label="Next slide"
+        />
+      </SliderNavigation>
+
       <GNB>
         <Logo>
-          <div style={{ position: 'relative', width: '32px', height: '32px' }}>
+          <div style={{ position: 'relative', width: '36px', height: '36px' }}>
             <Image
               src="/images/logo.png"
               alt="HyGE Logo"
               fill
-              sizes="32px"
+              sizes="36px"
               style={{ objectFit: 'contain' }}
               priority
             />
           </div>
           <span>HyGE</span>
         </Logo>
-        <UserMenu>
-          <button>로그인</button>
-          <button>회원가입</button>
-        </UserMenu>
+        <NavButtons>
+          <StyledLink href="/monitoring">
+            <NavigationButton>
+              <BiShieldAlt2 />
+              안전모니터링
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/hydrogen-station">
+            <NavigationButton>
+              <BiGasPump />
+              수소충전소
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/login">
+            <NavigationButton>
+              <BiLogIn />
+              로그인
+            </NavigationButton>
+          </StyledLink>
+          <StyledLink href="/signup">
+            <NavigationButton>
+              <BiUserPlus />
+              회원가입
+            </NavigationButton>
+          </StyledLink>
+        </NavButtons>
       </GNB>
 
       <FadeContent $isActive={currentBgIndex === 0}>

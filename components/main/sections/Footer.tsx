@@ -8,8 +8,12 @@ const Container = styled.footer`
   color: #ffffff;
   user-select: none;
 
-  @media (max-width: 1024px) {
-    padding: 2rem 1rem;
+  @media (max-width: 1366px) {
+    padding: 40px 40px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 32px 20px;
   }
 `;
 
@@ -17,16 +21,32 @@ const FooterContent = styled.div`
   display: flex;
   justify-content: center;
   gap: 40rem;
+  max-width: 1280px;
+  margin: 0 auto;
+
+  @media (max-width: 1366px) {
+    gap: 20rem;
+  }
+
+  @media (max-width: 1024px) {
+    gap: 10rem;
+  }
 
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
   }
 `;
 
 const LogoSection = styled.div`
   width: 320px;
   flex: 0 0 320px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex: none;
+  }
+
   .logo-wrapper {
     display: flex;
     align-items: center;
@@ -34,10 +54,19 @@ const LogoSection = styled.div`
     margin-bottom: 1rem;
     height: 24px;
 
+    @media (max-width: 768px) {
+      height: 20px;
+      margin-bottom: 0.75rem;
+    }
+
     img {
       width: clamp(40px, 3.125vw, 60px);
       height: auto;
       object-fit: contain;
+
+      @media (max-width: 768px) {
+        width: 36px;
+      }
     }
 
     span {
@@ -45,6 +74,10 @@ const LogoSection = styled.div`
       font-size: clamp(14px, 0.83vw, 16px);
       font-weight: 600;
       color: #ffffff;
+
+      @media (max-width: 768px) {
+        font-size: 14px;
+      }
     }
   }
 
@@ -54,6 +87,11 @@ const LogoSection = styled.div`
     line-height: 1.5;
     color: #767676;
     margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 12px;
+      line-height: 1.4;
+    }
   }
 `;
 
@@ -64,13 +102,28 @@ const MenuSection = styled.div`
   justify-content: space-between;
   gap: clamp(24px, 2.5vw, 48px);
 
+  @media (max-width: 1024px) {
+    width: 280px;
+    flex: 0 0 280px;
+    gap: 20px;
+  }
+
   @media (max-width: 768px) {
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    width: 100%;
+    flex: none;
+    gap: 1rem;
+    justify-content: flex-start;
   }
 `;
 
 const MenuColumn = styled.div`
+  flex: 1;
+
+  @media (max-width: 768px) {
+    flex: 0 0 auto;
+    width: calc(33.33% - 0.67rem);
+  }
+
   h3 {
     font-family: 'Pretendard';
     font-weight: 600;
@@ -78,6 +131,11 @@ const MenuColumn = styled.div`
     color: #ffffff;
     margin: 0;
     margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+      margin-bottom: 0.75rem;
+    }
   }
 
   ul {
@@ -88,12 +146,20 @@ const MenuColumn = styled.div`
     li {
       margin-bottom: 0.75rem;
 
+      @media (max-width: 768px) {
+        margin-bottom: 0.5rem;
+      }
+
       a {
         font-family: 'Pretendard';
         font-size: clamp(12px, 0.73vw, 14px);
         color: #767676;
         text-decoration: none;
         transition: color 0.2s;
+
+        @media (max-width: 768px) {
+          font-size: 12px;
+        }
 
         &:hover {
           color: #ffffff;
@@ -105,6 +171,10 @@ const MenuColumn = styled.div`
 
 const AddressSpan = styled.span`
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    white-space: normal;
+  }
 `;
 
 const Footer: React.FC = () => {
@@ -156,10 +226,10 @@ const Footer: React.FC = () => {
                 <a href="#">수소충전소</a>
               </li>
               <li>
-                <a href="#">안전관리시스템</a>
+                <a href="#">모니터링</a>
               </li>
               <li>
-                <a href="#">수소 모빌리티</a>
+                <a href="#">압축기</a>
               </li>
             </ul>
           </MenuColumn>

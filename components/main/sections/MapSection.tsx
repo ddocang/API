@@ -136,28 +136,65 @@ interface MarkerIcon {
 
 const Container = styled.section`
   width: 100%;
-  height: 968px;
+  height: auto;
+  min-height: 968px;
   background-color: #f2f2f2;
-  padding: 0 clamp(1rem, 16.67vw, 320px);
+  padding: 80px clamp(1rem, 16.67vw, 320px);
   display: flex;
   align-items: center;
+
+  @media (max-width: 1366px) {
+    padding: 60px 2rem;
+    min-height: 800px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 40px 1rem;
+    min-height: auto;
+  }
 `;
 
 const Card = styled.div`
   width: 100%;
   max-width: 1279px;
-  height: 780px;
+  height: auto;
+  min-height: 780px;
   background: #ffffff;
   border-radius: 36px;
   padding: 32px;
   display: flex;
   gap: 32px;
   margin: 0 auto;
+
+  @media (max-width: 1366px) {
+    padding: 24px;
+    gap: 24px;
+    min-height: 680px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    border-radius: 24px;
+  }
 `;
 
 const InfoSection = styled.div`
   width: 534px;
   flex-shrink: 0;
+
+  @media (max-width: 1366px) {
+    width: 440px;
+  }
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    flex-shrink: 1;
+  }
 `;
 
 const SectionTitle = styled.div`
@@ -166,6 +203,12 @@ const SectionTitle = styled.div`
   justify-content: space-between;
   align-items: center;
 
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
   .title-area {
     span {
       font-family: 'Pretendard';
@@ -173,6 +216,10 @@ const SectionTitle = styled.div`
       color: #767676;
       display: block;
       margin-bottom: 4px;
+
+      @media (max-width: 768px) {
+        font-size: 14px;
+      }
     }
 
     h2 {
@@ -181,6 +228,10 @@ const SectionTitle = styled.div`
       font-size: 28px;
       color: #000000;
       margin: 0;
+
+      @media (max-width: 768px) {
+        font-size: 24px;
+      }
     }
   }
 `;
@@ -191,6 +242,12 @@ const SearchContainer = styled.div`
   gap: 10px;
   transform: translateX(-30px);
   margin-top: 20px;
+
+  @media (max-width: 768px) {
+    transform: none;
+    margin-top: 0;
+    width: 100%;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -204,6 +261,12 @@ const SearchInput = styled.input`
   outline: none;
   text-align: center;
 
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 36px;
+    font-size: 14px;
+  }
+
   &::placeholder {
     color: #999;
   }
@@ -216,6 +279,19 @@ const StationList = styled.div`
   max-height: 600px;
   overflow-y: auto;
   padding-right: 16px;
+
+  @media (max-width: 1366px) {
+    max-height: 500px;
+  }
+
+  @media (max-width: 1024px) {
+    max-height: 320px;
+  }
+
+  @media (max-width: 768px) {
+    padding-right: 12px;
+    gap: 12px;
+  }
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -247,6 +323,11 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
   text-align: left;
   color: ${(props) => (props.$isActive ? '#FFFFFF' : '#000000')};
 
+  @media (max-width: 768px) {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
   &:hover {
     background: ${(props) => (props.$isActive ? '#27AFE9' : '#f0f0f0')};
   }
@@ -255,6 +336,10 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
     font-family: 'Pretendard';
     font-weight: ${(props) => (props.$isActive ? '700' : '600')};
     font-size: 24px;
+
+    @media (max-width: 768px) {
+      font-size: 18px;
+    }
   }
 
   .station-details {
@@ -264,12 +349,23 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
     transition: all 0.3s ease-in-out;
     margin-top: ${(props) => (props.$isActive ? '16px' : '0')};
 
+    @media (max-width: 768px) {
+      margin-top: ${(props) => (props.$isActive ? '12px' : '0')};
+    }
+
     .address-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 16px;
       margin-bottom: 16px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
 
       p {
         font-family: 'Pretendard';
@@ -278,6 +374,11 @@ const StationItem = styled.div<{ $isActive?: boolean }>`
         opacity: 0.8;
         flex: 1;
         line-height: 1.4;
+
+        @media (max-width: 768px) {
+          font-size: 14px;
+          width: 100%;
+        }
       }
     }
   }
@@ -288,6 +389,11 @@ const InfoDetails = styled.div`
   flex: 1;
   gap: 24px;
 
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+  }
+
   div {
     display: flex;
     align-items: center;
@@ -296,6 +402,10 @@ const InfoDetails = styled.div`
     span {
       font-family: 'Pretendard';
       font-size: 15px;
+
+      @media (max-width: 768px) {
+        font-size: 13px;
+      }
 
       &:first-child {
         opacity: 0.8;
@@ -319,6 +429,12 @@ const DirectionButton = styled.button`
   white-space: nowrap;
   flex-shrink: 0;
 
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 32px;
+    font-size: 13px;
+  }
+
   &:hover {
     background: #f0f0f0;
   }
@@ -332,12 +448,33 @@ const MapArea = styled.div`
   position: relative;
   overflow: hidden;
 
+  @media (max-width: 1024px) {
+    min-height: 400px;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 300px;
+    border-radius: 16px;
+  }
+
   #map {
     width: 100%;
     height: 100%;
     min-height: 716px;
     position: relative;
     z-index: 1;
+
+    @media (max-width: 1366px) {
+      min-height: 616px;
+    }
+
+    @media (max-width: 1024px) {
+      min-height: 400px;
+    }
+
+    @media (max-width: 768px) {
+      min-height: 300px;
+    }
   }
 
   &::after {
@@ -383,7 +520,7 @@ const MapSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredStations, setFilteredStations] = useState<Station[]>([]);
   let isInitialized = false;
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 10;
   const RETRY_DELAY = 500;
   let initialMarker: any = null;
   let currentInfoWindow: any = null;
@@ -417,8 +554,8 @@ const MapSection = () => {
       try {
         // 초기 좌표 직접 설정
         const initialLocation = {
-          lat: 37.42405,
-          lng: 126.88702,
+          lat: 37.42426,
+          lng: 126.8876,
         };
 
         const mapOptions = {
@@ -426,7 +563,7 @@ const MapSection = () => {
             initialLocation.lat,
             initialLocation.lng
           ),
-          zoom: 16,
+          zoom: 17,
           zoomControl: true,
           zoomControlOptions: {
             position: (window.naver.maps as any).Position.TOP_RIGHT as number,
@@ -449,8 +586,8 @@ const MapSection = () => {
         const markerIcon = {
           content: `
             <div style="
-              width: 48px;
-              height: 48px;
+              width: 40px;
+              height: 40px;
               background: rgba(255, 255, 255, 0.5);
               border-radius: 50%;
               display: flex;
@@ -464,8 +601,8 @@ const MapSection = () => {
               <img 
                 src="/images/ge_logo.png"
                 alt="GE Logo"
-                width="36"
-                height="36"
+                width="32"
+                height="32"
                 style="object-fit: contain;"
                 loading="eager"
               />

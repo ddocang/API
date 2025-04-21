@@ -11,6 +11,17 @@ const Container = styled.section`
   align-items: center;
   padding: 0 clamp(1rem, 16.7vw, 320px);
   user-select: none;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #e0e0e0;
+  }
 
   @media (max-width: 1024px) {
     padding: 4rem 2rem;
