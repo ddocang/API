@@ -7,6 +7,7 @@ import FacilityListItem from './components/FacilityListItem';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Footer from '../../components/main/sections/Footer';
+import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
 
 // 더미 데이터
 const DUMMY_FACILITY = {
@@ -82,26 +83,10 @@ const DUMMY_LIST = [
 ];
 
 export default function MonitoringPage() {
-  const [imageHeight, setImageHeight] = useState(0);
   const [selectedFacility, setSelectedFacility] = useState(DUMMY_LIST[0]);
   const [currentTime, setCurrentTime] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isAutoCompleteVisible, setIsAutoCompleteVisible] = useState(false);
-
-  useEffect(() => {
-    // 이미지의 실제 비율 계산 (1920:357)
-    const aspectRatio = 357 / 1920;
-    const height = Math.floor(window.innerWidth * aspectRatio);
-    setImageHeight(height);
-
-    const handleResize = () => {
-      const newHeight = Math.floor(window.innerWidth * aspectRatio);
-      setImageHeight(newHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     // 초기 시간 설정
@@ -167,15 +152,19 @@ export default function MonitoringPage() {
 
   return (
     <Container>
-      <TopBanner style={{ height: imageHeight || '357px' }}>
+      <TopBanner>
         <BannerBackground>
           <Image
             src="/images/monitoring/monitoring-bg.jpg"
             alt="수소 생산 시설 전경"
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 882px"
+            sizes="100vw"
             quality={100}
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
+            style={{
+              objectFit: 'cover',
+              objectPosition: 'center',
+              zIndex: 1,
+            }}
             priority
           />
           <DarkOverlay />
@@ -187,19 +176,36 @@ export default function MonitoringPage() {
                 src="/images/logo.png"
                 alt="Logo"
                 fill
-                sizes="32px"
+                sizes="36px"
                 style={{ objectFit: 'contain' }}
                 priority
               />
             </LogoImageWrapper>
             <span>HyGE</span>
           </Logo>
-          <MainMenu></MainMenu>
-          <UserMenu>
-            <button>로그인</button>
-            <button>회원가입</button>
-            <Link href="/">홈</Link>
-          </UserMenu>
+          <MenuContainer>
+            <MainMenu>
+              <Link href="/">홈</Link>
+              <Link href="/monitoring">
+                <BiShieldAlt2 />
+                모니터링
+              </Link>
+              <Link href="/charging">
+                <BiGasPump />
+                충전소
+              </Link>
+            </MainMenu>
+            <UserMenu>
+              <button>
+                <BiLogIn />
+                로그인
+              </button>
+              <button>
+                <BiUserPlus />
+                회원가입
+              </button>
+            </UserMenu>
+          </MenuContainer>
         </GNB>
         <BannerContent>
           <Title>수소 생산시설 & 충전소 모니터링</Title>
@@ -275,22 +281,16 @@ export default function MonitoringPage() {
                     : '/images/monitoring/kd.png'
                 }
                 alt={`${selectedFacility.name} 지도`}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 882px"
-                quality={100}
+                width={1200}
+                height={800}
                 style={{
+                  width: '100%',
+                  height: '100%',
                   objectFit: 'cover',
-                  objectPosition:
-                    selectedFacility.name === '삼척 수소충전소'
-                      ? 'center center'
-                      : selectedFacility.name === '원주 수소충전소'
-                      ? 'center center'
-                      : selectedFacility.name === '속초 수소충전소'
-                      ? 'center center'
-                      : selectedFacility.name === '동해 휴게소 수소충전소'
-                      ? 'center center'
-                      : 'center center',
-                  transition: 'all 0.3s ease-in-out',
+                  objectPosition: 'center',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
                 }}
                 priority
               />
@@ -302,7 +302,7 @@ export default function MonitoringPage() {
           <UpdateTime>업데이트: {currentTime}</UpdateTime>
           <ListHeader>
             <HeaderItem>상호</HeaderItem>
-            <HeaderItem>주소</HeaderItem>
+            <HeaderItem hideOnMobile>주소</HeaderItem>
             <HeaderItem>가스감지기</HeaderItem>
             <HeaderItem>화재감지기</HeaderItem>
             <HeaderItem>진동감지기</HeaderItem>
@@ -336,23 +336,23 @@ const Container = styled.div`
 `;
 
 const TopBanner = styled.div`
-  position: relative;
   width: 100%;
-  transition: height 0.3s ease;
-
-  @media (max-width: 1024px) {
-    height: 450px;
-  }
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1920/357;
 
   @media (max-width: 768px) {
-    height: 300px;
+    display: none;
   }
 `;
 
 const BannerBackground = styled.div`
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 `;
 
 const DarkOverlay = styled.div`
@@ -366,6 +366,7 @@ const DarkOverlay = styled.div`
     rgba(0, 0, 0, 0) 0%,
     rgba(0, 0, 0, 0.3) 100%
   );
+  z-index: 2;
 `;
 
 const BannerContent = styled.div`
@@ -374,23 +375,38 @@ const BannerContent = styled.div`
   margin: 0 auto;
   padding: 40px 20px;
   color: white;
-  z-index: 1;
+  z-index: 5;
   text-align: center;
+  margin-top: -15px;
+
+  @media (max-width: 768px) {
+    margin-top: 80px;
+    padding: 20px;
+  }
 `;
 
 const Title = styled.h1`
   font-family: 'Pretendard';
   font-weight: 600;
-  font-size: 38px;
+  font-size: 32px;
   text-align: center;
   margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
 `;
 
 const Subtitle = styled.p`
   font-family: 'Pretendard';
-  font-size: 20px;
+  font-size: 18px;
   text-align: center;
   margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
 const SearchBarWrapper = styled.div`
@@ -402,11 +418,17 @@ const SearchBarWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  padding: 0 20px;
 `;
 
 const SearchBar = styled.div`
   width: 800px;
   position: relative;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    max-width: 600px;
+  }
 
   input {
     width: 100%;
@@ -418,6 +440,11 @@ const SearchBar = styled.div`
     color: #d7d7d7;
     font-size: 16px;
     text-align: center;
+
+    @media (max-width: 768px) {
+      height: 40px;
+      font-size: 14px;
+    }
 
     &::placeholder {
       color: #d7d7d7;
@@ -435,30 +462,60 @@ const ContentSection = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 40px 20px;
+
+  @media (max-width: 768px) {
+    padding: 0 15px;
+  }
 `;
 
 const MapSection = styled.div`
   margin-bottom: 40px;
+  position: relative;
+
+  @media (max-width: 768px) {
+    margin-bottom: 30px;
+  }
 `;
 
 const FacilityInfo = styled.div`
   width: 378px;
   height: 630px;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+  }
 `;
 
 const MapView = styled.div`
   flex: 1;
-  height: 630px;
+  min-height: 630px;
+  position: relative;
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  position: relative;
+
+  @media (max-width: 1024px) {
+    min-height: 500px;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 300px;
+  }
 `;
 
 const ListSection = styled.div`
   background: white;
   border-radius: 16px;
   padding: 17px 30px 30px 30px;
+  margin-top: 40px;
+
+  @media (max-width: 768px) {
+    padding: 15px;
+    margin-top: 30px;
+    overflow-x: auto;
+  }
 `;
 
 const ListHeader = styled.div`
@@ -467,38 +524,52 @@ const ListHeader = styled.div`
   padding: 12px 0;
   border-bottom: 1px solid #c5c5c5;
   border-radius: 8px;
+  min-width: 800px;
+
+  @media (max-width: 768px) {
+    padding: 10px 0;
+    min-width: auto;
+  }
 `;
 
-const HeaderItem = styled.div`
+const HeaderItem = styled.div<{ hideOnMobile?: boolean }>`
   flex: 1;
   text-align: center;
   color: #747474;
   font-family: 'Pretendard';
   font-weight: 600;
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
+  }
 `;
 
 const ListContent = styled.div`
   margin-top: 10px;
+  min-width: 800px;
+
+  @media (max-width: 768px) {
+    min-width: auto;
+  }
 `;
 
 const GNB = styled.nav`
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   height: auto;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 20px;
+  align-items: flex-start;
+  padding: clamp(20px, 2.08vw, 40px) 20px;
   user-select: none;
   position: relative;
-  z-index: 1;
-  max-width: 1280px;
-  margin: 0 auto;
+  z-index: 10;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
+    display: none;
   }
 `;
 
@@ -507,14 +578,14 @@ const Logo = styled.div`
   align-items: center;
   gap: 1rem;
   user-select: none;
-  height: 32px;
+  height: 36px;
 
   span {
     font-family: 'Pretendard';
     font-weight: 600;
-    font-size: 20px;
+    font-size: 24px;
     color: #ffffff;
-    line-height: 32px;
+    line-height: 36px;
   }
 
   @media (max-width: 768px) {
@@ -524,13 +595,25 @@ const Logo = styled.div`
 
 const LogoImageWrapper = styled.div`
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+`;
+
+const MenuContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
 `;
 
 const MainMenu = styled.div`
   display: flex;
-  gap: clamp(24px, 2.5vw, 48px);
+  gap: 10px;
   user-select: none;
 
   @media (max-width: 768px) {
@@ -539,20 +622,35 @@ const MainMenu = styled.div`
   }
 
   a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: 'Pretendard';
     font-size: clamp(14px, 0.83vw, 16px);
     color: #ffffff;
     text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(1px);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
 
     &:hover {
-      color: #0066ff;
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
     }
   }
 `;
 
 const UserMenu = styled.div`
   display: flex;
-  gap: clamp(16px, 1.67vw, 32px);
+  gap: 10px;
   user-select: none;
 
   @media (max-width: 768px) {
@@ -561,16 +659,29 @@ const UserMenu = styled.div`
 
   button,
   a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: 'Pretendard';
     font-size: clamp(14px, 0.83vw, 16px);
     color: #ffffff;
-    background: none;
-    border: none;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(1px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     cursor: pointer;
     text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 8px 16px;
+    border-radius: 24px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
 
     &:hover {
-      color: #0066ff;
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
     }
   }
 `;
@@ -586,6 +697,11 @@ const UpdateTime = styled.div`
 const MapContent = styled.div`
   display: flex;
   gap: 20px;
+  position: relative;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
 `;
 
 const AutoCompleteList = styled.ul`
@@ -602,6 +718,11 @@ const AutoCompleteList = styled.ul`
   max-height: 300px;
   overflow-y: auto;
   z-index: 100;
+
+  @media (max-width: 768px) {
+    max-height: 250px;
+    margin-top: 6px;
+  }
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -622,6 +743,10 @@ const AutoCompleteItem = styled.li`
   cursor: pointer;
   transition: background-color 0.2s;
 
+  @media (max-width: 768px) {
+    padding: 10px 15px;
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 0.1);
   }
@@ -631,11 +756,19 @@ const ItemName = styled.div`
   color: #ffffff;
   font-size: 16px;
   margin-bottom: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
 const ItemAddress = styled.div`
   color: #d7d7d7;
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
 const ClearButton = styled.button`

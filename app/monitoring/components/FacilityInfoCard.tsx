@@ -118,7 +118,7 @@ const Type = styled.div`
 const Name = styled.h2`
   font-family: 'Pretendard';
   font-weight: 600;
-  font-size: 32px;
+  font-size: 28px;
   color: #111111;
   margin: 0;
 `;

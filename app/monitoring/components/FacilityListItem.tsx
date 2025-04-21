@@ -45,10 +45,12 @@ export default function FacilityListItem({
   onClick,
   onDetailClick,
 }: FacilityListItemProps) {
+  const truncatedName = window.innerWidth <= 768 ? name.slice(0, 5) : name;
+
   return (
     <Container isSelected={isSelected} onClick={onClick}>
-      <Column>{name}</Column>
-      <Column>{address}</Column>
+      <Column>{truncatedName}</Column>
+      <Column hideOnMobile>{address}</Column>
       <Column>
         <StatusWrapper $status={gasStatus}>
           <StatusIndicator status={gasStatus} />
@@ -92,7 +94,8 @@ export default function FacilityListItem({
             onDetailClick?.();
           }}
         >
-          상세보기
+          <span className="detail-text">상세보기</span>
+          <span className="detail-icon">→</span>
         </DetailButton>
       </Column>
     </Container>
@@ -116,7 +119,7 @@ const Container = styled.div<{ isSelected?: boolean }>`
   }
 `;
 
-const Column = styled.div`
+const Column = styled.div<{ hideOnMobile?: boolean }>`
   flex: 1;
   display: flex;
   align-items: center;
@@ -125,6 +128,11 @@ const Column = styled.div`
   font-size: 14px;
   color: #111111;
   text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
+  }
 `;
 
 const StatusWrapper = styled.div<{
@@ -230,8 +238,7 @@ const DetailButton = styled.button`
   align-items: center;
   gap: 4px;
 
-  &::after {
-    content: '→';
+  .detail-icon {
     font-size: 16px;
     line-height: 1;
     transition: transform 0.2s;
@@ -242,8 +249,23 @@ const DetailButton = styled.button`
     color: #111111;
     border-color: #111111;
 
-    &::after {
+    .detail-icon {
       transform: translateX(3px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 6px;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    justify-content: center;
+
+    .detail-text {
+      display: none;
+    }
+
+    .detail-icon {
+      margin: 0;
     }
   }
 `;
