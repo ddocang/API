@@ -2,6 +2,7 @@
 
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
+import { useState, useEffect } from 'react';
 
 interface FacilityListItemProps {
   id: number;
@@ -45,7 +46,24 @@ export default function FacilityListItem({
   onClick,
   onDetailClick,
 }: FacilityListItemProps) {
-  const truncatedName = window.innerWidth <= 768 ? name.slice(0, 5) : name;
+  const [truncatedName, setTruncatedName] = useState(name);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setTruncatedName(name.slice(0, 5));
+      } else {
+        setTruncatedName(name);
+      }
+    };
+
+    handleResize(); // 초기 실행
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [name]);
 
   return (
     <Container isSelected={isSelected} onClick={onClick}>
