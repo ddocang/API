@@ -50,7 +50,8 @@ const GNB = styled.nav`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
+    padding-top: 1.5rem;
   }
 `;
 
@@ -149,7 +150,7 @@ const FadeContent = styled.div<{ $isActive: boolean }>`
 
   @media (max-width: 768px) {
     justify-content: flex-start;
-    padding-top: 150px;
+    padding-top: 220px;
   }
 `;
 
@@ -314,7 +315,21 @@ const NavButtons = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
+    flex-direction: column;
     gap: 8px;
+    width: 100%;
+  }
+`;
+
+const NavButtonRow = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
   }
 `;
 
@@ -332,7 +347,7 @@ const NavigationButton = styled.button`
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
@@ -340,7 +355,7 @@ const NavigationButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 120px;
+  min-width: 108px;
   position: relative;
   overflow: hidden;
 
@@ -389,9 +404,11 @@ const NavigationButton = styled.button`
 
   @media (max-width: 768px) {
     font-size: 14px;
-    padding: 8px 16px;
-    min-width: 100px;
+    padding: 8px 14px;
+    min-width: 90px;
     gap: 6px;
+    flex: 1;
+    max-width: 160px;
 
     svg {
       font-size: 16px;
@@ -475,30 +492,34 @@ const TopBanner: React.FC = () => {
           <span>HyGE</span>
         </Logo>
         <NavButtons>
-          <StyledLink href="/monitoring">
-            <NavigationButton>
-              <BiShieldAlt2 />
-              안전모니터링
-            </NavigationButton>
-          </StyledLink>
-          <StyledLink href="/hydrogen-station">
-            <NavigationButton>
-              <BiGasPump />
-              수소충전소
-            </NavigationButton>
-          </StyledLink>
-          <StyledLink href="/login">
-            <NavigationButton>
-              <BiLogIn />
-              로그인
-            </NavigationButton>
-          </StyledLink>
-          <StyledLink href="/signup">
-            <NavigationButton>
-              <BiUserPlus />
-              회원가입
-            </NavigationButton>
-          </StyledLink>
+          <NavButtonRow>
+            <StyledLink href="/login">
+              <NavigationButton>
+                <BiLogIn />
+                로그인
+              </NavigationButton>
+            </StyledLink>
+            <StyledLink href="/signup">
+              <NavigationButton>
+                <BiUserPlus />
+                회원가입
+              </NavigationButton>
+            </StyledLink>
+          </NavButtonRow>
+          <NavButtonRow>
+            <StyledLink href="/monitoring">
+              <NavigationButton>
+                <BiShieldAlt2 />
+                안전모니터링
+              </NavigationButton>
+            </StyledLink>
+            <StyledLink href="/hydrogen-station">
+              <NavigationButton>
+                <BiGasPump />
+                수소충전소
+              </NavigationButton>
+            </StyledLink>
+          </NavButtonRow>
         </NavButtons>
       </GNB>
 

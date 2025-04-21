@@ -123,6 +123,7 @@ const EnvironmentCard = styled.div`
   @media (max-width: 768px) {
     padding: 20px;
     border-radius: 24px;
+    margin-top: 16px;
   }
 `;
 
@@ -237,20 +238,8 @@ const InfoContainer = styled.div`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
     margin-top: 16px;
-  }
-`;
-
-const PriceInfoArea = styled.div`
-  width: 100%;
-  max-width: 391px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    gap: 12px;
   }
 `;
 
@@ -267,8 +256,22 @@ const MapArea = styled.div`
   }
 
   @media (max-width: 768px) {
-    height: 300px;
-    margin-top: 16px;
+    height: 250px;
+    margin: 16px 0;
+    order: 2;
+  }
+`;
+
+const PriceInfoArea = styled.div`
+  width: 100%;
+  max-width: 391px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+    order: 1;
   }
 `;
 
@@ -284,8 +287,8 @@ const PriceBox = styled.div<StyledProps>`
 
   @media (max-width: 768px) {
     height: auto;
-    min-height: 180px;
-    padding: 20px;
+    min-height: 160px;
+    padding: 16px;
   }
 `;
 
@@ -424,8 +427,9 @@ const StationList = styled.div`
   }
 
   @media (max-width: 768px) {
-    max-height: 300px;
+    max-height: 250px;
     padding-right: 8px;
+    margin-top: 16px;
   }
 
   &::-webkit-scrollbar {
