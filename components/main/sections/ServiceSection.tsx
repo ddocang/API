@@ -13,7 +13,7 @@ const Container = styled.section`
 
   @media (max-width: 1024px) {
     flex-direction: column;
-    padding: 3rem 1rem;
+    padding: 0;
     gap: 2rem;
   }
 `;
