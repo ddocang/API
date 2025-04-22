@@ -938,7 +938,6 @@ const Container = styled.div`
   background-color: #f2f2f2;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 `;
 
 const TopBanner = styled.div`
@@ -968,16 +967,21 @@ const DarkOverlay = styled.div`
 
 const BannerContent = styled.div`
   position: relative;
-  max-width: 1280px;
+  max-width: 1920px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 32px;
   z-index: 1;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-left: 170px;
+  padding-left: 200px;
   height: 100%;
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    align-items: center;
+  }
 `;
 
 const TitleContainer = styled.div`
@@ -1038,50 +1042,48 @@ const UpdateTime = styled.div`
 `;
 
 const ContentSection = styled.div`
-  max-width: 1920px;
+  width: 100%;
   margin: 0 auto;
-  padding: 16px 20px;
+  padding: 15px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  height: calc(100vh - 85px);
 `;
 
 const MapSection = styled.div`
   width: 100%;
   display: flex;
-  gap: 20px;
+  gap: 15px;
   flex: 1;
-  overflow: hidden;
+  height: 100%;
+  padding-bottom: 15px;
 
   @media (max-width: 1024px) {
     flex-direction: column;
+    height: auto;
   }
 `;
 
 const LeftColumn = styled.div`
-  flex: 0.45;
-  min-width: 760px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  width: 42%;
+  display: grid;
+  grid-template-rows: repeat(3, 32.7%);
+  gap: 15px;
+  height: 100%;
 
-  @media (max-width: 1600px) {
-    min-width: 680px;
-  }
-
-  @media (max-width: 1440px) {
-    min-width: 620px;
-  }
-
-  @media (max-width: 1280px) {
-    min-width: 580px;
+  @media (max-width: 1024px) {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
   }
 `;
 
 const MapView = styled.div`
+  grid-row: span 2;
   width: 100%;
-  height: 640px;
+  height: 100%;
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -1090,98 +1092,33 @@ const MapView = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  padding: 30px;
+  padding: 15px;
 
   img {
-    max-width: 100%;
-    height: auto;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    padding: 0 !important;
   }
-`;
-
-const VibrationGraphContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 250px);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 12px;
-  flex: 0.55;
-  min-height: 0;
-  min-width: 0;
-  justify-content: center;
-  overflow: hidden;
-`;
-
-const VibrationGraphCard = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
-  width: 250px;
-
-  h4 {
-    font-family: 'Pretendard';
-    font-weight: 600;
-    font-size: 15px;
-    color: #000000;
-    margin: 0 0 6px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .status {
-      font-size: 12px;
-      padding: 3px 8px;
-      background: #e8f5e9;
-      color: #2e7d32;
-      border-radius: 8px;
-    }
-  }
-
-  .graph-container {
-    flex-grow: 1;
-    background: #f8f9fa;
-    border-radius: 8px;
-    height: 180px;
-  }
-`;
-
-const SensorSection = styled.div`
-  margin-bottom: 40px;
-`;
-
-const SectionTitle = styled.h2`
-  font-family: 'Pretendard';
-  font-weight: 600;
-  font-size: 24px;
-  color: #000000;
-  margin: 0 0 24px 0;
-`;
-
-const SensorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
 
   @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    height: 300px;
   }
 `;
 
 const SensorCard = styled.div`
   background: white;
   border-radius: 16px;
-  padding: 10px;
+  padding: 15px;
   width: 100%;
-  height: 308px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 1024px) {
+    height: 300px;
+  }
 `;
 
 const SensorHeader = styled.div`
@@ -1377,17 +1314,18 @@ const GNB = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 20px 20px 20px;
+  padding: 24px 32px 20px 32px;
   user-select: none;
   position: relative;
   z-index: 1;
-  max-width: 1280px;
+  max-width: 1920px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
     gap: 2rem;
+    padding: 24px 20px 20px 20px;
   }
 `;
 
@@ -1418,4 +1356,65 @@ const LogoImageWrapper = styled.div`
   position: relative;
   width: 36px;
   height: 36px;
+`;
+
+const VibrationGraphContainer = styled.div`
+  width: 58%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 32.7%);
+  gap: 15px;
+  height: 100%;
+  margin-bottom: 15px;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+`;
+
+const VibrationGraphCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+
+  h4 {
+    font-family: 'Pretendard';
+    font-weight: 600;
+    font-size: 16px;
+    color: #000000;
+    margin: 0 0 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .status {
+      font-size: 13px;
+      padding: 4px 10px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 8px;
+    }
+  }
+
+  .graph-container {
+    flex-grow: 1;
+    background: #f8f9fa;
+    border-radius: 12px;
+    height: calc(100% - 40px);
+    padding: 15px;
+  }
+
+  @media (max-width: 1024px) {
+    min-height: 250px;
+  }
 `;
