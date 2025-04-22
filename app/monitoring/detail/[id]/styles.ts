@@ -271,6 +271,7 @@ export const MapSection = styled.div`
     flex-direction: column;
     height: auto;
     gap: 15px;
+    overflow: visible;
   }
 `;
 
@@ -285,7 +286,7 @@ export const LeftColumn = styled.div`
   @media (max-width: 1024px) {
     width: 100%;
     height: auto;
-    gap: 15px;
+    min-height: auto;
   }
 `;
 
@@ -298,6 +299,13 @@ export const MapView = styled.div`
   border-radius: 16px;
   padding: 15px;
   aspect-ratio: 828 / 672;
+
+  @media (max-width: 1024px) {
+    min-height: 300px;
+    aspect-ratio: auto;
+    height: 300px;
+    flex: none;
+  }
 
   svg {
     width: 100%;
@@ -387,7 +395,8 @@ export const SensorCard = styled.div`
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
 
   @media (max-width: 1024px) {
-    height: 250px;
+    height: 300px;
+    min-height: 300px;
     flex: none;
   }
 `;
@@ -422,6 +431,11 @@ export const SensorList = styled.div`
   min-height: 0;
   padding: 0 8px;
 
+  @media (max-width: 1024px) {
+    height: calc(100% - 90px);
+    overflow-y: auto;
+  }
+
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -434,10 +448,6 @@ export const SensorList = styled.div`
   &::-webkit-scrollbar-thumb {
     background: #dde2e6;
     border-radius: 3px;
-  }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
   }
 `;
 
@@ -638,6 +648,7 @@ export const VibrationGraphContainer = styled.div`
     grid-template-columns: 1fr;
     grid-template-rows: repeat(9, minmax(200px, auto));
     gap: 15px;
+    margin-top: 15px;
   }
 `;
 
@@ -691,6 +702,11 @@ export const Container = styled.div`
   background-color: #f2f2f2;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 1024px) {
+    height: auto;
+    min-height: 100vh;
+  }
 `;
 
 export const TopBanner = styled.div`
@@ -802,4 +818,10 @@ export const ContentSection = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 85px);
+
+  @media (max-width: 1024px) {
+    height: auto;
+    min-height: 100vh;
+    padding: 15px;
+  }
 `;
