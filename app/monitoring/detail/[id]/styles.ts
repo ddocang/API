@@ -296,23 +296,40 @@ export const MapView = styled.div`
   position: relative;
   background: white;
   border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 15px;
   aspect-ratio: 828 / 672;
 
-  img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-    padding: 0 !important;
+  svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
-  @media (max-width: 1024px) {
-    aspect-ratio: 828 / 672;
-    flex: 1;
+  .sensor-icon {
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &[data-type='gas'] {
+      fill: #22c576;
+    }
+
+    &[data-type='fire'] {
+      fill: #d81159;
+    }
+
+    &[data-type='vibration'] {
+      fill: #f2c035;
+    }
   }
+`;
+
+export const MapContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const SensorIcon = styled.div<{

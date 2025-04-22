@@ -55,6 +55,7 @@ import {
   PopupLogo,
   CloseButton,
   DetailedGraphContainer,
+  MapContainer,
 } from './styles';
 
 interface SensorBase {
@@ -104,6 +105,48 @@ interface FacilityDetail {
     vibration: VibrationSensor[];
   };
 }
+
+// 가스 감지기 정보 배열
+const GAS_SENSORS = [
+  { id: 'gas-1', x: 128, y: 82, name: '가스감지기1' },
+  { id: 'gas-2', x: 263, y: 90, name: '가스감지기2' },
+  { id: 'gas-3', x: 333, y: 90, name: '가스감지기3' },
+  { id: 'gas-4', x: 263, y: 255, name: '가스감지기4' },
+  { id: 'gas-5', x: 333, y: 255, name: '가스감지기5' },
+  { id: 'gas-6', x: 448, y: 255, name: '가스감지기6' },
+  { id: 'gas-7', x: 448, y: 90, name: '가스감지기7' },
+  { id: 'gas-8', x: 525, y: 95, name: '가스감지기8' },
+  { id: 'gas-9', x: 525, y: 235, name: '가스감지기9' },
+  { id: 'gas-10', x: 562, y: 110, name: '가스감지기10' },
+  { id: 'gas-11', x: 562, y: 222, name: '가스감지기11' },
+  { id: 'gas-12', x: 610, y: 165, name: '가스감지기12' },
+  { id: 'gas-13', x: 665, y: 165, name: '가스감지기13' },
+  { id: 'gas-14', x: 328, y: 336, name: '가스감지기14' },
+  { id: 'gas-15', x: 458, y: 336, name: '가스감지기15' },
+];
+
+// 화재 감지기 정보 배열
+const FIRE_SENSORS = [
+  { id: 'fire-1', x: 210, y: 265, name: '화재감지기1' },
+  { id: 'fire-2', x: 210, y: 377, name: '화재감지기2' },
+  { id: 'fire-3', x: 485, y: 265, name: '화재감지기3' },
+  { id: 'fire-4', x: 575, y: 251, name: '화재감지기4' },
+  { id: 'fire-5', x: 485, y: 78, name: '화재감지기5' },
+  { id: 'fire-6', x: 602, y: 78, name: '화재감지기6' },
+];
+
+// 진동 감지기 정보 배열
+const VIBRATION_SENSORS = [
+  { id: 'vibration-1', x: 260, y: 305, name: '진동감지기1' },
+  { id: 'vibration-2', x: 277, y: 362, name: '진동감지기2' },
+  { id: 'vibration-3', x: 295, y: 305, name: '진동감지기3' },
+  { id: 'vibration-4', x: 390, y: 305, name: '진동감지기4' },
+  { id: 'vibration-5', x: 407, y: 362, name: '진동감지기5' },
+  { id: 'vibration-6', x: 427, y: 305, name: '진동감지기6' },
+  { id: 'vibration-7', x: 525, y: 120, name: '진동감지기7' },
+  { id: 'vibration-8', x: 525, y: 195, name: '진동감지기8' },
+  { id: 'vibration-9', x: 561, y: 135, name: '진동감지기9' },
+];
 
 const FACILITY_DETAIL: FacilityDetail = {
   name: '삼척 교동 수소 스테이션',
@@ -360,7 +403,7 @@ export default function MonitoringDetailPage({
     return `${hours}:${minutes}:${seconds}`;
   }, []);
 
-  const updateData = useCallback(() => {
+  const updateData = useEffect(() => {
     const now = new Date();
     const updatedSensors = FACILITY_DETAIL.sensors.vibration.map((sensor) => {
       const data = [];
@@ -405,15 +448,6 @@ export default function MonitoringDetailPage({
   }, [generateDetailedData, formatTime]);
 
   useEffect(() => {
-    // 초기 데이터 로드
-    updateData();
-
-    // 1분마다 데이터 업데이트
-    const interval = setInterval(updateData, 60000);
-    return () => clearInterval(interval);
-  }, [updateData]);
-
-  useEffect(() => {
     // 이미지의 실제 비율 계산 (1920:357)
     const aspectRatio = 357 / 1920;
     const height = Math.floor(window.innerWidth * aspectRatio);
@@ -450,6 +484,17 @@ export default function MonitoringDetailPage({
     if (selectedSensorType === 'fire') return FACILITY_DETAIL.sensors.fire;
     return vibrationSensors;
   }, [selectedSensorType, vibrationSensors]);
+
+  const handleSensorClick = (sensorId: string) => {
+    const sensor =
+      GAS_SENSORS.find((s) => s.id === sensorId) ||
+      FIRE_SENSORS.find((s) => s.id === sensorId) ||
+      VIBRATION_SENSORS.find((s) => s.id === sensorId);
+    if (sensor) {
+      console.log(`Clicked sensor: ${sensor.name}`);
+      // 여기에 센서 클릭 시 필요한 로직 추가
+    }
+  };
 
   return (
     <Container>
@@ -532,110 +577,78 @@ export default function MonitoringDetailPage({
         <MapSection>
           <LeftColumn>
             <MapView>
-              <Image
-                src="/images/monitoring/detail/kd_map.png"
-                alt="시설 위치"
-                width={828}
-                height={672}
-                quality={90}
-                style={{
-                  objectFit: 'contain',
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                }}
-                priority
-              />
-              {/* Gas Sensors */}
-              <SensorIcon type="gas" x={15} y={15}>
+              <MapContainer>
                 <svg
+                  viewBox="0 0 828 672"
+                  preserveAspectRatio="xMidYMid meet"
                   xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
                 >
-                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
-                </svg>
-              </SensorIcon>
-              <SensorIcon type="gas" x={35} y={20}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
-                </svg>
-              </SensorIcon>
-              <SensorIcon type="gas" x={55} y={25}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
-                </svg>
-              </SensorIcon>
+                  {/* 배경 이미지를 SVG 내부에 포함 */}
+                  <image
+                    href="/images/monitoring/detail/map.svg"
+                    width="828"
+                    height="672"
+                    preserveAspectRatio="xMidYMid meet"
+                  />
 
-              {/* Fire Sensors */}
-              <SensorIcon type="fire" x={25} y={45}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
-                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
-                </svg>
-              </SensorIcon>
-              <SensorIcon type="fire" x={45} y={45}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
-                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
-                </svg>
-              </SensorIcon>
-              <SensorIcon type="fire" x={65} y={45}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
-                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
-                </svg>
-              </SensorIcon>
+                  {/* 가스 감지기 아이콘들 */}
+                  {GAS_SENSORS.map((sensor) => (
+                    <g
+                      key={sensor.id}
+                      className="sensor-icon"
+                      data-type="gas"
+                      transform={`translate(${sensor.x}, ${sensor.y})`}
+                      onClick={() => handleSensorClick(sensor.id)}
+                    >
+                      <image
+                        href="/images/monitoring/detail/gas_box.svg"
+                        x="-30"
+                        y="-23"
+                        width="60"
+                        height="60"
+                      />
+                    </g>
+                  ))}
 
-              {/* Vibration Sensors */}
-              <SensorIcon type="vibration" x={35} y={65}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
+                  {/* 화재 감지기 아이콘들 */}
+                  {FIRE_SENSORS.map((sensor) => (
+                    <g
+                      key={sensor.id}
+                      className="sensor-icon"
+                      data-type="fire"
+                      transform={`translate(${sensor.x}, ${sensor.y})`}
+                      onClick={() => handleSensorClick(sensor.id)}
+                    >
+                      <image
+                        href="/images/monitoring/detail/fire_box.svg"
+                        x="-30"
+                        y="-23"
+                        width="60"
+                        height="60"
+                      />
+                    </g>
+                  ))}
+
+                  {/* 진동 감지기 아이콘들 */}
+                  {VIBRATION_SENSORS.map((sensor) => (
+                    <g
+                      key={sensor.id}
+                      className="sensor-icon"
+                      data-type="vibration"
+                      transform={`translate(${sensor.x}, ${sensor.y})`}
+                      onClick={() => handleSensorClick(sensor.id)}
+                    >
+                      <image
+                        href="/images/monitoring/detail/vibration_box.svg"
+                        x="-30"
+                        y="-23"
+                        width="60"
+                        height="60"
+                      />
+                    </g>
+                  ))}
                 </svg>
-              </SensorIcon>
-              <SensorIcon type="vibration" x={55} y={65}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
-                </svg>
-              </SensorIcon>
-              <SensorIcon type="vibration" x={75} y={65}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
-                </svg>
-              </SensorIcon>
+              </MapContainer>
             </MapView>
             <SensorCard>
               <SensorHeader>
