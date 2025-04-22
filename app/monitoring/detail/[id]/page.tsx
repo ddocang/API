@@ -1,10 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import styled from '@emotion/styled';
-import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -14,6 +13,49 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import {
+  Container,
+  TopBanner,
+  BannerBackground,
+  DarkOverlay,
+  BannerContent,
+  TitleContainer,
+  Title,
+  Subtitle,
+  UpdateTime,
+  ContentSection,
+  MapSection,
+  LeftColumn,
+  MapView,
+  SensorIcon,
+  SensorCard,
+  ListHeader,
+  SensorList,
+  SensorItem,
+  SensorNo,
+  SensorType,
+  SensorConnection,
+  SensorStatus,
+  SensorValue,
+  SensorTitle,
+  GNB,
+  Logo,
+  LogoImageWrapper,
+  MainMenu,
+  NavLinkStyle,
+  BackButton,
+  SensorHeader,
+  FilterButton,
+  VibrationGraphContainer,
+  VibrationGraphCard,
+  CustomTooltip,
+  DetailedGraphPopup,
+  PopupOverlay,
+  PopupHeader,
+  PopupLogo,
+  CloseButton,
+  DetailedGraphContainer,
+} from './styles';
 
 interface SensorBase {
   id: number;
@@ -31,6 +73,11 @@ interface FireSensor extends SensorBase {
 }
 
 interface DetailedVibrationDataPoint {
+  time: string;
+  value: number;
+}
+
+interface VibrationDataPoint {
   time: string;
   value: number;
 }
@@ -72,106 +119,106 @@ const FACILITY_DETAIL: FacilityDetail = {
     gas: [
       {
         id: 1,
-        name: '수소감지기1',
+        name: '가스감지기1',
         unit: '--',
         status: 'normal',
       },
       {
         id: 2,
-        name: '수소감지기2',
+        name: '가스감지기2',
         unit: '--',
         status: 'normal',
       },
       {
         id: 3,
-        name: '수소감지기3',
+        name: '가스감지기3',
         unit: '--',
         status: 'normal',
       },
       {
         id: 4,
-        name: '수소감지기4',
+        name: '가스감지기4',
         unit: '--',
         status: 'normal',
       },
       {
         id: 5,
-        name: '수소감지기5',
+        name: '가스감지기5',
         unit: '--',
         status: 'normal',
       },
       {
         id: 6,
-        name: '수소감지기6',
+        name: '가스감지기6',
         unit: '--',
         status: 'normal',
       },
       {
         id: 7,
-        name: '수소감지기7',
+        name: '가스감지기7',
         unit: '--',
         status: 'normal',
       },
       {
         id: 8,
-        name: '수소감지기8',
+        name: '가스감지기8',
         unit: '--',
         status: 'normal',
       },
       {
         id: 9,
-        name: '수소감지기9',
+        name: '가스감지기9',
         unit: '--',
         status: 'normal',
       },
       {
         id: 10,
-        name: '수소감지기10',
+        name: '가스감지기10',
         unit: '--',
         status: 'normal',
       },
       {
         id: 11,
-        name: '수소감지기11',
+        name: '가스감지기11',
         unit: '--',
         status: 'normal',
       },
       {
         id: 12,
-        name: '수소감지기12',
+        name: '가스감지기12',
         unit: '--',
         status: 'normal',
       },
       {
         id: 13,
-        name: '수소감지기13',
+        name: '가스감지기13',
         unit: '--',
         status: 'normal',
       },
       {
         id: 14,
-        name: '수소감지기14',
+        name: '가스감지기14',
         unit: '--',
         status: 'normal',
       },
       {
         id: 15,
-        name: '수소감지기15',
+        name: '가스감지기15',
         unit: '--',
         status: 'normal',
       },
     ],
     fire: [
-      { id: 1, name: '화재감지1', unit: '--', status: 'normal' },
-      { id: 2, name: '화재감지2', unit: '--', status: 'normal' },
-      { id: 3, name: '화재감지3', unit: '--', status: 'normal' },
-      { id: 4, name: '화재감지4', unit: '--', status: 'normal' },
-      { id: 5, name: '화재감지5', unit: '--', status: 'normal' },
-      { id: 6, name: '화재감지6', unit: '--', status: 'normal' },
+      { id: 16, name: '화재감지1', unit: '--', status: 'normal' },
+      { id: 17, name: '화재감지2', unit: '--', status: 'normal' },
+      { id: 18, name: '화재감지3', unit: '--', status: 'normal' },
+      { id: 19, name: '화재감지4', unit: '--', status: 'normal' },
+      { id: 20, name: '화재감지5', unit: '--', status: 'normal' },
+      { id: 21, name: '화재감지6', unit: '--', status: 'normal' },
     ],
     vibration: [
       {
-        id: 1,
+        id: 22,
         name: '진동감지기1',
         value: '0.85',
         unit: 'g',
@@ -180,7 +227,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 2,
+        id: 23,
         name: '진동감지기2',
         value: '0.92',
         unit: 'g',
@@ -189,7 +236,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 3,
+        id: 24,
         name: '진동감지기3',
         value: '0.78',
         unit: 'g',
@@ -198,7 +245,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 4,
+        id: 25,
         name: '진동감지기4',
         value: '0.88',
         unit: 'g',
@@ -207,7 +254,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 5,
+        id: 26,
         name: '진동감지기5',
         value: '0.95',
         unit: 'g',
@@ -216,7 +263,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 6,
+        id: 27,
         name: '진동감지기6',
         value: '0.82',
         unit: 'g',
@@ -225,7 +272,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 7,
+        id: 28,
         name: '진동감지기7',
         value: '0.87',
         unit: 'g',
@@ -234,7 +281,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 8,
+        id: 29,
         name: '진동감지기8',
         value: '0.91',
         unit: 'g',
@@ -243,7 +290,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 9,
+        id: 30,
         name: '진동감지기9',
         value: '0.84',
         unit: 'g',
@@ -254,227 +301,6 @@ const FACILITY_DETAIL: FacilityDetail = {
     ],
   },
 };
-
-const CustomTooltip = styled.div`
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 4px;
-  padding: 8px 12px;
-
-  .time {
-    font-family: 'Pretendard';
-    font-size: 12px;
-    color: #999999;
-    margin-bottom: 4px;
-  }
-
-  .value {
-    font-family: 'Pretendard';
-    font-size: 14px;
-    color: white;
-    font-weight: 600;
-  }
-`;
-
-interface VibrationDataPoint {
-  time: string;
-  value: number;
-}
-
-const DetailedGraphPopup = styled.div<{ isOpen: boolean }>`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 1500px;
-  height: 650px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 1000;
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
-  padding: 32px;
-  border: 1px solid rgba(96, 165, 250, 0.15);
-`;
-
-const PopupOverlay = styled.div<{ isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 999;
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
-`;
-
-const PopupHeader = styled.div`
-  display: grid;
-  grid-template-columns: 120px 1fr 120px;
-  align-items: center;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
-
-  h2 {
-    font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 28px;
-    color: #1e293b;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    grid-column: 2;
-
-    &:before {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
-      background: #2563eb;
-      border-radius: 50%;
-      box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
-    }
-  }
-`;
-
-const PopupLogo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  grid-column: 1;
-
-  .logo-wrapper {
-    position: relative;
-    width: 36px;
-    height: 36px;
-  }
-
-  span {
-    font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 28px;
-    color: #1e293b;
-    letter-spacing: -0.02em;
-  }
-`;
-
-const CloseButton = styled.button`
-  background: #f1f5f9;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: #64748b;
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  grid-column: 3;
-  justify-self: end;
-
-  &:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-  }
-`;
-
-const DetailedGraphContainer = styled.div`
-  width: 100%;
-  height: calc(100% - 80px);
-  background: #f8fafc;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
-`;
-
-const MainMenu = styled.div`
-  display: flex;
-  gap: 12px;
-  user-select: none;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-`;
-
-const NavLinkStyle = styled.a<{ active?: boolean }>`
-  && {
-    font-family: 'Pretendard';
-    font-size: 14px;
-    font-weight: ${({ active }) => (active ? 600 : 500)};
-    color: ${({ active }) => (active ? '#2563eb' : '#64748b')};
-    text-decoration: none;
-    position: relative;
-    padding: 6px 12px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    background: ${({ active }) => (active ? '#eff6ff' : '#ffffff')};
-    border: 1px solid ${({ active }) => (active ? '#93c5fd' : '#e2e8f0')};
-
-    &:hover {
-      color: #2563eb;
-      border-color: #93c5fd;
-      background: #eff6ff;
-
-      svg {
-        color: #2563eb;
-      }
-    }
-
-    svg {
-      width: 16px;
-      height: 16px;
-      transition: all 0.2s ease;
-      color: ${({ active }) => (active ? '#2563eb' : '#64748b')};
-    }
-  }
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-family: 'Pretendard';
-  font-size: 14px;
-  font-weight: 500;
-  color: #1e293b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 8px;
-
-  &:hover {
-    background: #eff6ff;
-    border-color: #93c5fd;
-    color: #2563eb;
-
-    svg {
-      color: #2563eb;
-    }
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: #64748b;
-    transition: all 0.2s ease;
-  }
-`;
 
 export default function MonitoringDetailPage({
   params,
@@ -498,6 +324,9 @@ export default function MonitoringDetailPage({
         detailedData: [],
       }))
   );
+  const [selectedSensorType, setSelectedSensorType] = useState<
+    'all' | 'gas' | 'fire' | 'vibration'
+  >('all');
 
   const generateDetailedData = useCallback((baseValue: number) => {
     const data: DetailedVibrationDataPoint[] = [];
@@ -609,6 +438,19 @@ export default function MonitoringDetailPage({
     setSelectedSensor(null);
   };
 
+  const filteredSensors = useMemo(() => {
+    if (selectedSensorType === 'all') {
+      return [
+        ...FACILITY_DETAIL.sensors.gas,
+        ...FACILITY_DETAIL.sensors.fire,
+        ...vibrationSensors,
+      ];
+    }
+    if (selectedSensorType === 'gas') return FACILITY_DETAIL.sensors.gas;
+    if (selectedSensorType === 'fire') return FACILITY_DETAIL.sensors.fire;
+    return vibrationSensors;
+  }, [selectedSensorType, vibrationSensors]);
+
   return (
     <Container>
       <TopBanner>
@@ -627,7 +469,9 @@ export default function MonitoringDetailPage({
                 priority
               />
             </LogoImageWrapper>
-            <span>HyGE&nbsp;안전모니터링_삼척&nbsp;교동&nbsp;수소스테이션</span>
+            <span>
+              HyGE&nbsp;안전모니터링_삼척&nbsp;교동&nbsp;수소&nbsp;스테이션
+            </span>
           </Logo>
           <MainMenu>
             <Link href="/" passHref legacyBehavior>
@@ -689,23 +533,149 @@ export default function MonitoringDetailPage({
           <LeftColumn>
             <MapView>
               <Image
-                src="/images/monitoring/detail/kd-map.png"
+                src="/images/monitoring/detail/kd_map.png"
                 alt="시설 위치"
-                width={849}
-                height={624}
+                width={828}
+                height={672}
                 quality={90}
                 style={{
                   objectFit: 'contain',
                   width: '100%',
                   height: '100%',
-                  maxWidth: '849px',
-                  maxHeight: '624px',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                 }}
                 priority
               />
+              {/* Gas Sensors */}
+              <SensorIcon type="gas" x={15} y={15}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="gas" x={35} y={20}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="gas" x={55} y={25}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M8 4.5C9.1 4.5 10 5.2 10.3 6.2C10.4 6.19 10.5 6.18 10.6 6.18C12.1 6.18 13.4 7.4 13.4 9C13.4 10.6 12.1 11.8 10.6 11.8H4.4C5.8 11.2 6.8 10.2 7.4 9C6.7 9.8 5.2 10.6 4.1 10.6C3.1 10.6 2.2 9.8 2.2 8.8C2.2 7.8 3.1 7 4.1 7C4.2 7 4.3 7 4.4 7C4.5 5.4 6.1 4.5 8 4.5Z" />
+                </svg>
+              </SensorIcon>
+
+              {/* Fire Sensors */}
+              <SensorIcon type="fire" x={25} y={45}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
+                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="fire" x={45} y={45}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
+                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="fire" x={65} y={45}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <ellipse cx="9.9601" cy="11.1764" rx="1.87224" ry="1.90443" />
+                  <path d="M8.3231 2.6665C11.0456 4.438 10.5046 6.9591 9.10445 8.419C8.43214 9.1205 7.87034 9.692 7.44381 10.2269C7.30456 10.3883 7.17597 10.5731 7.07989 10.7765C7.02674 10.8848 6.98041 10.9951 6.94627 11.0589C6.94273 11.0761 6.93958 11.0934 6.93656 11.1106C6.92717 11.157 6.91815 11.2032 6.90959 11.2503C6.84069 11.4595 6.80614 11.6869 6.80614 11.9263C6.80614 12.7594 7.16275 13.5227 7.72641 14.0659C7.72996 14.0716 7.73349 14.078 7.73706 14.0835C4.7566 13.4097 3.6407 11.653 3.7346 9.47879C3.8266 7.34816 5.5802 6.1102 6.9432 4.7253C8.0636 3.5873 8.1842 2.691 8.3231 2.6665Z" />
+                </svg>
+              </SensorIcon>
+
+              {/* Vibration Sensors */}
+              <SensorIcon type="vibration" x={35} y={65}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="vibration" x={55} y={65}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
+                </svg>
+              </SensorIcon>
+              <SensorIcon type="vibration" x={75} y={65}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 2c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5z" />
+                </svg>
+              </SensorIcon>
             </MapView>
             <SensorCard>
-              <SensorHeader></SensorHeader>
+              <SensorHeader>
+                <FilterButton
+                  active={selectedSensorType === 'all'}
+                  onClick={() => setSelectedSensorType('all')}
+                >
+                  전체
+                  <span className="count">
+                    {FACILITY_DETAIL.sensors.gas.length +
+                      FACILITY_DETAIL.sensors.fire.length +
+                      vibrationSensors.length}
+                  </span>
+                </FilterButton>
+                <FilterButton
+                  active={selectedSensorType === 'gas'}
+                  onClick={() => setSelectedSensorType('gas')}
+                >
+                  가스감지기
+                  <span className="count">
+                    {FACILITY_DETAIL.sensors.gas.length}
+                  </span>
+                </FilterButton>
+                <FilterButton
+                  active={selectedSensorType === 'fire'}
+                  onClick={() => setSelectedSensorType('fire')}
+                >
+                  화재감지기
+                  <span className="count">
+                    {FACILITY_DETAIL.sensors.fire.length}
+                  </span>
+                </FilterButton>
+                <FilterButton
+                  active={selectedSensorType === 'vibration'}
+                  onClick={() => setSelectedSensorType('vibration')}
+                >
+                  진동감지기
+                  <span className="count">{vibrationSensors.length}</span>
+                </FilterButton>
+              </SensorHeader>
               <ListHeader>
                 <span>No</span>
                 <span>종류</span>
@@ -714,37 +684,9 @@ export default function MonitoringDetailPage({
                 <span>Data</span>
               </ListHeader>
               <SensorList>
-                {FACILITY_DETAIL.sensors.gas.map((sensor) => (
+                {filteredSensors.map((sensor, index) => (
                   <SensorItem key={sensor.id}>
-                    <SensorNo>{sensor.id}</SensorNo>
-                    <SensorType>{sensor.name}</SensorType>
-                    <SensorConnection>연결됨</SensorConnection>
-                    <SensorStatus status={sensor.status}>
-                      {sensor.status === 'normal' ? '정상' : sensor.status}
-                    </SensorStatus>
-                    <SensorValue status={sensor.status}>
-                      {sensor.value}
-                      <span>{sensor.unit}</span>
-                    </SensorValue>
-                  </SensorItem>
-                ))}
-                {FACILITY_DETAIL.sensors.fire.map((sensor) => (
-                  <SensorItem key={sensor.id}>
-                    <SensorNo>{sensor.id}</SensorNo>
-                    <SensorType>{sensor.name}</SensorType>
-                    <SensorConnection>연결됨</SensorConnection>
-                    <SensorStatus status={sensor.status}>
-                      {sensor.status === 'normal' ? '정상' : sensor.status}
-                    </SensorStatus>
-                    <SensorValue status={sensor.status}>
-                      {sensor.value}
-                      <span>{sensor.unit}</span>
-                    </SensorValue>
-                  </SensorItem>
-                ))}
-                {vibrationSensors.map((sensor) => (
-                  <SensorItem key={sensor.id}>
-                    <SensorNo>{sensor.id}</SensorNo>
+                    <SensorNo>{index + 1}</SensorNo>
                     <SensorType>{sensor.name}</SensorType>
                     <SensorConnection>연결됨</SensorConnection>
                     <SensorStatus status={sensor.status}>
@@ -931,490 +873,3 @@ export default function MonitoringDetailPage({
     </Container>
   );
 }
-
-const Container = styled.div`
-  width: 100%;
-  height: 100vh;
-  background-color: #f2f2f2;
-  display: flex;
-  flex-direction: column;
-`;
-
-const TopBanner = styled.div`
-  position: relative;
-  width: 100%;
-  height: 85px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-`;
-
-const BannerBackground = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(96, 165, 250, 0.08) 0%,
-    rgba(59, 130, 246, 0.12) 100%
-  );
-`;
-
-const DarkOverlay = styled.div`
-  display: none;
-`;
-
-const BannerContent = styled.div`
-  position: relative;
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 0 32px;
-  z-index: 1;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-left: 200px;
-  height: 100%;
-
-  @media (max-width: 768px) {
-    padding: 0 20px;
-    align-items: center;
-  }
-`;
-
-const TitleContainer = styled.div`
-  padding: 8px 20px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-  text-align: left;
-  margin-top: 8px;
-`;
-
-const Title = styled.h1`
-  font-family: 'Pretendard';
-  font-weight: 700;
-  font-size: 24px;
-  text-align: center;
-  color: #1e293b;
-  margin: 0;
-  line-height: 1.4;
-  letter-spacing: -0.02em;
-`;
-
-const Subtitle = styled.p`
-  font-family: 'Pretendard';
-  font-size: 15px;
-  text-align: center;
-  color: #60a5fa;
-  margin: 4px 0 0 0;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-`;
-
-const UpdateTime = styled.div`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px 10px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  margin-left: 12px;
-  border: 1px solid rgba(96, 165, 250, 0.2);
-
-  &:before {
-    content: '';
-    display: block;
-    width: 6px;
-    height: 6px;
-    background: #2563eb;
-    border-radius: 50%;
-    box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
-  }
-`;
-
-const ContentSection = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  padding: 15px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 85px);
-`;
-
-const MapSection = styled.div`
-  width: 100%;
-  display: flex;
-  gap: 15px;
-  flex: 1;
-  height: 100%;
-  padding-bottom: 15px;
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    height: auto;
-  }
-`;
-
-const LeftColumn = styled.div`
-  width: 42%;
-  display: grid;
-  grid-template-rows: repeat(3, 32.7%);
-  gap: 15px;
-  height: 100%;
-
-  @media (max-width: 1024px) {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-  }
-`;
-
-const MapView = styled.div`
-  grid-row: span 2;
-  width: 100%;
-  height: 100%;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-
-  img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-    padding: 0 !important;
-  }
-
-  @media (max-width: 1024px) {
-    height: 300px;
-  }
-`;
-
-const SensorCard = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
-
-  @media (max-width: 1024px) {
-    height: 300px;
-  }
-`;
-
-const SensorHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const ListHeader = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #666666;
-  font-weight: 600;
-
-  span {
-    text-align: center;
-  }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-    gap: 6px;
-    padding: 6px;
-  }
-`;
-
-const SensorList = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 8px;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f8f9fa;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #dde2e6;
-    border-radius: 3px;
-  }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-  }
-`;
-
-const SensorItem = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #f8f9fa;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  > * {
-    text-align: center;
-  }
-
-  @media (max-width: 1600px) {
-    gap: 6px;
-    padding: 6px;
-  }
-`;
-
-const SensorNo = styled.span`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #666666;
-  text-align: center;
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-  }
-`;
-
-const SensorType = styled.span`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #666666;
-  text-align: center;
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-  }
-`;
-
-const SensorConnection = styled.span`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #2e7d32;
-  font-weight: 600;
-  text-align: center;
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-  }
-`;
-
-const SensorStatus = styled.div<{ status?: string }>`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #2e7d32;
-  font-weight: 600;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-
-  ${(props) =>
-    props.status &&
-    `
-    padding: 4px 12px;
-    background: ${
-      props.status === 'normal'
-        ? '#E8F5E9'
-        : props.status === 'warning'
-        ? '#FFF3E0'
-        : '#FFEBEE'
-    };
-    color: ${
-      props.status === 'normal'
-        ? '#2E7D32'
-        : props.status === 'warning'
-        ? '#EF6C00'
-        : '#C62828'
-    };
-    border-radius: 12px;
-    margin: 0 auto;
-  `}
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-    ${(props) =>
-      props.status &&
-      `
-      padding: 3px 8px;
-    `}
-  }
-`;
-
-const SensorValue = styled.div<{ status?: string }>`
-  font-family: 'Pretendard';
-  font-weight: 600;
-  font-size: 13px;
-  color: ${({ status }) =>
-    status === 'normal'
-      ? '#000000'
-      : status === 'warning'
-      ? '#EF6C00'
-      : '#C62828'};
-  text-align: center;
-
-  span {
-    font-size: 12px;
-    color: #999999;
-    margin-left: 4px;
-  }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-
-    span {
-      font-size: 11px;
-    }
-  }
-`;
-
-const SensorTitle = styled.h3`
-  font-family: 'Pretendard';
-  font-weight: 600;
-  font-size: 18px;
-  color: #000000;
-  margin: 0;
-`;
-
-const GNB = styled.nav`
-  width: 100%;
-  height: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 32px 20px 32px;
-  user-select: none;
-  position: relative;
-  z-index: 1;
-  max-width: 1920px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    padding: 24px 20px 20px 20px;
-  }
-`;
-
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  user-select: none;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
-
-  span {
-    font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 24px;
-    color: #1e293b;
-    line-height: 36px;
-    letter-spacing: -0.02em;
-  }
-
-  @media (max-width: 768px) {
-    gap: 8px;
-  }
-`;
-
-const LogoImageWrapper = styled.div`
-  position: relative;
-  width: 36px;
-  height: 36px;
-`;
-
-const VibrationGraphContainer = styled.div`
-  width: 58%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 32.7%);
-  gap: 15px;
-  height: 100%;
-  margin-bottom: 15px;
-
-  @media (max-width: 1024px) {
-    width: 100%;
-    height: auto;
-    padding: 0;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-`;
-
-const VibrationGraphCard = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  height: 100%;
-  min-height: 200px;
-
-  h4 {
-    font-family: 'Pretendard';
-    font-weight: 600;
-    font-size: 16px;
-    color: #000000;
-    margin: 0 0 15px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .status {
-      font-size: 13px;
-      padding: 4px 10px;
-      background: #e8f5e9;
-      color: #2e7d32;
-      border-radius: 8px;
-    }
-  }
-
-  .graph-container {
-    flex-grow: 1;
-    background: #f8f9fa;
-    border-radius: 12px;
-    height: calc(100% - 40px);
-    padding: 15px;
-  }
-
-  @media (max-width: 1024px) {
-    min-height: 250px;
-  }
-`;
