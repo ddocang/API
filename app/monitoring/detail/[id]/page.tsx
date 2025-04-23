@@ -861,7 +861,7 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'gas'}
                   onClick={() => setSelectedSensorType('gas')}
                 >
-                  가스감지기
+                  가스
                   <span className="count">
                     {FACILITY_DETAIL.sensors.gas.length}
                   </span>
@@ -870,7 +870,7 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'fire'}
                   onClick={() => setSelectedSensorType('fire')}
                 >
-                  화재감지기
+                  화재
                   <span className="count">
                     {FACILITY_DETAIL.sensors.fire.length}
                   </span>
@@ -879,7 +879,7 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'vibration'}
                   onClick={() => setSelectedSensorType('vibration')}
                 >
-                  진동감지기
+                  진동
                   <span className="count">{vibrationSensors.length}</span>
                 </FilterButton>
               </SensorHeader>
@@ -891,20 +891,26 @@ export default function MonitoringDetailPage({
                 <span>Data</span>
               </ListHeader>
               <SensorList>
-                {filteredSensors.map((sensor, index) => (
-                  <SensorItem key={sensor.id}>
-                    <SensorNo>{index + 1}</SensorNo>
-                    <SensorType>{sensor.name}</SensorType>
-                    <SensorConnection>연결됨</SensorConnection>
-                    <SensorStatus status={sensor.status}>
-                      {sensor.status === 'normal' ? '정상' : sensor.status}
-                    </SensorStatus>
-                    <SensorValue status={sensor.status}>
-                      {sensor.value || '--'}
-                      <span>{sensor.unit}</span>
-                    </SensorValue>
-                  </SensorItem>
-                ))}
+                {filteredSensors.map((sensor, index) => {
+                  const sensorName = sensor.name.replace(
+                    /감지기\d+$/,
+                    (match) => match.replace('감지기', ' #')
+                  );
+                  return (
+                    <SensorItem key={sensor.id}>
+                      <SensorNo>{index + 1}</SensorNo>
+                      <SensorType>{sensorName}</SensorType>
+                      <SensorConnection>연결됨</SensorConnection>
+                      <SensorStatus status={sensor.status}>
+                        {sensor.status === 'normal' ? '정상' : sensor.status}
+                      </SensorStatus>
+                      <SensorValue status={sensor.status}>
+                        {sensor.value || '--'}
+                        <span>{sensor.unit}</span>
+                      </SensorValue>
+                    </SensorItem>
+                  );
+                })}
               </SensorList>
             </SensorCard>
           </LeftColumn>
