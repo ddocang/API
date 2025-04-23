@@ -62,6 +62,7 @@ import {
   LogHeader,
   LogContent,
   LogItem,
+  BannerTitle,
 } from './styles';
 
 interface SensorBase {
@@ -258,12 +259,12 @@ const FACILITY_DETAIL: FacilityDetail = {
       },
     ],
     fire: [
-      { id: 16, name: '화재감지1', unit: '--', status: 'normal' },
-      { id: 17, name: '화재감지2', unit: '--', status: 'normal' },
-      { id: 18, name: '화재감지3', unit: '--', status: 'normal' },
-      { id: 19, name: '화재감지4', unit: '--', status: 'normal' },
-      { id: 20, name: '화재감지5', unit: '--', status: 'normal' },
-      { id: 21, name: '화재감지6', unit: '--', status: 'normal' },
+      { id: 16, name: '화재감지기1', unit: '--', status: 'normal' },
+      { id: 17, name: '화재감지기2', unit: '--', status: 'normal' },
+      { id: 18, name: '화재감지기3', unit: '--', status: 'normal' },
+      { id: 19, name: '화재감지기4', unit: '--', status: 'normal' },
+      { id: 20, name: '화재감지기5', unit: '--', status: 'normal' },
+      { id: 21, name: '화재감지기6', unit: '--', status: 'normal' },
     ],
     vibration: [
       {
@@ -658,6 +659,29 @@ export default function MonitoringDetailPage({
     });
   }, [addLogItem, vibrationSensors]);
 
+  const options = {
+    chart: {
+      toolbar: {
+        show: false,
+      },
+      zoom: {
+        enabled: false,
+      },
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 2,
+      colors: ['#4D7298'],
+    },
+    markers: {
+      size: 0,
+      hover: {
+        size: 5,
+        sizeOffset: 3,
+      },
+    },
+  };
+
   return (
     <Container>
       <TopBanner>
@@ -676,10 +700,9 @@ export default function MonitoringDetailPage({
                 priority
               />
             </LogoImageWrapper>
-            <span>
-              HyGE&nbsp;안전모니터링_삼척&nbsp;교동&nbsp;수소&nbsp;스테이션
-            </span>
+            <span>HyGE&nbsp;Safety&nbsp;Monitoring</span>
           </Logo>
+          <BannerTitle>삼척 교동 수소 스테이션</BannerTitle>
           <MainMenu>
             <Link href="/" passHref legacyBehavior>
               <NavLinkStyle active={pathname === '/'}>
@@ -742,11 +765,6 @@ export default function MonitoringDetailPage({
             <UpdateTime>업데이트: {lastUpdateTime}</UpdateTime>
           </MainMenu>
         </GNB>
-        <BannerContent>
-          <TitleContainer>
-            <Title>{FACILITY_DETAIL.name}</Title>
-          </TitleContainer>
-        </BannerContent>
       </TopBanner>
 
       <ContentSection>
@@ -861,7 +879,11 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'gas'}
                   onClick={() => setSelectedSensorType('gas')}
                 >
-                  가스
+                  <span
+                    className="sensor-name"
+                    data-full-name="가스감지기"
+                    data-short-name="가스"
+                  />
                   <span className="count">
                     {FACILITY_DETAIL.sensors.gas.length}
                   </span>
@@ -870,7 +892,11 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'fire'}
                   onClick={() => setSelectedSensorType('fire')}
                 >
-                  화재
+                  <span
+                    className="sensor-name"
+                    data-full-name="화재감지기"
+                    data-short-name="화재"
+                  />
                   <span className="count">
                     {FACILITY_DETAIL.sensors.fire.length}
                   </span>
@@ -879,7 +905,11 @@ export default function MonitoringDetailPage({
                   active={selectedSensorType === 'vibration'}
                   onClick={() => setSelectedSensorType('vibration')}
                 >
-                  진동
+                  <span
+                    className="sensor-name"
+                    data-full-name="진동감지기"
+                    data-short-name="진동"
+                  />
                   <span className="count">{vibrationSensors.length}</span>
                 </FilterButton>
               </SensorHeader>
@@ -892,14 +922,17 @@ export default function MonitoringDetailPage({
               </ListHeader>
               <SensorList>
                 {filteredSensors.map((sensor, index) => {
-                  const sensorName = sensor.name.replace(
-                    /감지기\d+$/,
-                    (match) => match.replace('감지기', ' #')
-                  );
+                  const shortName = sensor.name.replace(/감지기(\d+)$/, '#$1');
                   return (
                     <SensorItem key={sensor.id}>
                       <SensorNo>{index + 1}</SensorNo>
-                      <SensorType>{sensorName}</SensorType>
+                      <SensorType>
+                        <span
+                          className="sensor-name"
+                          data-full-name={sensor.name}
+                          data-short-name={shortName}
+                        />
+                      </SensorType>
                       <SensorConnection>연결됨</SensorConnection>
                       <SensorStatus status={sensor.status}>
                         {sensor.status === 'normal' ? '정상' : sensor.status}
@@ -978,12 +1011,12 @@ export default function MonitoringDetailPage({
                       <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#0066FF"
+                        stroke="#4D7298"
                         strokeWidth={2}
-                        dot={{ fill: '#0066FF', r: 2 }}
+                        dot={false}
                         activeDot={{
                           r: 4,
-                          fill: '#0066FF',
+                          fill: '#4D7298',
                           stroke: 'white',
                           strokeWidth: 2,
                         }}
@@ -1067,12 +1100,12 @@ export default function MonitoringDetailPage({
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#2563eb"
+                    stroke="#4D7298"
                     strokeWidth={2.5}
                     dot={false}
                     activeDot={{
                       r: 6,
-                      fill: '#2563eb',
+                      fill: '#4D7298',
                       stroke: 'white',
                       strokeWidth: 2,
                     }}

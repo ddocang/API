@@ -135,7 +135,7 @@ export const DetailedGraphContainer = styled.div`
 
 export const MainMenu = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 16px;
   user-select: none;
   align-items: center;
 
@@ -148,36 +148,41 @@ export const MainMenu = styled.div`
 export const NavLinkStyle = styled.a<{ active?: boolean }>`
   && {
     font-family: 'Pretendard';
-    font-size: 14px;
-    font-weight: ${({ active }) => (active ? 600 : 500)};
-    color: ${({ active }) => (active ? '#2563eb' : '#64748b')};
+    font-size: 15px;
+    font-weight: 400;
+    color: ${({ active }) => (active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)')};
     text-decoration: none;
     position: relative;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
-    background: ${({ active }) => (active ? '#eff6ff' : '#ffffff')};
-    border: 1px solid ${({ active }) => (active ? '#93c5fd' : '#e2e8f0')};
+    background: ${({ active }) =>
+      active ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
+    backdrop-filter: blur(8px);
+    border: 1px solid
+      ${({ active }) =>
+        active ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)'};
 
     &:hover {
-      color: #2563eb;
-      border-color: #93c5fd;
-      background: #eff6ff;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
 
       svg {
-        color: #2563eb;
+        color: #ffffff;
       }
     }
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       transition: all 0.2s ease;
-      color: ${({ active }) => (active ? '#2563eb' : '#64748b')};
+      color: ${({ active }) =>
+        active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
     }
   }
 `;
@@ -186,32 +191,32 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
   border-radius: 8px;
   font-family: 'Pretendard';
-  font-size: 14px;
-  font-weight: 500;
-  color: #1e293b;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 8px;
+  backdrop-filter: blur(8px);
 
   &:hover {
-    background: #eff6ff;
-    border-color: #93c5fd;
-    color: #2563eb;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
 
     svg {
-      color: #2563eb;
+      color: #ffffff;
     }
   }
 
   svg {
-    width: 16px;
-    height: 16px;
-    color: #64748b;
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.7);
     transition: all 0.2s ease;
   }
 `;
@@ -228,9 +233,9 @@ export const FilterButton = styled.button<{ active: boolean }>`
   font-family: 'Pretendard';
   font-size: 13px;
   font-weight: ${({ active }) => (active ? '600' : '500')};
-  color: ${({ active }) => (active ? '#2563eb' : '#64748b')};
-  background: ${({ active }) => (active ? '#eff6ff' : '#ffffff')};
-  border: 1px solid ${({ active }) => (active ? '#93c5fd' : '#e2e8f0')};
+  color: ${({ active }) => (active ? '#4D7298' : '#64748b')};
+  background: ${({ active }) => (active ? '#EDF2F7' : '#ffffff')};
+  border: 1px solid ${({ active }) => (active ? '#4D7298' : '#e2e8f0')};
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -238,24 +243,52 @@ export const FilterButton = styled.button<{ active: boolean }>`
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 
   &:hover {
-    color: #2563eb;
-    border-color: #93c5fd;
-    background: #eff6ff;
+    color: #4d7298;
+    border-color: #4d7298;
+    background: #edf2f7;
   }
 
   .count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: ${({ active }) => (active ? '#2563eb' : '#f1f5f9')};
+    background: ${({ active }) => (active ? '#4D7298' : '#f1f5f9')};
     color: ${({ active }) => (active ? '#ffffff' : '#64748b')};
     font-size: 12px;
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 4px;
     min-width: 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+    font-size: 12px;
+
+    .sensor-name {
+      &:after {
+        content: attr(data-short-name);
+      }
+    }
+
+    .sensor-name-full {
+      display: none;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .sensor-name {
+      &:after {
+        content: attr(data-full-name);
+      }
+    }
+
+    .sensor-name-short {
+      display: none;
+    }
   }
 `;
 
@@ -495,6 +528,32 @@ export const SensorType = styled.span`
   color: #666666;
   text-align: center;
 
+  @media (max-width: 768px) {
+    font-size: 12px;
+
+    .sensor-name {
+      &:after {
+        content: attr(data-short-name);
+      }
+    }
+
+    .sensor-name-full {
+      display: none;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .sensor-name {
+      &:after {
+        content: attr(data-full-name);
+      }
+    }
+
+    .sensor-name-short {
+      display: none;
+    }
+  }
+
   @media (max-width: 1600px) {
     font-size: 12px;
   }
@@ -620,10 +679,10 @@ export const Logo = styled.div`
 
   span {
     font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 24px;
-    color: #1e293b;
-    line-height: 36px;
+    font-weight: 400;
+    font-size: 32px;
+    color: #ffffff;
+    line-height: 32px;
     letter-spacing: -0.02em;
   }
 
@@ -671,14 +730,21 @@ export const VibrationGraphCard = styled.div`
   h4 {
     font-family: 'Pretendard';
     font-weight: 600;
-    font-size: 16px;
-    color: #000000;
+    font-size: 15px;
+    color: #1e293b;
     margin: 0 0 15px 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    background: #f8fafc;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    position: relative;
 
     .status {
+      position: absolute;
+      right: 8px;
       font-size: 13px;
       padding: 4px 10px;
       background: #e8f5e9;
@@ -704,7 +770,7 @@ export const VibrationGraphCard = styled.div`
 export const Container = styled.div`
   width: 100%;
   height: 100vh;
-  background-color: #f2f2f2;
+  background: linear-gradient(to bottom right, #68d2ce, #b9ece8);
   display: flex;
   flex-direction: column;
 
@@ -717,26 +783,62 @@ export const Container = styled.div`
 export const TopBanner = styled.div`
   position: relative;
   width: 100%;
-  height: 85px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 1;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
 `;
 
 export const BannerBackground = styled.div`
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(96, 165, 250, 0.08) 0%,
-    rgba(59, 130, 246, 0.12) 100%
-  );
+  z-index: -1;
+  overflow: hidden;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/monitoring/detail/noisy-gradients.svg');
+    background-size: cover;
+    background-position: center;
+    filter: drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.15));
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.85) 0%,
+      rgba(0, 0, 0, 0) 71.79%
+    );
+    mix-blend-mode: multiply;
+  }
 `;
 
 export const DarkOverlay = styled.div`
-  display: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mix-blend-mode: multiply;
 `;
 
 export const BannerContent = styled.div`
@@ -792,26 +894,25 @@ export const Subtitle = styled.p`
 
 export const UpdateTime = styled.div`
   font-family: 'Pretendard';
-  font-size: 13px;
-  color: #64748b;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px 10px;
-  border-radius: 20px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
   backdrop-filter: blur(8px);
-  margin-left: 12px;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   &:before {
     content: '';
     display: block;
     width: 6px;
     height: 6px;
-    background: #2563eb;
+    background: #ffffff;
     border-radius: 50%;
-    box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
   }
 `;
 
@@ -919,11 +1020,12 @@ export const SensorTooltip = styled.div<{ status: string }>`
 export const LogButton = styled(NavLinkStyle)`
   && {
     svg {
-      color: #ef4444;
+      color: ${({ active }) =>
+        active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
     }
     &:hover {
       svg {
-        color: #dc2626;
+        color: #ffffff;
       }
     }
   }
@@ -1032,5 +1134,32 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
     color: ${(props) => (props.severity === 'warning' ? '#9a3412' : '#991b1b')};
     margin-left: 12px;
     white-space: nowrap;
+  }
+`;
+
+export const BannerTitle = styled.div`
+  font-family: 'Pretendard';
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 24px;
+  margin-right: auto;
+
+  &:before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
   }
 `;
