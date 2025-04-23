@@ -291,7 +291,7 @@ export const LeftColumn = styled.div`
 `;
 
 export const MapView = styled.div`
-  flex: 0.682;
+  flex: 0.684;
   width: 100%;
   min-height: 0;
   position: relative;
@@ -315,18 +315,33 @@ export const MapView = styled.div`
 
   .sensor-icon {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+
+    @keyframes pulse {
+      0% {
+        filter: brightness(1);
+      }
+      50% {
+        filter: brightness(1.2);
+      }
+      100% {
+        filter: brightness(1);
+      }
+    }
 
     &[data-type='gas'] {
       fill: #22c576;
+      animation: pulse 1.5s infinite ease-in-out;
     }
 
     &[data-type='fire'] {
       fill: #d81159;
+      animation: pulse 1.5s infinite ease-in-out;
     }
 
     &[data-type='vibration'] {
       fill: #f2c035;
+      animation: pulse 1.5s infinite ease-in-out;
     }
   }
 `;
@@ -338,53 +353,43 @@ export const MapContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 `;
 
-export const SensorIcon = styled.div<{
-  type: 'gas' | 'fire' | 'vibration';
-  x: number;
-  y: number;
-}>`
-  position: absolute;
-  width: clamp(16px, 2vw, 24px);
-  height: clamp(16px, 2vw, 24px);
-  border-radius: 50%;
-  background-color: ${({ type }) =>
-    type === 'gas' ? '#22c576' : type === 'fire' ? '#d81159' : '#f2c035'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  left: ${({ x }) => x}%;
-  top: ${({ y }) => y}%;
-  transform: translate(-50%, -50%);
+export const SensorIcon = styled.g`
   cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 1;
+  transition: all 0.3s ease;
 
-  &:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
-  }
-
-  svg {
-    width: clamp(12px, 1.5vw, 20px);
-    height: clamp(12px, 1.5vw, 20px);
-    color: white;
-  }
-
-  @media (max-width: 768px) {
-    width: clamp(12px, 4vw, 20px);
-    height: clamp(12px, 4vw, 20px);
-
-    svg {
-      width: clamp(8px, 3vw, 16px);
-      height: clamp(8px, 3vw, 16px);
+  @keyframes pulse {
+    0% {
+      filter: brightness(1);
     }
+    50% {
+      filter: brightness(1.2);
+    }
+    100% {
+      filter: brightness(1);
+    }
+  }
+
+  &[data-type='gas'] {
+    fill: #00ff00;
+    animation: pulse 1.5s infinite;
+  }
+
+  &[data-type='fire'] {
+    fill: rgb(255, 0, 0);
+    animation: pulse 1.5s infinite;
+  }
+
+  &[data-type='vibration'] {
+    fill: #ffff00;
+    animation: pulse 1.5s infinite;
   }
 `;
 
 export const SensorCard = styled.div`
-  flex: 0.318;
+  flex: 0.316;
   min-height: 0;
   background: white;
   border-radius: 16px;
@@ -823,5 +828,90 @@ export const ContentSection = styled.div`
     height: auto;
     min-height: 100vh;
     padding: 15px;
+  }
+`;
+
+export const SensorTooltip = styled.div<{ status: string }>`
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  min-width: 200px;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+
+  .tooltip-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: ${({ status }) =>
+        status === 'normal'
+          ? '#34D399'
+          : status === 'warning'
+          ? '#FBBF24'
+          : '#EF4444'};
+    }
+
+    .name {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .status-text {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background-color: ${({ status }) =>
+        status === 'normal'
+          ? '#D1FAE5'
+          : status === 'warning'
+          ? '#FEF3C7'
+          : '#FEE2E2'};
+      color: ${({ status }) =>
+        status === 'normal'
+          ? '#065F46'
+          : status === 'warning'
+          ? '#92400E'
+          : '#991B1B'};
+    }
+  }
+
+  .tooltip-content {
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        color: #6b7280;
+      }
+
+      .value {
+        color: #1f2937;
+        font-weight: 500;
+      }
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -90%);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -100%);
+    }
   }
 `;

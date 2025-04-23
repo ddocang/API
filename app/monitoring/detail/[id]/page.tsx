@@ -56,6 +56,7 @@ import {
   CloseButton,
   DetailedGraphContainer,
   MapContainer,
+  SensorTooltip,
 } from './styles';
 
 interface SensorBase {
@@ -119,7 +120,7 @@ const GAS_SENSORS = [
   { id: 'gas-9', x: 525, y: 235, name: '가스감지기9' },
   { id: 'gas-10', x: 562, y: 110, name: '가스감지기10' },
   { id: 'gas-11', x: 562, y: 222, name: '가스감지기11' },
-  { id: 'gas-12', x: 610, y: 165, name: '가스감지기12' },
+  { id: 'gas-12', x: 615, y: 165, name: '가스감지기12' },
   { id: 'gas-13', x: 665, y: 165, name: '가스감지기13' },
   { id: 'gas-14', x: 328, y: 336, name: '가스감지기14' },
   { id: 'gas-15', x: 458, y: 336, name: '가스감지기15' },
@@ -370,6 +371,19 @@ export default function MonitoringDetailPage({
   const [selectedSensorType, setSelectedSensorType] = useState<
     'all' | 'gas' | 'fire' | 'vibration'
   >('all');
+  const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipSensor, setTooltipSensor] = useState<{
+    id: string;
+    name: string;
+    status: 'normal' | 'warning' | 'danger';
+    value?: string;
+    unit?: string;
+  } | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [animationDelays, setAnimationDelays] = useState<
+    Record<string, number>
+  >({});
 
   const generateDetailedData = useCallback((baseValue: number) => {
     const data: DetailedVibrationDataPoint[] = [];
@@ -485,16 +499,113 @@ export default function MonitoringDetailPage({
     return vibrationSensors;
   }, [selectedSensorType, vibrationSensors]);
 
-  const handleSensorClick = (sensorId: string) => {
-    const sensor =
-      GAS_SENSORS.find((s) => s.id === sensorId) ||
-      FIRE_SENSORS.find((s) => s.id === sensorId) ||
-      VIBRATION_SENSORS.find((s) => s.id === sensorId);
-    if (sensor) {
-      console.log(`Clicked sensor: ${sensor.name}`);
-      // 여기에 센서 클릭 시 필요한 로직 추가
+  const handleSensorClick = (sensorId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const target = event.currentTarget as Element;
+    const rect = target.getBoundingClientRect();
+    const mapContainer = document.querySelector('.map-container');
+    const mapRect = mapContainer?.getBoundingClientRect();
+
+    if (mapRect) {
+      const x = rect.left - mapRect.left + rect.width / 2;
+      const y = rect.top - mapRect.top;
+
+      setTooltipPosition({ x, y });
+
+      if (selectedSensorId === sensorId) {
+        setSelectedSensorId(null);
+        setShowTooltip(false);
+        setTooltipSensor(null);
+      } else {
+        setSelectedSensorId(sensorId);
+        setShowTooltip(true);
+
+        // Find the sensor from the arrays based on sensorId
+        const sensorType = sensorId.split('-')[0];
+        const sensor = [
+          ...GAS_SENSORS,
+          ...FIRE_SENSORS,
+          ...VIBRATION_SENSORS,
+        ].find((s) => s.id === sensorId);
+
+        if (sensor) {
+          setTooltipSensor({
+            id: sensorId,
+            name: sensor.name,
+            status: getSensorStatus(sensorId),
+            value:
+              sensorType === 'vibration'
+                ? FACILITY_DETAIL.sensors.vibration.find(
+                    (s) => s.id === parseInt(sensorId.split('-')[1])
+                  )?.value
+                : '--',
+            unit: sensorType === 'vibration' ? 'g' : '--',
+          });
+        }
+      }
     }
   };
+
+  const getSensorStatus = (
+    sensorId: string
+  ): 'normal' | 'warning' | 'danger' => {
+    // 임시로 랜덤 상태 반환 (실제로는 센서 데이터에 따라 결정되어야 함)
+    const statuses: Array<'normal' | 'warning' | 'danger'> = [
+      'normal',
+      'warning',
+      'danger',
+    ];
+    return statuses[Math.floor(Math.random() * 3)];
+  };
+
+  const getSensorInfo = (sensorId: string) => {
+    const type = sensorId.split('-')[0];
+    const sensor =
+      type === 'vibration'
+        ? vibrationSensors.find(
+            (s) => s.id.toString() === sensorId.split('-')[1]
+          )
+        : FACILITY_DETAIL.sensors[type as 'gas' | 'fire'].find(
+            (s) => s.id.toString() === sensorId.split('-')[1]
+          );
+
+    return {
+      name: sensor?.name || '',
+      value: sensor?.value || '--',
+      unit: sensor?.unit || '',
+      status: sensor?.status || 'normal',
+    };
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setSelectedSensorId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  // 필터링된 센서 아이콘 계산
+  const filteredSensorIcons = useMemo(() => {
+    if (selectedSensorType === 'all') {
+      return [...GAS_SENSORS, ...FIRE_SENSORS, ...VIBRATION_SENSORS];
+    }
+    if (selectedSensorType === 'gas') return GAS_SENSORS;
+    if (selectedSensorType === 'fire') return FIRE_SENSORS;
+    return VIBRATION_SENSORS;
+  }, [selectedSensorType]);
+
+  // 컴포넌트가 마운트될 때 한 번만 애니메이션 딜레이 계산
+  useEffect(() => {
+    const delays = filteredSensorIcons.reduce((acc, sensor) => {
+      acc[sensor.id] = Math.random() * 1.5;
+      return acc;
+    }, {} as Record<string, number>);
+    setAnimationDelays(delays);
+  }, []);
 
   return (
     <Container>
@@ -577,69 +688,37 @@ export default function MonitoringDetailPage({
         <MapSection>
           <LeftColumn>
             <MapView>
-              <MapContainer>
+              <MapContainer className="map-container">
                 <svg
                   viewBox="0 0 828 672"
                   preserveAspectRatio="xMidYMid meet"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* 배경 이미지를 SVG 내부에 포함 */}
                   <image
                     href="/images/monitoring/detail/map.svg"
                     width="828"
                     height="672"
                     preserveAspectRatio="xMidYMid meet"
                   />
-
-                  {/* 가스 감지기 아이콘들 */}
-                  {GAS_SENSORS.map((sensor) => (
+                  {filteredSensorIcons.map((sensor) => (
                     <g
                       key={sensor.id}
                       className="sensor-icon"
-                      data-type="gas"
+                      data-type={sensor.id.split('-')[0]}
                       transform={`translate(${sensor.x}, ${sensor.y})`}
-                      onClick={() => handleSensorClick(sensor.id)}
+                      onClick={(e) => handleSensorClick(sensor.id, e)}
+                      style={
+                        animationDelays[sensor.id]
+                          ? {
+                              animationDelay: `${animationDelays[sensor.id]}s`,
+                            }
+                          : undefined
+                      }
                     >
                       <image
-                        href="/images/monitoring/detail/gas_box.svg"
-                        x="-30"
-                        y="-23"
-                        width="60"
-                        height="60"
-                      />
-                    </g>
-                  ))}
-
-                  {/* 화재 감지기 아이콘들 */}
-                  {FIRE_SENSORS.map((sensor) => (
-                    <g
-                      key={sensor.id}
-                      className="sensor-icon"
-                      data-type="fire"
-                      transform={`translate(${sensor.x}, ${sensor.y})`}
-                      onClick={() => handleSensorClick(sensor.id)}
-                    >
-                      <image
-                        href="/images/monitoring/detail/fire_box.svg"
-                        x="-30"
-                        y="-23"
-                        width="60"
-                        height="60"
-                      />
-                    </g>
-                  ))}
-
-                  {/* 진동 감지기 아이콘들 */}
-                  {VIBRATION_SENSORS.map((sensor) => (
-                    <g
-                      key={sensor.id}
-                      className="sensor-icon"
-                      data-type="vibration"
-                      transform={`translate(${sensor.x}, ${sensor.y})`}
-                      onClick={() => handleSensorClick(sensor.id)}
-                    >
-                      <image
-                        href="/images/monitoring/detail/vibration_box.svg"
+                        href={`/images/monitoring/detail/${
+                          sensor.id.split('-')[0]
+                        }_box.svg`}
                         x="-30"
                         y="-23"
                         width="60"
@@ -648,6 +727,45 @@ export default function MonitoringDetailPage({
                     </g>
                   ))}
                 </svg>
+                {showTooltip && tooltipSensor && (
+                  <SensorTooltip
+                    status={tooltipSensor.status}
+                    style={{
+                      position: 'absolute',
+                      left: `${tooltipPosition.x}px`,
+                      top: `${tooltipPosition.y}px`,
+                      transform: 'translate(-50%, -100%)',
+                    }}
+                  >
+                    <div className="tooltip-header">
+                      <div className="status-indicator" />
+                      <span className="name">{tooltipSensor.name}</span>
+                      <span className="status-text">
+                        {tooltipSensor.status === 'normal'
+                          ? '정상'
+                          : tooltipSensor.status === 'warning'
+                          ? '경고'
+                          : '위험'}
+                      </span>
+                    </div>
+                    <div className="tooltip-content">
+                      <div className="info-row">
+                        <span className="label">측정값</span>
+                        <span className="value">
+                          {tooltipSensor.value} {tooltipSensor.unit}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">상태</span>
+                        <span className="value">연결됨</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">업데이트</span>
+                        <span className="value">{lastUpdateTime}</span>
+                      </div>
+                    </div>
+                  </SensorTooltip>
+                )}
               </MapContainer>
             </MapView>
             <SensorCard>
