@@ -915,3 +915,122 @@ export const SensorTooltip = styled.div<{ status: string }>`
     }
   }
 `;
+
+export const LogButton = styled(NavLinkStyle)`
+  && {
+    svg {
+      color: #ef4444;
+    }
+    &:hover {
+      svg {
+        color: #dc2626;
+      }
+    }
+  }
+`;
+
+export const LogPopup = styled.div<{ isOpen: boolean }>`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  max-height: 600px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+export const LogHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+
+  h2 {
+    font-family: 'Pretendard';
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      color: #ef4444;
+    }
+  }
+`;
+
+export const LogContent = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #dde2e6;
+    border-radius: 3px;
+  }
+`;
+
+export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background: ${(props) =>
+    props.severity === 'warning' ? '#fff7ed' : '#fef2f2'};
+  border: 1px solid
+    ${(props) => (props.severity === 'warning' ? '#fdba74' : '#fca5a5')};
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .time {
+    font-family: 'Pretendard';
+    font-size: 13px;
+    color: #64748b;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+
+  .content {
+    flex: 1;
+    font-family: 'Pretendard';
+    font-size: 14px;
+    color: ${(props) => (props.severity === 'warning' ? '#9a3412' : '#991b1b')};
+    font-weight: 500;
+  }
+
+  .status {
+    font-family: 'Pretendard';
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: ${(props) =>
+      props.severity === 'warning' ? '#fed7aa' : '#fecaca'};
+    color: ${(props) => (props.severity === 'warning' ? '#9a3412' : '#991b1b')};
+    margin-left: 12px;
+    white-space: nowrap;
+  }
+`;

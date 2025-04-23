@@ -57,6 +57,11 @@ import {
   DetailedGraphContainer,
   MapContainer,
   SensorTooltip,
+  LogButton,
+  LogPopup,
+  LogHeader,
+  LogContent,
+  LogItem,
 } from './styles';
 
 interface SensorBase {
@@ -384,6 +389,16 @@ export default function MonitoringDetailPage({
   const [animationDelays, setAnimationDelays] = useState<
     Record<string, number>
   >({});
+  const [isLogOpen, setIsLogOpen] = useState(false);
+  const [logItems, setLogItems] = useState<
+    Array<{
+      time: string;
+      sensorName: string;
+      status: 'warning' | 'danger';
+      value?: string;
+      unit?: string;
+    }>
+  >([]);
 
   const generateDetailedData = useCallback((baseValue: number) => {
     const data: DetailedVibrationDataPoint[] = [];
@@ -607,6 +622,42 @@ export default function MonitoringDetailPage({
     setAnimationDelays(delays);
   }, []);
 
+  // 로그 아이템 추가 함수
+  const addLogItem = useCallback(
+    (sensor: any, status: 'warning' | 'danger') => {
+      const now = new Date();
+      const time = formatTime(now);
+
+      setLogItems((prev) => [
+        {
+          time,
+          sensorName: sensor.name,
+          status,
+          value: sensor.value,
+          unit: sensor.unit,
+        },
+        ...prev,
+      ]);
+    },
+    [formatTime]
+  );
+
+  // 센서 상태 변경 시 로그 추가
+  useEffect(() => {
+    const allSensors = [
+      ...FACILITY_DETAIL.sensors.gas,
+      ...FACILITY_DETAIL.sensors.fire,
+      ...vibrationSensors,
+    ];
+
+    allSensors.forEach((sensor) => {
+      const status = getSensorStatus(sensor.id.toString());
+      if (status === 'warning' || status === 'danger') {
+        addLogItem(sensor, status);
+      }
+    });
+  }, [addLogItem, vibrationSensors]);
+
   return (
     <Container>
       <TopBanner>
@@ -657,6 +708,20 @@ export default function MonitoringDetailPage({
                 튜브트레일러
               </NavLinkStyle>
             </Link>
+            <LogButton as="button" onClick={() => setIsLogOpen(true)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              경고 로그
+            </LogButton>
             <NavLinkStyle
               as="button"
               onClick={() => router.push('/monitoring')}
@@ -688,7 +753,14 @@ export default function MonitoringDetailPage({
         <MapSection>
           <LeftColumn>
             <MapView>
-              <MapContainer className="map-container">
+              <MapContainer
+                className="map-container"
+                onClick={() => {
+                  setShowTooltip(false);
+                  setSelectedSensorId(null);
+                  setTooltipSensor(null);
+                }}
+              >
                 <svg
                   viewBox="0 0 828 672"
                   preserveAspectRatio="xMidYMid meet"
@@ -706,7 +778,10 @@ export default function MonitoringDetailPage({
                       className="sensor-icon"
                       data-type={sensor.id.split('-')[0]}
                       transform={`translate(${sensor.x}, ${sensor.y})`}
-                      onClick={(e) => handleSensorClick(sensor.id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 이벤트 버블링 방지
+                        handleSensorClick(sensor.id, e);
+                      }}
                       style={
                         animationDelays[sensor.id]
                           ? {
@@ -736,6 +811,7 @@ export default function MonitoringDetailPage({
                       top: `${tooltipPosition.y}px`,
                       transform: 'translate(-50%, -100%)',
                     }}
+                    onClick={(e) => e.stopPropagation()} // 툴큭 클릭 시 이벤트 버블링 방지
                   >
                     <div className="tooltip-header">
                       <div className="status-indicator" />
@@ -1001,6 +1077,53 @@ export default function MonitoringDetailPage({
           </>
         )}
       </DetailedGraphPopup>
+
+      <LogPopup isOpen={isLogOpen}>
+        <LogHeader>
+          <h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            경고 로그
+          </h2>
+          <CloseButton onClick={() => setIsLogOpen(false)}>&times;</CloseButton>
+        </LogHeader>
+        <LogContent>
+          {logItems.map((item, index) => (
+            <LogItem key={index} severity={item.status}>
+              <span className="time">{item.time}</span>
+              <span className="content">
+                {item.sensorName}
+                {item.value && item.unit && ` (${item.value}${item.unit})`}
+              </span>
+              <span className="status">
+                {item.status === 'warning' ? '경고' : '위험'}
+              </span>
+            </LogItem>
+          ))}
+          {logItems.length === 0 && (
+            <div
+              style={{
+                textAlign: 'center',
+                color: '#64748b',
+                padding: '40px 0',
+              }}
+            >
+              경고 또는 위험 상태의 센서가 없습니다.
+            </div>
+          )}
+        </LogContent>
+      </LogPopup>
+
+      <PopupOverlay isOpen={isLogOpen} onClick={() => setIsLogOpen(false)} />
     </Container>
   );
 }
