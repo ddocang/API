@@ -1,14 +1,28 @@
-'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import TopBanner from './sections/TopBanner';
-import Copy01 from './sections/Copy01';
-import ServiceSection from './sections/ServiceSection';
-import MapSection from './sections/MapSection';
-import PriceSection from './sections/PriceSection';
-import Copy02 from './sections/Copy02';
-import NewsSection from './sections/NewsSection';
-import Footer from './sections/Footer';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import Link from 'next/link';
+// 개별 아이콘 import
+import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
+
+// Dynamic imports for components that might have client-side only logic
+const TopBanner = dynamic(() => import('./sections/TopBanner'), { ssr: true });
+const Copy01 = dynamic(() => import('./sections/Copy01'), { ssr: true });
+const ServiceSection = dynamic(() => import('./sections/ServiceSection'), {
+  ssr: true,
+});
+const MapSection = dynamic(() => import('./sections/MapSection'), {
+  ssr: true,
+});
+const PriceSection = dynamic(() => import('./sections/PriceSection'), {
+  ssr: true,
+});
+const Copy02 = dynamic(() => import('./sections/Copy02'), { ssr: true });
+const NewsSection = dynamic(() => import('./sections/NewsSection'), {
+  ssr: true,
+});
+const Footer = dynamic(() => import('./sections/Footer'), { ssr: true });
 
 const MainContainer = styled.main`
   width: 100%;
@@ -33,6 +47,17 @@ const MainContainer = styled.main`
 `;
 
 const MainPage: React.FC = () => {
+  const [isClient, setIsClient] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    setIsClient(true);
+    const checkDesktop = () => setIsDesktop(window.innerWidth > 768);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
   return (
     <MainContainer>
       <TopBanner />
@@ -41,7 +66,7 @@ const MainPage: React.FC = () => {
       <MapSection />
       <PriceSection />
       <Copy02 />
-      <NewsSection />
+      {isClient && isDesktop && <NewsSection />}
       <Footer />
     </MainContainer>
   );

@@ -1,21 +1,24 @@
 import styled from '@emotion/styled';
+import { colors } from '@/app/styles/colors';
 
 export const CustomTooltip = styled.div`
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 4px;
-  padding: 8px 12px;
+  background: rgba(17, 25, 40, 0.95);
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
 
   .time {
     font-family: 'Pretendard';
-    font-size: 12px;
-    color: #999999;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
     margin-bottom: 4px;
   }
 
   .value {
     font-family: 'Pretendard';
-    font-size: 14px;
-    color: white;
+    font-size: 16px;
+    color: #ffffff;
     font-weight: 600;
   }
 `;
@@ -25,15 +28,21 @@ export const DetailedGraphPopup = styled.div<{ isOpen: boolean }>`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 1500px;
-  height: 650px;
-  background: #ffffff;
+  background: ${colors.background.primary};
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 95vw;
+  height: 85vh;
+  max-width: 1800px;
+  max-height: 1000px;
+  display: flex;
+  flex-direction: column;
+  opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
+  visibility: ${({ isOpen }) => (isOpen ? 'visible' : 'hidden')};
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
-  padding: 32px;
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
 `;
 
 export const PopupOverlay = styled.div<{ isOpen: boolean }>`
@@ -50,23 +59,25 @@ export const PopupOverlay = styled.div<{ isOpen: boolean }>`
 
 export const PopupHeader = styled.div`
   display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 24px 32px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 24px;
 
   h2 {
     font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 28px;
-    color: #1e293b;
+    font-weight: 600;
+    font-size: 24px;
+    color: #ffffff;
     margin: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 12px;
-    grid-column: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:before {
       content: '';
@@ -76,61 +87,123 @@ export const PopupHeader = styled.div`
       background: #2563eb;
       border-radius: 50%;
       box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+      flex-shrink: 0;
+    }
+  }
+
+  .button-group {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+`;
+
+export const PopupButton = styled.button<{ $active?: boolean }>`
+  background: ${({ $active }) =>
+    $active ? 'rgba(37, 99, 235, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
+  color: ${({ $active }) => ($active ? '#60a5fa' : 'rgba(255, 255, 255, 0.7)')};
+  border: 1px solid
+    ${({ $active }) =>
+      $active ? 'rgba(37, 99, 235, 0.3)' : 'rgba(255, 255, 255, 0.1)'};
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-family: 'Pretendard';
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: ${({ $active }) =>
+      $active ? 'rgba(37, 99, 235, 0.25)' : 'rgba(255, 255, 255, 0.08)'};
+    color: ${({ $active }) => ($active ? '#93c5fd' : '#ffffff')};
+    border-color: ${({ $active }) =>
+      $active ? 'rgba(37, 99, 235, 0.4)' : 'rgba(255, 255, 255, 0.2)'};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+export const CloseButton = styled(PopupButton)`
+  && {
+    padding: 10px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
     }
   }
 `;
 
-export const PopupLogo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  grid-column: 1;
-
-  .logo-wrapper {
-    position: relative;
-    width: 36px;
-    height: 36px;
-  }
-
-  span {
-    font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 28px;
-    color: #1e293b;
-    letter-spacing: -0.02em;
-  }
-`;
-
-export const CloseButton = styled.button`
-  background: #f1f5f9;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: #64748b;
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  grid-column: 3;
-  justify-self: end;
-
-  &:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-  }
-`;
-
 export const DetailedGraphContainer = styled.div`
+  flex: 1;
   width: 100%;
-  height: calc(100% - 80px);
-  background: #f8fafc;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
+  padding: 24px 32px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .recharts-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .recharts-surface {
+    width: 100%;
+    height: 100%;
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: rgba(255, 255, 255, 0.1);
+  }
+
+  .recharts-cartesian-axis-line {
+    stroke: rgba(255, 255, 255, 0.2);
+  }
+
+  .recharts-cartesian-axis-tick-value {
+    font-family: 'Pretendard';
+    font-size: 12px;
+    fill: rgba(255, 255, 255, 0.7);
+  }
+
+  .recharts-tooltip-wrapper {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  }
 `;
 
 export const MainMenu = styled.div`
@@ -140,8 +213,7 @@ export const MainMenu = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: none;
   }
 `;
 
@@ -193,7 +265,7 @@ export const BackButton = styled.button`
   gap: 6px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
+  padding: 4px 8px;
   border-radius: 8px;
   font-family: 'Pretendard';
   font-size: 15px;
@@ -229,66 +301,149 @@ export const SensorHeader = styled.div`
   gap: 8px;
 `;
 
-export const FilterButton = styled.button<{ active: boolean }>`
+export const ListHeader = styled.div`
+  display: grid;
+  grid-template-columns: 120px repeat(4, 1fr) 80px;
+  gap: 8px;
+  padding: 12px 16px;
+  background: ${colors.background.light};
+  border: 1px solid ${colors.border.color};
+  border-radius: 12px;
+  margin-bottom: 12px;
   font-family: 'Pretendard';
   font-size: 13px;
-  font-weight: ${({ active }) => (active ? '600' : '500')};
-  color: ${({ active }) => (active ? '#4D7298' : '#64748b')};
-  background: ${({ active }) => (active ? '#EDF2F7' : '#ffffff')};
-  border: 1px solid ${({ active }) => (active ? '#4D7298' : '#e2e8f0')};
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
+  color: ${colors.text.white};
+  font-weight: 600;
+  box-shadow: inset 0 0 20px rgba(29, 56, 120, 0.15);
+  backdrop-filter: blur(8px);
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
 
-  &:hover {
-    color: #4d7298;
-    border-color: #4d7298;
-    background: #edf2f7;
+  span {
+    text-align: center;
+    padding: 0 8px;
   }
 
-  .count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: ${({ active }) => (active ? '#4D7298' : '#f1f5f9')};
-    color: ${({ active }) => (active ? '#ffffff' : '#64748b')};
+  > * {
+    text-align: center;
+  }
+
+  > *:last-child {
+    text-align: right;
+    padding-right: 0;
+  }
+
+  @media (max-width: 1600px) {
     font-size: 12px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-    min-width: 20px;
+    gap: 6px;
+    padding: 10px 12px;
+    grid-template-columns: 100px repeat(4, 1fr) 70px;
   }
 
   @media (max-width: 768px) {
-    padding: 4px 8px;
-    font-size: 12px;
+    grid-template-columns: 50px 100px repeat(2, 1fr);
+    padding: 8px 10px;
+    font-size: 11px;
+    gap: 4px;
 
-    .sensor-name {
-      &:after {
-        content: attr(data-short-name);
-      }
-    }
-
-    .sensor-name-full {
+    > *:nth-of-type(5),
+    > *:last-child {
       display: none;
     }
   }
+`;
 
-  @media (min-width: 769px) {
-    .sensor-name {
-      &:after {
-        content: attr(data-full-name);
-      }
-    }
+export const FilterDropdown = styled.div`
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  text-align: right;
+`;
 
-    .sensor-name-short {
-      display: none;
+export const FilterButton = styled.button<{ isOpen?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: 'Pretendard';
+  font-size: 13px;
+  font-weight: 600;
+  color: ${colors.text.white};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: ${colors.text.white};
+    transition: all 0.2s ease;
+    transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0)')};
+  }
+
+  &:hover {
+    color: #ffffff;
+
+    svg {
+      color: #ffffff;
     }
+  }
+
+  @media (max-width: 1600px) {
+    font-size: 12px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+`;
+
+export const FilterMenu = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: ${colors.background.primary};
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 130px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
+  z-index: 100;
+`;
+
+export const FilterMenuItem = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: ${({ $active }) =>
+    $active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
+  border-radius: 8px;
+  font-family: 'Pretendard';
+  font-size: 14px;
+  color: ${({ $active }) => ($active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)')};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .count {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: ${({ $active }) =>
+      $active ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)'};
+    color: ${({ $active }) =>
+      $active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
   }
 `;
 
@@ -328,10 +483,13 @@ export const MapView = styled.div`
   width: 100%;
   min-height: 0;
   position: relative;
-  background: white;
-  border-radius: 16px;
+  background: ${colors.background.primary};
+  border-radius: ${colors.borderPreset.card.radius};
   padding: 15px;
   aspect-ratio: 828 / 672;
+  border: ${colors.borderPreset.card.width} ${colors.borderPreset.card.style}
+    ${colors.borderPreset.card.color};
+  box-shadow: ${colors.borderPreset.card.glow};
 
   @media (max-width: 1024px) {
     min-height: 300px;
@@ -352,29 +510,46 @@ export const MapView = styled.div`
 
     @keyframes pulse {
       0% {
-        filter: brightness(1);
+        filter: brightness(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.1));
       }
       50% {
-        filter: brightness(1.2);
+        filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
       }
       100% {
-        filter: brightness(1);
+        filter: brightness(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.1));
       }
     }
 
     &[data-type='gas'] {
-      fill: #22c576;
-      animation: pulse 1.5s infinite ease-in-out;
+      fill: #04a777;
+      filter: drop-shadow(0 0 5px rgba(4, 167, 119, 0.5));
+      animation: pulse 2s infinite ease-in-out;
     }
 
     &[data-type='fire'] {
-      fill: #d81159;
-      animation: pulse 1.5s infinite ease-in-out;
+      fill: #d90368;
+      filter: drop-shadow(0 0 5px rgba(217, 3, 104, 0.5));
+      animation: pulse 2s infinite ease-in-out;
     }
 
     &[data-type='vibration'] {
-      fill: #f2c035;
-      animation: pulse 1.5s infinite ease-in-out;
+      fill: #fb8b24;
+      filter: drop-shadow(0 0 5px rgba(251, 139, 36, 0.5));
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    &:hover {
+      &[data-type='gas'] {
+        filter: drop-shadow(0 0 8px rgba(4, 167, 119, 0.8));
+      }
+
+      &[data-type='fire'] {
+        filter: drop-shadow(0 0 8px rgba(217, 3, 104, 0.8));
+      }
+
+      &[data-type='vibration'] {
+        filter: drop-shadow(0 0 8px rgba(251, 139, 36, 0.8));
+      }
     }
   }
 `;
@@ -395,71 +570,66 @@ export const SensorIcon = styled.g`
 
   @keyframes pulse {
     0% {
-      filter: brightness(1);
+      filter: brightness(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.1));
     }
     50% {
-      filter: brightness(1.2);
+      filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
     }
     100% {
-      filter: brightness(1);
+      filter: brightness(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.1));
     }
   }
 
   &[data-type='gas'] {
-    fill: #00ff00;
-    animation: pulse 1.5s infinite;
+    fill: #04a777;
+    filter: drop-shadow(0 0 5px rgba(4, 167, 119, 0.5));
+    animation: pulse 2s infinite ease-in-out;
   }
 
   &[data-type='fire'] {
-    fill: rgb(255, 0, 0);
-    animation: pulse 1.5s infinite;
+    fill: #d90368;
+    filter: drop-shadow(0 0 5px rgba(217, 3, 104, 0.5));
+    animation: pulse 2s infinite ease-in-out;
   }
 
   &[data-type='vibration'] {
-    fill: #ffff00;
-    animation: pulse 1.5s infinite;
+    fill: #fb8b24;
+    filter: drop-shadow(0 0 5px rgba(251, 139, 36, 0.5));
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  &:hover {
+    &[data-type='gas'] {
+      filter: drop-shadow(0 0 8px rgba(4, 167, 119, 0.8));
+    }
+
+    &[data-type='fire'] {
+      filter: drop-shadow(0 0 8px rgba(217, 3, 104, 0.8));
+    }
+
+    &[data-type='vibration'] {
+      filter: drop-shadow(0 0 8px rgba(251, 139, 36, 0.8));
+    }
   }
 `;
 
 export const SensorCard = styled.div`
   flex: 0.316;
   min-height: 0;
-  background: white;
-  border-radius: 16px;
+  background: ${colors.background.primary};
+  border-radius: ${colors.borderPreset.card.radius};
   padding: 15px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+  border: ${colors.borderPreset.card.width} ${colors.borderPreset.card.style}
+    ${colors.borderPreset.card.color};
+  box-shadow: ${colors.borderPreset.card.glow};
 
   @media (max-width: 1024px) {
     height: 300px;
     min-height: 300px;
     flex: none;
-  }
-`;
-
-export const ListHeader = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #666666;
-  font-weight: 600;
-
-  span {
-    text-align: center;
-  }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-    gap: 6px;
-    padding: 6px;
   }
 `;
 
@@ -479,23 +649,28 @@ export const SensorList = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: #f8f9fa;
+    background: ${colors.background.secondary};
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #dde2e6;
+    background: ${colors.border.color};
     border-radius: 3px;
   }
 `;
 
 export const SensorItem = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 120px repeat(4, 1fr) 80px;
   gap: 8px;
   align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid ${colors.background.secondary};
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
 
   &:last-child {
     border-bottom: none;
@@ -503,33 +678,51 @@ export const SensorItem = styled.div`
 
   > * {
     text-align: center;
+    padding: 0 8px;
+  }
+
+  > *:last-child {
+    text-align: right;
+    padding-right: 0;
   }
 
   @media (max-width: 1600px) {
     gap: 6px;
-    padding: 6px;
+    padding: 10px 12px;
+    grid-template-columns: 100px repeat(4, 1fr) 70px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 50px 100px repeat(2, 1fr);
+    padding: 8px 10px;
+    gap: 4px;
+
+    > *:nth-of-type(5),
+    > *:last-child {
+      display: none;
+    }
   }
 `;
 
 export const SensorNo = styled.span`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: #666666;
+  color: ${colors.text.secondary};
   text-align: center;
 
-  @media (max-width: 1600px) {
-    font-size: 12px;
+  @media (max-width: 768px) {
+    font-size: 11px;
   }
 `;
 
 export const SensorType = styled.span`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: #666666;
+  color: ${colors.text.secondary};
   text-align: center;
 
   @media (max-width: 768px) {
-    font-size: 12px;
+    font-size: 11px;
 
     .sensor-name {
       &:after {
@@ -553,10 +746,6 @@ export const SensorType = styled.span`
       display: none;
     }
   }
-
-  @media (max-width: 1600px) {
-    font-size: 12px;
-  }
 `;
 
 export const SensorConnection = styled.span`
@@ -566,15 +755,15 @@ export const SensorConnection = styled.span`
   font-weight: 600;
   text-align: center;
 
-  @media (max-width: 1600px) {
-    font-size: 12px;
+  @media (max-width: 768px) {
+    font-size: 11px;
   }
 `;
 
 export const SensorStatus = styled.div<{ status?: string }>`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: #2e7d32;
+  color: ${colors.status.normal.text};
   font-weight: 600;
   text-align: center;
   display: flex;
@@ -586,28 +775,29 @@ export const SensorStatus = styled.div<{ status?: string }>`
     padding: 4px 12px;
     background: ${
       props.status === 'normal'
-        ? '#E8F5E9'
+        ? colors.status.normal.background
         : props.status === 'warning'
-        ? '#FFF3E0'
-        : '#FFEBEE'
+        ? colors.status.warning.background
+        : colors.status.danger.background
     };
     color: ${
       props.status === 'normal'
-        ? '#2E7D32'
+        ? colors.status.normal.text
         : props.status === 'warning'
-        ? '#EF6C00'
-        : '#C62828'
+        ? colors.status.warning.text
+        : colors.status.danger.text
     };
     border-radius: 12px;
     margin: 0 auto;
   `}
 
-  @media (max-width: 1600px) {
-    font-size: 12px;
+  @media (max-width: 768px) {
+    font-size: 11px;
     ${(props) =>
       props.status &&
       `
-      padding: 3px 8px;
+      padding: 2px 8px;
+      border-radius: 8px;
     `}
   }
 `;
@@ -618,15 +808,15 @@ export const SensorValue = styled.div<{ status?: string }>`
   font-size: 13px;
   color: ${({ status }) =>
     status === 'normal'
-      ? '#000000'
+      ? '#ffffff'
       : status === 'warning'
-      ? '#EF6C00'
-      : '#C62828'};
+      ? colors.status.warning.text
+      : colors.status.danger.text};
   text-align: center;
 
   span {
     font-size: 12px;
-    color: #999999;
+    color: rgba(255, 255, 255, 0.7);
     margin-left: 4px;
   }
 
@@ -717,12 +907,11 @@ export const VibrationGraphContainer = styled.div`
 `;
 
 export const VibrationGraphCard = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
+  background: transparent;
+  border-radius: ${colors.borderPreset.card.radius};
+  padding: 0;
   display: flex;
   flex-direction: column;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -731,15 +920,15 @@ export const VibrationGraphCard = styled.div`
     font-family: 'Pretendard';
     font-weight: 600;
     font-size: 15px;
-    color: #1e293b;
+    color: ${colors.chart.title.text};
     margin: 0 0 15px 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f8fafc;
+    background: ${colors.chart.title.background};
     padding: 8px 16px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid ${colors.chart.title.border};
     position: relative;
 
     .status {
@@ -747,19 +936,21 @@ export const VibrationGraphCard = styled.div`
       right: 8px;
       font-size: 13px;
       padding: 4px 10px;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: ${colors.chart.title.status.background};
+      color: ${colors.chart.title.status.text};
       border-radius: 8px;
+      border: 1px solid ${colors.chart.title.status.border};
     }
   }
 
   .graph-container {
     flex: 1;
-    background: #f8f9fa;
+    background: ${colors.background.secondary};
     border-radius: 12px;
     padding: 15px;
     min-height: 0;
     height: calc(100% - 46px);
+    border: 1px solid ${colors.border.color};
   }
 
   @media (max-width: 1024px) {
@@ -770,7 +961,11 @@ export const VibrationGraphCard = styled.div`
 export const Container = styled.div`
   width: 100%;
   height: 100vh;
-  background: linear-gradient(to bottom right, #68d2ce, #b9ece8);
+  background: linear-gradient(
+    to bottom right,
+    ${colors.gradient.main.from},
+    ${colors.gradient.main.to}
+  );
   display: flex;
   flex-direction: column;
 
@@ -790,6 +985,12 @@ export const TopBanner = styled.div`
   padding: 0 24px;
   z-index: 1;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: 768px) {
+    height: 60px;
+    padding: 0 16px;
+    justify-content: center;
+  }
 `;
 
 export const BannerBackground = styled.div`
@@ -855,8 +1056,9 @@ export const BannerContent = styled.div`
   height: 100%;
 
   @media (max-width: 768px) {
-    padding: 0 20px;
+    padding: 0;
     align-items: center;
+    justify-content: center;
   }
 `;
 
@@ -914,6 +1116,10 @@ export const UpdateTime = styled.div`
     border-radius: 50%;
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
   }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const ContentSection = styled.div`
@@ -930,22 +1136,83 @@ export const ContentSection = styled.div`
     min-height: 100vh;
     padding: 15px;
   }
+
+  @media (max-width: 768px) {
+    height: 100vh;
+    padding: 10px;
+  }
 `;
 
-export const SensorTooltip = styled.div<{ status: string }>`
-  background: white;
+export const SensorTooltip = styled.div<{
+  status: 'normal' | 'warning' | 'danger';
+}>`
+  position: absolute;
+  background: rgba(26, 32, 44, 0.95);
+  border: 1px solid
+    ${({ status }) =>
+      status === 'normal'
+        ? 'rgba(16, 185, 129, 0.5)'
+        : status === 'warning'
+        ? 'rgba(245, 158, 11, 0.5)'
+        : 'rgba(239, 68, 68, 0.5)'};
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 12px;
   min-width: 200px;
+  backdrop-filter: blur(8px);
+  box-shadow: ${({ status }) =>
+    status === 'normal'
+      ? '0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.1)'
+      : status === 'warning'
+      ? '0 0 15px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1)'
+      : '0 0 15px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.1)'};
   z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
+  margin-bottom: 15px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(26, 32, 44, 0.95);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid
+      ${({ status }) =>
+        status === 'normal'
+          ? 'rgba(16, 185, 129, 0.5)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.5)'
+          : 'rgba(239, 68, 68, 0.5)'};
+  }
 
   .tooltip-header {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
     gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid
+      ${({ status }) =>
+        status === 'normal'
+          ? 'rgba(16, 185, 129, 0.2)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.2)'
+          : 'rgba(239, 68, 68, 0.2)'};
 
     .status-indicator {
       width: 8px;
@@ -953,33 +1220,49 @@ export const SensorTooltip = styled.div<{ status: string }>`
       border-radius: 50%;
       background-color: ${({ status }) =>
         status === 'normal'
-          ? '#34D399'
+          ? '#10B981'
           : status === 'warning'
-          ? '#FBBF24'
+          ? '#F59E0B'
           : '#EF4444'};
+      box-shadow: 0 0 12px
+        ${({ status }) =>
+          status === 'normal'
+            ? 'rgba(16, 185, 129, 0.8)'
+            : status === 'warning'
+            ? 'rgba(245, 158, 11, 0.8)'
+            : 'rgba(239, 68, 68, 0.8)'};
     }
 
     .name {
+      font-size: 14px;
       font-weight: 600;
-      color: #1f2937;
+      color: #ffffff;
+      flex: 1;
     }
 
     .status-text {
       font-size: 12px;
       padding: 2px 8px;
-      border-radius: 12px;
+      border-radius: 4px;
       background-color: ${({ status }) =>
         status === 'normal'
-          ? '#D1FAE5'
+          ? 'rgba(16, 185, 129, 0.2)'
           : status === 'warning'
-          ? '#FEF3C7'
-          : '#FEE2E2'};
+          ? 'rgba(245, 158, 11, 0.2)'
+          : 'rgba(239, 68, 68, 0.2)'};
       color: ${({ status }) =>
         status === 'normal'
-          ? '#065F46'
+          ? '#10B981'
           : status === 'warning'
-          ? '#92400E'
-          : '#991B1B'};
+          ? '#F59E0B'
+          : '#EF4444'};
+      border: 1px solid
+        ${({ status }) =>
+          status === 'normal'
+            ? 'rgba(16, 185, 129, 0.3)'
+            : status === 'warning'
+            ? 'rgba(245, 158, 11, 0.3)'
+            : 'rgba(239, 68, 68, 0.3)'};
     }
   }
 
@@ -987,6 +1270,7 @@ export const SensorTooltip = styled.div<{ status: string }>`
     .info-row {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 8px;
       font-size: 13px;
 
@@ -995,24 +1279,13 @@ export const SensorTooltip = styled.div<{ status: string }>`
       }
 
       .label {
-        color: #6b7280;
+        color: #94a3b8;
       }
 
       .value {
-        color: #1f2937;
+        color: #ffffff;
         font-weight: 500;
       }
-    }
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translate(-50%, -90%);
-    }
-    to {
-      opacity: 1;
-      transform: translate(-50%, -100%);
     }
   }
 `;
@@ -1037,37 +1310,58 @@ export const LogPopup = styled.div<{ isOpen: boolean }>`
   left: 50%;
   transform: translate(-50%, -50%);
   width: 800px;
-  max-height: 600px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 80vh;
+  background: ${colors.background.primary};
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 1000;
   display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+
+  @media (max-width: 900px) {
+    width: 90%;
+    max-height: 70vh;
+  }
 `;
 
 export const LogHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 
   h2 {
     font-family: 'Pretendard';
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
-    color: #1e293b;
+    color: #ffffff;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 
     svg {
-      width: 20px;
-      height: 20px;
-      color: #ef4444;
+      width: 24px;
+      height: 24px;
+      color: ${colors.status.danger.text};
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 24px;
+
+    h2 {
+      font-size: 20px;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
     }
   }
 `;
@@ -1075,65 +1369,123 @@ export const LogHeader = styled.div`
 export const LogContent = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 24px 32px;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
 
   &::-webkit-scrollbar-track {
-    background: #f8f9fa;
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #dde2e6;
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 24px;
   }
 `;
 
 export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
   display: flex;
-  align-items: flex-start;
-  padding: 12px 16px;
+  align-items: center;
+  padding: 16px 20px;
   background: ${(props) =>
-    props.severity === 'warning' ? '#fff7ed' : '#fef2f2'};
+    props.severity === 'warning'
+      ? 'rgba(242, 192, 53, 0.1)'
+      : 'rgba(216, 17, 89, 0.1)'};
   border: 1px solid
-    ${(props) => (props.severity === 'warning' ? '#fdba74' : '#fca5a5')};
-  border-radius: 8px;
-  margin-bottom: 8px;
+    ${(props) =>
+      props.severity === 'warning'
+        ? 'rgba(242, 192, 53, 0.2)'
+        : 'rgba(216, 17, 89, 0.2)'};
+  border-radius: 12px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
 
   &:last-child {
     margin-bottom: 0;
   }
 
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px
+      ${(props) =>
+        props.severity === 'warning'
+          ? 'rgba(242, 192, 53, 0.15)'
+          : 'rgba(216, 17, 89, 0.15)'};
+  }
+
   .time {
     font-family: 'Pretendard';
-    font-size: 13px;
-    color: #64748b;
-    margin-right: 16px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 20px;
     white-space: nowrap;
   }
 
   .content {
     flex: 1;
     font-family: 'Pretendard';
-    font-size: 14px;
-    color: ${(props) => (props.severity === 'warning' ? '#9a3412' : '#991b1b')};
+    font-size: 15px;
+    color: #ffffff;
     font-weight: 500;
   }
 
   .status {
     font-family: 'Pretendard';
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
     background: ${(props) =>
-      props.severity === 'warning' ? '#fed7aa' : '#fecaca'};
-    color: ${(props) => (props.severity === 'warning' ? '#9a3412' : '#991b1b')};
-    margin-left: 12px;
+      props.severity === 'warning'
+        ? 'rgba(242, 192, 53, 0.2)'
+        : 'rgba(216, 17, 89, 0.2)'};
+    color: ${(props) =>
+      props.severity === 'warning'
+        ? colors.sensor.vibration
+        : colors.sensor.fire};
+    margin-left: 16px;
     white-space: nowrap;
+    border: 1px solid
+      ${(props) =>
+        props.severity === 'warning'
+          ? 'rgba(242, 192, 53, 0.3)'
+          : 'rgba(216, 17, 89, 0.3)'};
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .time {
+      font-size: 12px;
+      margin-right: 12px;
+    }
+
+    .content {
+      font-size: 14px;
+      width: 100%;
+      order: -1;
+      margin-bottom: 4px;
+    }
+
+    .status {
+      font-size: 12px;
+      padding: 4px 10px;
+      margin-left: auto;
+    }
   }
 `;
 
@@ -1161,5 +1513,16 @@ export const BannerTitle = styled.div`
     background: #ffffff;
     border-radius: 50%;
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  }
+
+  @media (max-width: 768px) {
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+
+    &:before {
+      width: 4px;
+      height: 4px;
+    }
   }
 `;

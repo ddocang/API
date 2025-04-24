@@ -47,14 +47,13 @@ export default function FacilityListItem({
   onDetailClick,
 }: FacilityListItemProps) {
   const [truncatedName, setTruncatedName] = useState(name);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setTruncatedName(name.slice(0, 5));
-      } else {
-        setTruncatedName(name);
-      }
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      setTruncatedName(mobile ? name.slice(0, 5) : name);
     };
 
     handleResize(); // 초기 실행

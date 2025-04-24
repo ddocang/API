@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
@@ -11,10 +13,6 @@ const Container = styled.section`
 
   @media (max-width: 1366px) {
     padding: 40px 40px;
-  }
-
-  @media (max-width: 768px) {
-    display: none;
   }
 `;
 

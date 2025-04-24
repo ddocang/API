@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  ReferenceArea,
 } from 'recharts';
 import {
   Container,
@@ -52,7 +53,6 @@ import {
   DetailedGraphPopup,
   PopupOverlay,
   PopupHeader,
-  PopupLogo,
   CloseButton,
   DetailedGraphContainer,
   MapContainer,
@@ -63,7 +63,13 @@ import {
   LogContent,
   LogItem,
   BannerTitle,
+  FilterDropdown,
+  FilterMenu,
+  FilterMenuItem,
+  PopupButton,
 } from './styles';
+import { colors } from '@/app/styles/colors';
+import { ChevronDown } from 'lucide-react';
 
 interface SensorBase {
   id: number;
@@ -82,6 +88,7 @@ interface FireSensor extends SensorBase {
 
 interface DetailedVibrationDataPoint {
   time: string;
+  timestamp: number;
   value: number;
 }
 
@@ -115,44 +122,44 @@ interface FacilityDetail {
 
 // 가스 감지기 정보 배열
 const GAS_SENSORS = [
-  { id: 'gas-1', x: 128, y: 82, name: '가스감지기1' },
-  { id: 'gas-2', x: 263, y: 90, name: '가스감지기2' },
-  { id: 'gas-3', x: 333, y: 90, name: '가스감지기3' },
-  { id: 'gas-4', x: 263, y: 255, name: '가스감지기4' },
-  { id: 'gas-5', x: 333, y: 255, name: '가스감지기5' },
-  { id: 'gas-6', x: 448, y: 255, name: '가스감지기6' },
-  { id: 'gas-7', x: 448, y: 90, name: '가스감지기7' },
-  { id: 'gas-8', x: 525, y: 95, name: '가스감지기8' },
-  { id: 'gas-9', x: 525, y: 235, name: '가스감지기9' },
-  { id: 'gas-10', x: 562, y: 110, name: '가스감지기10' },
-  { id: 'gas-11', x: 562, y: 222, name: '가스감지기11' },
-  { id: 'gas-12', x: 615, y: 165, name: '가스감지기12' },
-  { id: 'gas-13', x: 665, y: 165, name: '가스감지기13' },
-  { id: 'gas-14', x: 328, y: 336, name: '가스감지기14' },
-  { id: 'gas-15', x: 458, y: 336, name: '가스감지기15' },
+  { id: 'gas-1', x: 128, y: 80, name: '가스감지기1' },
+  { id: 'gas-2', x: 263, y: 88, name: '가스감지기2' },
+  { id: 'gas-3', x: 333, y: 88, name: '가스감지기3' },
+  { id: 'gas-4', x: 263, y: 253, name: '가스감지기4' },
+  { id: 'gas-5', x: 333, y: 253, name: '가스감지기5' },
+  { id: 'gas-6', x: 448, y: 253, name: '가스감지기6' },
+  { id: 'gas-7', x: 448, y: 88, name: '가스감지기7' },
+  { id: 'gas-8', x: 522, y: 93, name: '가스감지기8' },
+  { id: 'gas-9', x: 522, y: 233, name: '가스감지기9' },
+  { id: 'gas-10', x: 559, y: 108, name: '가스감지기10' },
+  { id: 'gas-11', x: 559, y: 220, name: '가스감지기11' },
+  { id: 'gas-12', x: 612, y: 163, name: '가스감지기12' },
+  { id: 'gas-13', x: 662, y: 163, name: '가스감지기13' },
+  { id: 'gas-14', x: 328, y: 334, name: '가스감지기14' },
+  { id: 'gas-15', x: 458, y: 334, name: '가스감지기15' },
 ];
 
 // 화재 감지기 정보 배열
 const FIRE_SENSORS = [
-  { id: 'fire-1', x: 210, y: 265, name: '화재감지기1' },
-  { id: 'fire-2', x: 210, y: 377, name: '화재감지기2' },
-  { id: 'fire-3', x: 485, y: 265, name: '화재감지기3' },
-  { id: 'fire-4', x: 575, y: 251, name: '화재감지기4' },
-  { id: 'fire-5', x: 485, y: 78, name: '화재감지기5' },
-  { id: 'fire-6', x: 602, y: 78, name: '화재감지기6' },
+  { id: 'fire-1', x: 210, y: 263, name: '화재감지기1' },
+  { id: 'fire-2', x: 210, y: 375, name: '화재감지기2' },
+  { id: 'fire-3', x: 485, y: 263, name: '화재감지기3' },
+  { id: 'fire-4', x: 575, y: 249, name: '화재감지기4' },
+  { id: 'fire-5', x: 485, y: 76, name: '화재감지기5' },
+  { id: 'fire-6', x: 602, y: 76, name: '화재감지기6' },
 ];
 
 // 진동 감지기 정보 배열
 const VIBRATION_SENSORS = [
-  { id: 'vibration-1', x: 260, y: 305, name: '진동감지기1' },
-  { id: 'vibration-2', x: 277, y: 362, name: '진동감지기2' },
-  { id: 'vibration-3', x: 295, y: 305, name: '진동감지기3' },
-  { id: 'vibration-4', x: 390, y: 305, name: '진동감지기4' },
-  { id: 'vibration-5', x: 407, y: 362, name: '진동감지기5' },
-  { id: 'vibration-6', x: 427, y: 305, name: '진동감지기6' },
-  { id: 'vibration-7', x: 525, y: 120, name: '진동감지기7' },
-  { id: 'vibration-8', x: 525, y: 195, name: '진동감지기8' },
-  { id: 'vibration-9', x: 561, y: 135, name: '진동감지기9' },
+  { id: 'vibration-1', x: 260, y: 303, name: '진동감지기1' },
+  { id: 'vibration-2', x: 277, y: 360, name: '진동감지기2' },
+  { id: 'vibration-3', x: 295, y: 303, name: '진동감지기3' },
+  { id: 'vibration-4', x: 390, y: 303, name: '진동감지기4' },
+  { id: 'vibration-5', x: 407, y: 360, name: '진동감지기5' },
+  { id: 'vibration-6', x: 427, y: 303, name: '진동감지기6' },
+  { id: 'vibration-7', x: 523, y: 118, name: '진동감지기7' },
+  { id: 'vibration-8', x: 523, y: 193, name: '진동감지기8' },
+  { id: 'vibration-9', x: 559, y: 133, name: '진동감지기9' },
 ];
 
 const FACILITY_DETAIL: FacilityDetail = {
@@ -352,6 +359,12 @@ const FACILITY_DETAIL: FacilityDetail = {
   },
 };
 
+// 색상 세트 타입 정의
+type ChartColorSet = {
+  line: string;
+  fill: string;
+};
+
 export default function MonitoringDetailPage({
   params,
 }: {
@@ -400,6 +413,45 @@ export default function MonitoringDetailPage({
       unit?: string;
     }>
   >([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [refAreaLeft, setRefAreaLeft] = useState('');
+  const [refAreaRight, setRefAreaRight] = useState('');
+  const [zoomDomain, setZoomDomain] = useState<{
+    x: [number, number];
+    y: [number, number];
+  } | null>(null);
+  const [isZooming] = useState(true);
+  const [aspectRatio] = useState(357 / 1920);
+  const [mapHeight, setMapHeight] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 색상 세트를 랜덤하게 섞어서 배분
+  const [colorAssignments] = useState<Record<number, ChartColorSet>>(() => {
+    return vibrationSensors.reduce((acc, sensor, index) => {
+      // 1-6번 차트는 #04A777
+      if (index < 6) {
+        acc[sensor.id] = {
+          line: '#04A777',
+          fill: '#04A777',
+        };
+      }
+      // 7-8번 차트는 #D90368
+      else if (index < 8) {
+        acc[sensor.id] = {
+          line: '#D90368',
+          fill: '#D90368',
+        };
+      }
+      // 9번 차트는 #FB8B24
+      else {
+        acc[sensor.id] = {
+          line: '#FB8B24',
+          fill: '#FB8B24',
+        };
+      }
+      return acc;
+    }, {} as Record<number, ChartColorSet>);
+  });
 
   const generateDetailedData = useCallback((baseValue: number) => {
     const data: DetailedVibrationDataPoint[] = [];
@@ -420,6 +472,7 @@ export default function MonitoringDetailPage({
       const value = Number((baseValue + variation).toFixed(2));
       data.push({
         time: timeString,
+        timestamp: time.getTime(),
         value: Math.max(0, Math.min(2, value)),
       });
     }
@@ -433,7 +486,7 @@ export default function MonitoringDetailPage({
     return `${hours}:${minutes}:${seconds}`;
   }, []);
 
-  const updateData = useEffect(() => {
+  const updateData = useCallback(() => {
     const now = new Date();
     const updatedSensors = FACILITY_DETAIL.sensors.vibration.map((sensor) => {
       const data = [];
@@ -478,19 +531,22 @@ export default function MonitoringDetailPage({
   }, [generateDetailedData, formatTime]);
 
   useEffect(() => {
-    // 이미지의 실제 비율 계산 (1920:357)
-    const aspectRatio = 357 / 1920;
-    const height = Math.floor(window.innerWidth * aspectRatio);
-    setImageHeight(height);
+    updateData();
+    const interval = setInterval(updateData, 10000); // 10초마다 데이터 업데이트
+    return () => clearInterval(interval);
+  }, [updateData]);
 
-    const handleResize = () => {
-      const newHeight = Math.floor(window.innerWidth * aspectRatio);
-      setImageHeight(newHeight);
+  useEffect(() => {
+    setIsMounted(true);
+    const updateMapHeight = () => {
+      const width = window.innerWidth;
+      setMapHeight(Math.floor(width * aspectRatio));
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    updateMapHeight();
+    window.addEventListener('resize', updateMapHeight);
+    return () => window.removeEventListener('resize', updateMapHeight);
+  }, [aspectRatio]);
 
   const handleGraphClick = (sensor: VibrationSensor) => {
     setSelectedSensor(sensor);
@@ -565,13 +621,20 @@ export default function MonitoringDetailPage({
   const getSensorStatus = (
     sensorId: string
   ): 'normal' | 'warning' | 'danger' => {
-    // 임시로 랜덤 상태 반환 (실제로는 센서 데이터에 따라 결정되어야 함)
-    const statuses: Array<'normal' | 'warning' | 'danger'> = [
-      'normal',
-      'warning',
-      'danger',
-    ];
-    return statuses[Math.floor(Math.random() * 3)];
+    const type = sensorId.split('-')[0];
+
+    if (type === 'vibration') {
+      // 진동감지기는 normal, warning, danger 3가지 상태
+      const statuses: Array<'normal' | 'warning' | 'danger'> = [
+        'normal',
+        'warning',
+        'danger',
+      ];
+      return statuses[Math.floor(Math.random() * 3)];
+    } else {
+      // 가스감지기와 화재감지기는 normal, danger 2가지 상태
+      return Math.random() < 0.5 ? 'normal' : 'danger';
+    }
   };
 
   const getSensorInfo = (sensorId: string) => {
@@ -601,6 +664,31 @@ export default function MonitoringDetailPage({
     document.addEventListener('click', handleClickOutside);
     return () => {
       document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  // 필터 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.filter-dropdown')) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 센서 타입별 개수 계산
+  const sensorCounts = useMemo(() => {
+    return {
+      all: [...GAS_SENSORS, ...FIRE_SENSORS, ...VIBRATION_SENSORS].length,
+      gas: GAS_SENSORS.length,
+      fire: FIRE_SENSORS.length,
+      vibration: VIBRATION_SENSORS.length,
     };
   }, []);
 
@@ -680,6 +768,248 @@ export default function MonitoringDetailPage({
         sizeOffset: 3,
       },
     },
+  };
+
+  const handleMouseDown = (e: any) => {
+    console.log('🔍 MouseDown Event:', {
+      isZooming,
+      hasEvent: !!e,
+      activeLabel: e?.activeLabel,
+      selectedSensor: !!selectedSensor,
+    });
+    if (!e || !isZooming || !selectedSensor) return;
+    setRefAreaLeft(e.activeLabel);
+  };
+
+  const handleMouseMove = (e: any) => {
+    if (!e || !isZooming || !selectedSensor) return;
+    if (refAreaLeft) {
+      console.log('🔄 MouseMove Event:', {
+        refAreaLeft,
+        currentLabel: e.activeLabel,
+      });
+      setRefAreaRight(e.activeLabel);
+    }
+  };
+
+  const handleMouseUp = () => {
+    console.log('👆 MouseUp Event:', {
+      refAreaLeft,
+      refAreaRight,
+      isZooming,
+      hasSensor: !!selectedSensor,
+    });
+    if (!refAreaLeft || !refAreaRight || !isZooming || !selectedSensor) return;
+
+    const leftIndex = selectedSensor.detailedData.findIndex(
+      (d) => d.timestamp === Number(refAreaLeft)
+    );
+    const rightIndex = selectedSensor.detailedData.findIndex(
+      (d) => d.timestamp === Number(refAreaRight)
+    );
+
+    console.log('📏 Zoom Area Indices:', { leftIndex, rightIndex });
+
+    if (Math.abs(leftIndex - rightIndex) < 5) {
+      setRefAreaLeft('');
+      setRefAreaRight('');
+      return;
+    }
+
+    let [left, right] = [Number(refAreaLeft), Number(refAreaRight)].sort();
+    const dataPoints = selectedSensor.detailedData.filter(
+      (d) => d.timestamp >= left && d.timestamp <= right
+    );
+
+    if (dataPoints.length > 0) {
+      const yMin = Math.min(...dataPoints.map((d) => d.value));
+      const yMax = Math.max(...dataPoints.map((d) => d.value));
+
+      console.log('🎯 Setting Zoom Domain:', {
+        x: [left, right],
+        y: [Math.max(0, yMin - 0.1), Math.min(2, yMax + 0.1)],
+      });
+
+      setZoomDomain({
+        x: [left, right] as [number, number],
+        y: [Math.max(0, yMin - 0.1), Math.min(2, yMax + 0.1)] as [
+          number,
+          number
+        ],
+      });
+    }
+
+    setRefAreaLeft('');
+    setRefAreaRight('');
+  };
+
+  useEffect(() => {
+    const handleWheelEvent = (e: WheelEvent) => {
+      if (!isDetailedGraphOpen || !selectedSensor || !isZooming) return;
+
+      e.preventDefault();
+
+      const isZoomIn = e.deltaY < 0;
+      const isCtrlPressed = e.ctrlKey;
+
+      if (!zoomDomain) {
+        const dataPoints = selectedSensor.detailedData;
+        const initialDomain = {
+          x: [
+            dataPoints[0].timestamp,
+            dataPoints[dataPoints.length - 1].timestamp,
+          ] as [number, number],
+          y: [0, 2] as [number, number],
+        };
+        console.log('🎨 Setting Initial Zoom Domain:', initialDomain);
+        setZoomDomain(initialDomain);
+        return;
+      }
+
+      if (isCtrlPressed) {
+        // Ctrl + 휠: 수직 줌
+        const currentRange = zoomDomain.y[1] - zoomDomain.y[0];
+        const zoomFactor = isZoomIn ? 0.8 : 1.2;
+        const newRange = currentRange * zoomFactor;
+        const centerY = (zoomDomain.y[0] + zoomDomain.y[1]) / 2;
+
+        const newDomain = {
+          ...zoomDomain,
+          y: [
+            Math.max(0, centerY - newRange / 2),
+            Math.min(2, centerY + newRange / 2),
+          ] as [number, number],
+        };
+        console.log('🔍 Vertical Zoom:', newDomain);
+        setZoomDomain(newDomain);
+      } else {
+        // 일반 휠: 수평 줌
+        const dataPoints = selectedSensor.detailedData;
+        const currentStartIdx = dataPoints.findIndex(
+          (d) => d.timestamp === Number(zoomDomain.x[0])
+        );
+        const currentEndIdx = dataPoints.findIndex(
+          (d) => d.timestamp === Number(zoomDomain.x[1])
+        );
+
+        if (currentStartIdx !== -1 && currentEndIdx !== -1) {
+          const currentRange = currentEndIdx - currentStartIdx;
+          const zoomFactor = isZoomIn ? 0.8 : 1.2;
+          const newRange = Math.round(currentRange * zoomFactor);
+
+          const centerIdx = Math.round((currentStartIdx + currentEndIdx) / 2);
+          const newStartIdx = Math.max(0, centerIdx - Math.round(newRange / 2));
+          const newEndIdx = Math.min(
+            dataPoints.length - 1,
+            centerIdx + Math.round(newRange / 2)
+          );
+
+          if (newStartIdx >= 0 && newEndIdx < dataPoints.length) {
+            const newDomain = {
+              ...zoomDomain,
+              x: [
+                dataPoints[newStartIdx].timestamp,
+                dataPoints[newEndIdx].timestamp,
+              ] as [number, number],
+            };
+            console.log('🔍 Horizontal Zoom:', newDomain);
+            setZoomDomain(newDomain);
+          }
+        }
+      }
+    };
+
+    const graphContainer = document.querySelector('.detailed-graph-container');
+    if (graphContainer) {
+      graphContainer.addEventListener(
+        'wheel',
+        handleWheelEvent as EventListener,
+        { passive: false }
+      );
+    }
+
+    return () => {
+      if (graphContainer) {
+        graphContainer.removeEventListener(
+          'wheel',
+          handleWheelEvent as EventListener
+        );
+      }
+    };
+  }, [isDetailedGraphOpen, selectedSensor, zoomDomain, isZooming]);
+
+  // 줌 초기화 함수 수정
+  const resetZoom = useCallback(() => {
+    if (!selectedSensor) return;
+
+    const dataPoints = selectedSensor.detailedData;
+    setZoomDomain({
+      x: [
+        dataPoints[0].timestamp,
+        dataPoints[dataPoints.length - 1].timestamp,
+      ] as [number, number],
+      y: [0, 2] as [number, number],
+    });
+  }, [selectedSensor]);
+
+  // 상세 그래프가 열릴 때 초기 줌 도메인 설정
+  useEffect(() => {
+    if (isDetailedGraphOpen && selectedSensor) {
+      resetZoom();
+    }
+  }, [isDetailedGraphOpen, selectedSensor, resetZoom]);
+
+  useEffect(() => {
+    console.log('📊 Current Zoom State:', {
+      isZooming,
+      hasZoomDomain: !!zoomDomain,
+      domain: zoomDomain,
+    });
+  }, [isZooming, zoomDomain]);
+
+  const handleSensorListItemClick = (
+    sensor: GasSensor | FireSensor | VibrationSensor
+  ) => {
+    // 센서 ID 형식 변환 (예: 1 -> 'gas-1')
+    let sensorType = '';
+    if (sensor.id <= 15) sensorType = 'gas';
+    else if (sensor.id <= 21) sensorType = 'fire';
+    else sensorType = 'vibration';
+
+    const sensorId = `${sensorType}-${
+      sensor.id <= 15
+        ? sensor.id
+        : sensor.id <= 21
+        ? sensor.id - 15
+        : sensor.id - 21
+    }`;
+
+    // 센서 아이콘의 위치 찾기
+    const sensorIcon = document.querySelector(`[data-sensor-id="${sensorId}"]`);
+    const mapContainer = document.querySelector('.map-container');
+
+    if (sensorIcon && mapContainer) {
+      const rect = sensorIcon.getBoundingClientRect();
+      const mapRect = mapContainer.getBoundingClientRect();
+
+      const x = rect.left - mapRect.left + rect.width / 2;
+      const y = rect.top - mapRect.top;
+
+      setTooltipPosition({ x, y });
+      setSelectedSensorId(sensorId);
+      setShowTooltip(true);
+
+      setTooltipSensor({
+        id: sensorId,
+        name: sensor.name,
+        status: getSensorStatus(sensorId),
+        value: sensor.value || '--',
+        unit: sensor.unit || '--',
+      });
+
+      // 아이콘이 보이도록 스크롤
+      sensorIcon.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
   return (
@@ -770,7 +1100,7 @@ export default function MonitoringDetailPage({
       <ContentSection>
         <MapSection>
           <LeftColumn>
-            <MapView>
+            <MapView style={{ height: isMounted ? `${mapHeight}px` : 'auto' }}>
               <MapContainer
                 className="map-container"
                 onClick={() => {
@@ -795,9 +1125,10 @@ export default function MonitoringDetailPage({
                       key={sensor.id}
                       className="sensor-icon"
                       data-type={sensor.id.split('-')[0]}
+                      data-sensor-id={sensor.id}
                       transform={`translate(${sensor.x}, ${sensor.y})`}
                       onClick={(e) => {
-                        e.stopPropagation(); // 이벤트 버블링 방지
+                        e.stopPropagation();
                         handleSensorClick(sensor.id, e);
                       }}
                       style={
@@ -835,10 +1166,14 @@ export default function MonitoringDetailPage({
                       <div className="status-indicator" />
                       <span className="name">{tooltipSensor.name}</span>
                       <span className="status-text">
-                        {tooltipSensor.status === 'normal'
+                        {tooltipSensor.id.split('-')[0] === 'vibration'
+                          ? tooltipSensor.status === 'normal'
+                            ? '정상'
+                            : tooltipSensor.status === 'warning'
+                            ? '경고'
+                            : '위험'
+                          : tooltipSensor.status === 'normal'
                           ? '정상'
-                          : tooltipSensor.status === 'warning'
-                          ? '경고'
                           : '위험'}
                       </span>
                     </div>
@@ -863,68 +1198,73 @@ export default function MonitoringDetailPage({
               </MapContainer>
             </MapView>
             <SensorCard>
-              <SensorHeader>
-                <FilterButton
-                  active={selectedSensorType === 'all'}
-                  onClick={() => setSelectedSensorType('all')}
-                >
-                  전체
-                  <span className="count">
-                    {FACILITY_DETAIL.sensors.gas.length +
-                      FACILITY_DETAIL.sensors.fire.length +
-                      vibrationSensors.length}
-                  </span>
-                </FilterButton>
-                <FilterButton
-                  active={selectedSensorType === 'gas'}
-                  onClick={() => setSelectedSensorType('gas')}
-                >
-                  <span
-                    className="sensor-name"
-                    data-full-name="가스감지기"
-                    data-short-name="가스"
-                  />
-                  <span className="count">
-                    {FACILITY_DETAIL.sensors.gas.length}
-                  </span>
-                </FilterButton>
-                <FilterButton
-                  active={selectedSensorType === 'fire'}
-                  onClick={() => setSelectedSensorType('fire')}
-                >
-                  <span
-                    className="sensor-name"
-                    data-full-name="화재감지기"
-                    data-short-name="화재"
-                  />
-                  <span className="count">
-                    {FACILITY_DETAIL.sensors.fire.length}
-                  </span>
-                </FilterButton>
-                <FilterButton
-                  active={selectedSensorType === 'vibration'}
-                  onClick={() => setSelectedSensorType('vibration')}
-                >
-                  <span
-                    className="sensor-name"
-                    data-full-name="진동감지기"
-                    data-short-name="진동"
-                  />
-                  <span className="count">{vibrationSensors.length}</span>
-                </FilterButton>
-              </SensorHeader>
               <ListHeader>
-                <span>No</span>
+                <span>번호</span>
                 <span>종류</span>
-                <span>연결</span>
-                <span>상태</span>
-                <span>Data</span>
+                <span>연결상태</span>
+                <span>신호</span>
+                <span>데이터</span>
+                <FilterDropdown className="filter-dropdown">
+                  <FilterButton
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    isOpen={isFilterOpen}
+                  >
+                    필터
+                    <ChevronDown />
+                  </FilterButton>
+                  <FilterMenu isOpen={isFilterOpen}>
+                    <FilterMenuItem
+                      $active={selectedSensorType === 'all'}
+                      onClick={() => {
+                        setSelectedSensorType('all');
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      전체
+                      <span className="count">{sensorCounts.all}</span>
+                    </FilterMenuItem>
+                    <FilterMenuItem
+                      $active={selectedSensorType === 'gas'}
+                      onClick={() => {
+                        setSelectedSensorType('gas');
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      가스 센서
+                      <span className="count">{sensorCounts.gas}</span>
+                    </FilterMenuItem>
+                    <FilterMenuItem
+                      $active={selectedSensorType === 'fire'}
+                      onClick={() => {
+                        setSelectedSensorType('fire');
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      화재 센서
+                      <span className="count">{sensorCounts.fire}</span>
+                    </FilterMenuItem>
+                    <FilterMenuItem
+                      $active={selectedSensorType === 'vibration'}
+                      onClick={() => {
+                        setSelectedSensorType('vibration');
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      진동 센서
+                      <span className="count">{sensorCounts.vibration}</span>
+                    </FilterMenuItem>
+                  </FilterMenu>
+                </FilterDropdown>
               </ListHeader>
               <SensorList>
                 {filteredSensors.map((sensor, index) => {
                   const shortName = sensor.name.replace(/감지기(\d+)$/, '#$1');
                   return (
-                    <SensorItem key={sensor.id}>
+                    <SensorItem
+                      key={sensor.id}
+                      onClick={() => handleSensorListItemClick(sensor)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <SensorNo>{index + 1}</SensorNo>
                       <SensorType>
                         <span
@@ -941,6 +1281,7 @@ export default function MonitoringDetailPage({
                         {sensor.value || '--'}
                         <span>{sensor.unit}</span>
                       </SensorValue>
+                      <span></span>
                     </SensorItem>
                   );
                 })}
@@ -960,7 +1301,7 @@ export default function MonitoringDetailPage({
                 </h4>
                 <div className="graph-container">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
+                    <AreaChart
                       data={sensor.data}
                       margin={{
                         top: 5,
@@ -969,28 +1310,43 @@ export default function MonitoringDetailPage({
                         bottom: 0,
                       }}
                     >
+                      <defs>
+                        <linearGradient
+                          id={`gradient-${sensor.id}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={colorAssignments[sensor.id].line}
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={colorAssignments[sensor.id].line}
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="#E9ECEF"
+                        stroke={colors.chart.grid.line}
+                        opacity={colors.chart.grid.opacity}
                       />
                       <XAxis
                         dataKey="time"
-                        tick={{ fontSize: 10, fill: '#666666' }}
+                        tick={{ fontSize: 12 }}
                         tickLine={false}
-                        axisLine={{ stroke: '#E9ECEF' }}
-                        ticks={[
-                          sensor.data[0]?.time,
-                          sensor.data[5]?.time,
-                          sensor.data[11]?.time,
-                        ]}
+                        axisLine={{ stroke: colors.chart.axis.line }}
                       />
                       <YAxis
-                        tick={{ fontSize: 10, fill: '#666666' }}
-                        tickLine={false}
-                        axisLine={{ stroke: '#E9ECEF' }}
                         domain={[0, 2]}
-                        ticks={[0, 0.5, 1.0, 1.5, 2.0]}
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={{ stroke: colors.chart.axis.line }}
                         tickFormatter={(value) => value.toFixed(1)}
                       />
                       <Tooltip
@@ -1008,20 +1364,16 @@ export default function MonitoringDetailPage({
                           return null;
                         }}
                       />
-                      <Line
+                      <Area
                         type="monotone"
                         dataKey="value"
-                        stroke="#4D7298"
+                        stroke={colorAssignments[sensor.id].line}
                         strokeWidth={2}
-                        dot={false}
-                        activeDot={{
-                          r: 4,
-                          fill: '#4D7298',
-                          stroke: 'white',
-                          strokeWidth: 2,
-                        }}
+                        fill={`url(#gradient-${sensor.id})`}
+                        fillOpacity={1}
+                        isAnimationActive={false}
                       />
-                    </LineChart>
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </VibrationGraphCard>
@@ -1035,25 +1387,30 @@ export default function MonitoringDetailPage({
         {selectedSensor && (
           <>
             <PopupHeader>
-              <PopupLogo>
-                <div className="logo-wrapper">
-                  <Image
-                    src="/images/logo.png"
-                    alt="Logo"
-                    fill
-                    sizes="36px"
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                </div>
-                <span>HyGE</span>
-              </PopupLogo>
               <h2>{selectedSensor.name} 상세 그래프</h2>
-              <CloseButton onClick={closeDetailedGraph}>&times;</CloseButton>
+              <div className="button-group">
+                {zoomDomain && (
+                  <PopupButton onClick={resetZoom}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    초기화
+                  </PopupButton>
+                )}
+                <CloseButton onClick={closeDetailedGraph}>&times;</CloseButton>
+              </div>
             </PopupHeader>
-            <DetailedGraphContainer>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+            <DetailedGraphContainer className="detailed-graph-container">
+              <ResponsiveContainer width="100%" height="100%" minWidth={2000}>
+                <AreaChart
                   data={selectedSensor.detailedData}
                   margin={{
                     top: 20,
@@ -1061,33 +1418,99 @@ export default function MonitoringDetailPage({
                     left: 20,
                     bottom: 20,
                   }}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
                 >
+                  <defs>
+                    <linearGradient
+                      id={`gradient-detailed`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={
+                          colorAssignments[selectedSensor.id || 0].line
+                        }
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={
+                          colorAssignments[selectedSensor.id || 0].line
+                        }
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                      <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                    <filter id="areaGlow">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feFlood
+                        floodColor={
+                          colorAssignments[selectedSensor.id || 0].line
+                        }
+                        floodOpacity="0.2"
+                      />
+                      <feComposite in2="blur" operator="in" />
+                      <feMerge>
+                        <feMergeNode />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="#e2e8f0"
+                    stroke="rgba(255, 255, 255, 0.1)"
+                    opacity={0.5}
                   />
                   <XAxis
-                    dataKey="time"
-                    tick={{ fontSize: 13, fill: '#64748b' }}
-                    tickLine={false}
-                    axisLine={{ stroke: '#e2e8f0' }}
-                    interval={179}
+                    dataKey="timestamp"
+                    type="number"
+                    domain={zoomDomain?.x || ['dataMin', 'dataMax']}
+                    allowDataOverflow
+                    tickFormatter={(unixTime) => {
+                      const date = new Date(unixTime);
+                      return date.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false,
+                      });
+                    }}
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    interval="preserveStartEnd"
+                    minTickGap={50}
                   />
                   <YAxis
-                    domain={[0, 2]}
-                    ticks={[0, 0.5, 1.0, 1.5, 2.0]}
-                    tick={{ fontSize: 13, fill: '#64748b' }}
-                    tickLine={false}
-                    axisLine={{ stroke: '#e2e8f0' }}
-                    tickFormatter={(value) => value.toFixed(1)}
+                    domain={zoomDomain?.y || [0, 2]}
+                    allowDataOverflow
+                    tickFormatter={(value) => value.toFixed(2)}
+                    stroke="rgba(255, 255, 255, 0.5)"
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
+                        const date = new Date(label);
                         return (
                           <CustomTooltip>
-                            <div className="time">{label}</div>
+                            <div className="time">
+                              {date.toLocaleTimeString('ko-KR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: false,
+                              })}
+                            </div>
                             <div className="value">
                               {Number(payload[0].value).toFixed(2)}g
                             </div>
@@ -1097,20 +1520,38 @@ export default function MonitoringDetailPage({
                       return null;
                     }}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="value"
-                    stroke="#4D7298"
-                    strokeWidth={2.5}
+                    stroke={colorAssignments[selectedSensor.id || 0].line}
+                    strokeWidth={2}
+                    fill="url(#gradient-detailed)"
+                    fillOpacity={1}
+                    isAnimationActive={false}
                     dot={false}
                     activeDot={{
                       r: 6,
-                      fill: '#4D7298',
-                      stroke: 'white',
+                      fill: colorAssignments[selectedSensor.id || 0].line,
+                      stroke: '#ffffff',
                       strokeWidth: 2,
+                      style: {
+                        filter: 'url(#glow)',
+                      },
+                    }}
+                    style={{
+                      filter: 'url(#areaGlow)',
                     }}
                   />
-                </LineChart>
+                  {isZooming && refAreaLeft && refAreaRight && (
+                    <ReferenceArea
+                      x1={refAreaLeft}
+                      x2={refAreaRight}
+                      strokeOpacity={0.3}
+                      fill={colorAssignments[selectedSensor.id || 0].line}
+                      fillOpacity={0.1}
+                    />
+                  )}
+                </AreaChart>
               </ResponsiveContainer>
             </DetailedGraphContainer>
           </>
