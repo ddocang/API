@@ -827,6 +827,10 @@ export const SensorValue = styled.div<{ status?: string }>`
       font-size: 11px;
     }
   }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const SensorTitle = styled.h3`
@@ -853,8 +857,8 @@ export const GNB = styled.nav`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    padding: 24px 20px 20px 20px;
+    gap: 1rem;
+    padding: 0;
   }
 `;
 
@@ -878,6 +882,13 @@ export const Logo = styled.div`
 
   @media (max-width: 768px) {
     gap: 8px;
+    height: auto;
+    padding: 8px;
+
+    span {
+      font-size: 24px;
+      line-height: 1.2;
+    }
   }
 `;
 
@@ -987,8 +998,9 @@ export const TopBanner = styled.div`
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
 
   @media (max-width: 768px) {
-    height: 60px;
-    padding: 0 16px;
+    height: auto;
+    min-height: 120px;
+    padding: 16px;
     justify-content: center;
   }
 `;
@@ -1519,6 +1531,9 @@ export const BannerTitle = styled.div`
     margin: 0;
     padding: 6px 12px;
     font-size: 13px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.3;
 
     &:before {
       width: 4px;
