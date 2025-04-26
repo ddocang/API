@@ -10,8 +10,8 @@ export const colors = {
   // 페이지 배경 그라데이션 (/monitoring/detail/[id])
   gradient: {
     main: {
-      from: '#020917', // 메인 배경 그라데이션 시작 색상
-      to: '#051636', // 메인 배경 그라데이션 끝 색상
+      from: '#141414', // 메인 배경 그라데이션 시작 색상
+      to: '#141414', // 메인 배경 그라데이션 끝 색상
     },
   },
 
@@ -46,13 +46,13 @@ export const colors = {
 
   // 레이아웃 배경 색상
   background: {
-    primary: '#010919', // 카드, 팝업 등 주요 컴포넌트 배경
-    secondary: '#010919', // 리스트 헤더, 구분선 등 보조 배경
-    tertiary: '#010919', // 그래프 컨테이너, 상세 정보 배경
+    primary: '#1a1a1a', // 카드, 팝업 등 주요 컴포넌트 배경
+    secondary: '#1a1a1a', // 리스트 헤더, 구분선 등 보조 배경
+    tertiary: '#1a1a1a', // 그래프 컨테이너, 상세 정보 배경
     overlay: 'rgba(15, 23, 42, 0.6)', // 모달 오버레이 배경
-    active: '#1D3878',
-    hover: '#2D4998',
-    light: '#1A2338',
+    active: '#141414',
+    hover: '#141414',
+    light: '#141414',
   },
 
   // 텍스트 색상
@@ -66,7 +66,7 @@ export const colors = {
 
   // 테두리 색상
   border: {
-    color: '#1D3878',
+    color: '#202020',
     width: '1px',
     style: 'solid',
     radius: '16px',
@@ -76,7 +76,7 @@ export const colors = {
   // 테두리 스타일 프리셋
   borderPreset: {
     card: {
-      color: '#1D3878', // 카드 테두리 색상
+      color: '#202020', // 카드 테두리 색상
       width: '1px', // 테두리 두께
       style: 'solid', // 테두리 스타일
       radius: '16px', // 테두리 곡률
@@ -126,8 +126,8 @@ export const colors = {
     ],
     title: {
       text: '#FFFFFF', // 제목 텍스트 색상
-      background: '#010919', // 제목 배경 색상
-      border: '#1D3878', // 제목 테두리 색상
+      background: '#1a1a1a', // 제목 배경 색상
+      border: '#202020', // 제목 테두리 색상
       status: {
         background: '#E8F5E9', // 상태 배경 색상
         text: '#2E7D32', // 상태 텍스트 색상

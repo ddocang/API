@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   ReferenceArea,
+  ReferenceLine,
 } from 'recharts';
 import {
   Container,
@@ -771,12 +772,6 @@ export default function MonitoringDetailPage({
   };
 
   const handleMouseDown = (e: any) => {
-    console.log('🔍 MouseDown Event:', {
-      isZooming,
-      hasEvent: !!e,
-      activeLabel: e?.activeLabel,
-      selectedSensor: !!selectedSensor,
-    });
     if (!e || !isZooming || !selectedSensor) return;
     setRefAreaLeft(e.activeLabel);
   };
@@ -784,21 +779,11 @@ export default function MonitoringDetailPage({
   const handleMouseMove = (e: any) => {
     if (!e || !isZooming || !selectedSensor) return;
     if (refAreaLeft) {
-      console.log('🔄 MouseMove Event:', {
-        refAreaLeft,
-        currentLabel: e.activeLabel,
-      });
       setRefAreaRight(e.activeLabel);
     }
   };
 
   const handleMouseUp = () => {
-    console.log('👆 MouseUp Event:', {
-      refAreaLeft,
-      refAreaRight,
-      isZooming,
-      hasSensor: !!selectedSensor,
-    });
     if (!refAreaLeft || !refAreaRight || !isZooming || !selectedSensor) return;
 
     const leftIndex = selectedSensor.detailedData.findIndex(
@@ -807,8 +792,6 @@ export default function MonitoringDetailPage({
     const rightIndex = selectedSensor.detailedData.findIndex(
       (d) => d.timestamp === Number(refAreaRight)
     );
-
-    console.log('📏 Zoom Area Indices:', { leftIndex, rightIndex });
 
     if (Math.abs(leftIndex - rightIndex) < 5) {
       setRefAreaLeft('');
@@ -824,11 +807,6 @@ export default function MonitoringDetailPage({
     if (dataPoints.length > 0) {
       const yMin = Math.min(...dataPoints.map((d) => d.value));
       const yMax = Math.max(...dataPoints.map((d) => d.value));
-
-      console.log('🎯 Setting Zoom Domain:', {
-        x: [left, right],
-        y: [Math.max(0, yMin - 0.1), Math.min(2, yMax + 0.1)],
-      });
 
       setZoomDomain({
         x: [left, right] as [number, number],
@@ -861,7 +839,6 @@ export default function MonitoringDetailPage({
           ] as [number, number],
           y: [0, 2] as [number, number],
         };
-        console.log('🎨 Setting Initial Zoom Domain:', initialDomain);
         setZoomDomain(initialDomain);
         return;
       }
@@ -880,7 +857,6 @@ export default function MonitoringDetailPage({
             Math.min(2, centerY + newRange / 2),
           ] as [number, number],
         };
-        console.log('🔍 Vertical Zoom:', newDomain);
         setZoomDomain(newDomain);
       } else {
         // 일반 휠: 수평 줌
@@ -912,7 +888,6 @@ export default function MonitoringDetailPage({
                 dataPoints[newEndIdx].timestamp,
               ] as [number, number],
             };
-            console.log('🔍 Horizontal Zoom:', newDomain);
             setZoomDomain(newDomain);
           }
         }
@@ -958,14 +933,6 @@ export default function MonitoringDetailPage({
       resetZoom();
     }
   }, [isDetailedGraphOpen, selectedSensor, resetZoom]);
-
-  useEffect(() => {
-    console.log('📊 Current Zoom State:', {
-      isZooming,
-      hasZoomDomain: !!zoomDomain,
-      domain: zoomDomain,
-    });
-  }, [isZooming, zoomDomain]);
 
   const handleSensorListItemClick = (
     sensor: GasSensor | FireSensor | VibrationSensor
@@ -1336,6 +1303,24 @@ export default function MonitoringDetailPage({
                         stroke={colors.chart.grid.line}
                         opacity={colors.chart.grid.opacity}
                       />
+                      <ReferenceLine
+                        y={0.5}
+                        stroke="#04A777"
+                        strokeWidth={1}
+                        strokeDasharray="4 2"
+                      />
+                      <ReferenceLine
+                        y={1.0}
+                        stroke="#FFD600"
+                        strokeWidth={1}
+                        strokeDasharray="4 2"
+                      />
+                      <ReferenceLine
+                        y={1.5}
+                        stroke="#D90429"
+                        strokeWidth={1}
+                        strokeDasharray="4 2"
+                      />
                       <XAxis
                         dataKey="time"
                         tick={{ fontSize: 12 }}
@@ -1472,6 +1457,24 @@ export default function MonitoringDetailPage({
                     vertical={false}
                     stroke="rgba(255, 255, 255, 0.1)"
                     opacity={0.5}
+                  />
+                  <ReferenceLine
+                    y={0.5}
+                    stroke="#04A777"
+                    strokeWidth={1}
+                    strokeDasharray="4 2"
+                  />
+                  <ReferenceLine
+                    y={1.0}
+                    stroke="#FFD600"
+                    strokeWidth={1}
+                    strokeDasharray="4 2"
+                  />
+                  <ReferenceLine
+                    y={1.5}
+                    stroke="#D90429"
+                    strokeWidth={1}
+                    strokeDasharray="4 2"
                   />
                   <XAxis
                     dataKey="timestamp"
