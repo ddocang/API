@@ -1574,15 +1574,21 @@ export const LogPopup = styled.div<{ isOpen: boolean }>`
   transform: translate(-50%, -50%);
   width: 800px;
   max-height: 80vh;
-  background: ${colors.background.primary};
+  background: #fff;
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   z-index: 1000;
   display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #e2e8f0;
   backdrop-filter: blur(10px);
+
+  html.dark & {
+    background: ${colors.background.primary};
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
 
   @media (max-width: 900px) {
     width: 90%;
@@ -1595,14 +1601,14 @@ export const LogHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 24px 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 
   h2 {
     font-family: 'Pretendard';
     font-size: 24px;
     font-weight: 600;
-    color: #ffffff;
+    color: #1e293b;
     margin: 0;
     display: flex;
     align-items: center;
@@ -1615,12 +1621,18 @@ export const LogHeader = styled.div`
     }
   }
 
+  html.dark & {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    h2 {
+      color: #fff;
+    }
+  }
+
   @media (max-width: 768px) {
     padding: 20px 24px;
-
     h2 {
       font-size: 20px;
-
       svg {
         width: 20px;
         height: 20px;
@@ -1633,22 +1645,35 @@ export const LogContent = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 24px 32px;
+  background: #fff;
+  color: #1e293b;
 
   &::-webkit-scrollbar {
     width: 8px;
   }
-
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: #f1f5f9;
     border-radius: 4px;
   }
-
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: #cbd5e1;
     border-radius: 4px;
-
     &:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: #94a3b8;
+    }
+  }
+
+  html.dark & {
+    background: ${colors.background.primary};
+    color: #fff;
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 
@@ -1663,13 +1688,13 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
   padding: 16px 20px;
   background: ${(props) =>
     props.severity === 'warning'
-      ? 'rgba(242, 192, 53, 0.1)'
-      : 'rgba(216, 17, 89, 0.1)'};
+      ? 'rgba(242, 192, 53, 0.12)'
+      : 'rgba(216, 17, 89, 0.10)'};
   border: 1px solid
     ${(props) =>
       props.severity === 'warning'
-        ? 'rgba(242, 192, 53, 0.2)'
-        : 'rgba(216, 17, 89, 0.2)'};
+        ? 'rgba(242, 192, 53, 0.28)'
+        : 'rgba(216, 17, 89, 0.22)'};
   border-radius: 12px;
   margin-bottom: 12px;
   backdrop-filter: blur(8px);
@@ -1684,14 +1709,14 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
     box-shadow: 0 4px 12px
       ${(props) =>
         props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.15)'
-          : 'rgba(216, 17, 89, 0.15)'};
+          ? 'rgba(242, 192, 53, 0.18)'
+          : 'rgba(216, 17, 89, 0.18)'};
   }
 
   .time {
     font-family: 'Pretendard';
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
+    color: #b0b0b0;
     margin-right: 20px;
     white-space: nowrap;
   }
@@ -1700,7 +1725,7 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
     flex: 1;
     font-family: 'Pretendard';
     font-size: 15px;
-    color: #ffffff;
+    color: #1e293b;
     font-weight: 500;
   }
 
@@ -1712,8 +1737,8 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
     border-radius: 20px;
     background: ${(props) =>
       props.severity === 'warning'
-        ? 'rgba(242, 192, 53, 0.2)'
-        : 'rgba(216, 17, 89, 0.2)'};
+        ? 'rgba(242, 192, 53, 0.18)'
+        : 'rgba(216, 17, 89, 0.18)'};
     color: ${(props) =>
       props.severity === 'warning'
         ? colors.sensor.vibration
@@ -1723,27 +1748,57 @@ export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
     border: 1px solid
       ${(props) =>
         props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.3)'
-          : 'rgba(216, 17, 89, 0.3)'};
+          ? 'rgba(242, 192, 53, 0.32)'
+          : 'rgba(216, 17, 89, 0.32)'};
+  }
+
+  html.dark & {
+    background: ${(props) =>
+      props.severity === 'warning'
+        ? 'rgba(242, 192, 53, 0.08)'
+        : 'rgba(216, 17, 89, 0.08)'};
+    border: 1px solid
+      ${(props) =>
+        props.severity === 'warning'
+          ? 'rgba(242, 192, 53, 0.18)'
+          : 'rgba(216, 17, 89, 0.18)'};
+    .time {
+      color: #888;
+    }
+    .content {
+      color: #fff;
+    }
+    .status {
+      background: ${(props) =>
+        props.severity === 'warning'
+          ? 'rgba(242, 192, 53, 0.13)'
+          : 'rgba(216, 17, 89, 0.13)'};
+      color: ${(props) =>
+        props.severity === 'warning'
+          ? colors.sensor.vibration
+          : colors.sensor.fire};
+      border: 1px solid
+        ${(props) =>
+          props.severity === 'warning'
+            ? 'rgba(242, 192, 53, 0.22)'
+            : 'rgba(216, 17, 89, 0.22)'};
+    }
   }
 
   @media (max-width: 768px) {
     padding: 12px 16px;
     flex-wrap: wrap;
     gap: 8px;
-
     .time {
       font-size: 12px;
       margin-right: 12px;
     }
-
     .content {
       font-size: 14px;
       width: 100%;
       order: -1;
       margin-bottom: 4px;
     }
-
     .status {
       font-size: 12px;
       padding: 4px 10px;
