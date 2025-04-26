@@ -65,6 +65,14 @@ export const DetailedGraphPopup = styled.div<{ isOpen: boolean }>`
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
     color: ${colors.theme.dark.text.primary};
   }
+
+  @media (max-width: 768px) {
+    width: 98vw;
+    height: 90vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 10px;
+  }
 `;
 
 export const PopupOverlay = styled.div<{ isOpen: boolean }>`
@@ -122,6 +130,25 @@ export const PopupHeader = styled.div`
 
   html.dark & h2 {
     color: #60a5fa;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 8px 4px 8px;
+    h2 {
+      font-size: 16px;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+    .button-group {
+      position: static;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 4px;
+      margin-bottom: 0;
+      gap: 8px;
+    }
   }
 `;
 
@@ -242,6 +269,12 @@ export const DetailedGraphContainer = styled.div`
       color: #cbd5e1 !important;
       font-weight: 600;
     }
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 4px 0 4px;
+    min-height: 220px;
+    height: 220px;
   }
 `;
 
@@ -1068,7 +1101,7 @@ export const GNB = styled.nav`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0;
     padding: 0;
   }
 `;
@@ -1130,6 +1163,10 @@ export const VibrationGraphContainer = styled.div`
     grid-template-rows: repeat(9, minmax(200px, auto));
     gap: 15px;
     margin-top: 15px;
+  }
+  @media (max-width: 768px) {
+    grid-template-rows: repeat(9, minmax(320px, auto));
+    gap: 12px;
   }
 `;
 
@@ -1212,6 +1249,10 @@ export const VibrationGraphCard = styled.div`
       color: ${colors.theme.dark.text.primary};
     }
   }
+  @media (max-width: 768px) {
+    min-height: 320px;
+    height: 320px;
+  }
 `;
 
 export const Container = styled.div`
@@ -1248,8 +1289,8 @@ export const TopBanner = styled.div`
 
   @media (max-width: 768px) {
     height: auto;
-    min-height: 120px;
-    padding: 16px;
+    min-height: unset;
+    padding: 4px 4px 0 4px;
     justify-content: center;
   }
 `;
@@ -1871,7 +1912,6 @@ export const BannerTitle = styled.div`
   gap: 8px;
   margin-left: 24px;
   margin-right: auto;
-
   &:before {
     content: '';
     display: block;
@@ -1881,7 +1921,6 @@ export const BannerTitle = styled.div`
     border-radius: 50%;
     box-shadow: 0 0 12px #bae6fd;
   }
-
   html.dark & {
     color: rgba(255, 255, 255, 0.9);
     background: rgba(255, 255, 255, 0.1);
@@ -1889,6 +1928,18 @@ export const BannerTitle = styled.div`
     &:before {
       background: #ffffff;
       box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    }
+  }
+  @media (max-width: 768px) {
+    justify-content: center;
+    margin: 0 auto;
+    padding: 4px 8px;
+    font-size: 13px;
+    min-width: 0;
+    width: 100%;
+    border-radius: 6px;
+    &:before {
+      margin-right: 4px;
     }
   }
 `;
