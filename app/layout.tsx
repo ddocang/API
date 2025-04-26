@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import StyledComponentsRegistry from '../lib/registry';
 import '@/styles/globals.css';
+import { ThemeProvider } from './contexts/ThemeContext';
+import GlobalStyle from './styles/GlobalStyle';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -28,9 +30,12 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       </head>
       <body>
-        <main>
-          <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
-        </main>
+        <ThemeProvider>
+          <GlobalStyle />
+          <main>
+            <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+          </main>
+        </ThemeProvider>
         <Script
           src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NCP_CLIENT_ID}&submodules=geocoder`}
           strategy="afterInteractive"

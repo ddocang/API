@@ -68,9 +68,13 @@ import {
   FilterMenu,
   FilterMenuItem,
   PopupButton,
+  GraphStatsBar,
 } from './styles';
 import { colors } from '@/app/styles/colors';
 import { ChevronDown } from 'lucide-react';
+import ThemeToggleButton from '@/app/components/ThemeToggleButton';
+import { ThemeProvider } from '@/app/contexts/ThemeContext';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 interface SensorBase {
   id: number;
@@ -371,6 +375,14 @@ export default function MonitoringDetailPage({
 }: {
   params: { id: string };
 }) {
+  return (
+    <ThemeProvider>
+      <DetailPageContent params={params} />
+    </ThemeProvider>
+  );
+}
+
+function DetailPageContent({ params }: { params: { id: string } }) {
   const pathname = usePathname();
   const router = useRouter();
   const [imageHeight, setImageHeight] = useState(0);
@@ -827,8 +839,8 @@ export default function MonitoringDetailPage({
 
       e.preventDefault();
 
+      // 휠 위로(업) = 줌인, 휠 아래로(다운) = 줌아웃
       const isZoomIn = e.deltaY < 0;
-      const isCtrlPressed = e.ctrlKey;
 
       if (!zoomDomain) {
         const dataPoints = selectedSensor.detailedData;
@@ -843,53 +855,37 @@ export default function MonitoringDetailPage({
         return;
       }
 
-      if (isCtrlPressed) {
-        // Ctrl + 휠: 수직 줌
-        const currentRange = zoomDomain.y[1] - zoomDomain.y[0];
+      // x축 줌만 동작
+      const dataPoints = selectedSensor.detailedData;
+      const currentStartIdx = dataPoints.findIndex(
+        (d) => d.timestamp === Number(zoomDomain.x[0])
+      );
+      const currentEndIdx = dataPoints.findIndex(
+        (d) => d.timestamp === Number(zoomDomain.x[1])
+      );
+
+      if (currentStartIdx !== -1 && currentEndIdx !== -1) {
+        const currentRange = currentEndIdx - currentStartIdx;
+        // 휠 업(줌인): 0.8, 휠 다운(줌아웃): 1.2
         const zoomFactor = isZoomIn ? 0.8 : 1.2;
-        const newRange = currentRange * zoomFactor;
-        const centerY = (zoomDomain.y[0] + zoomDomain.y[1]) / 2;
+        const newRange = Math.round(currentRange * zoomFactor);
 
-        const newDomain = {
-          ...zoomDomain,
-          y: [
-            Math.max(0, centerY - newRange / 2),
-            Math.min(2, centerY + newRange / 2),
-          ] as [number, number],
-        };
-        setZoomDomain(newDomain);
-      } else {
-        // 일반 휠: 수평 줌
-        const dataPoints = selectedSensor.detailedData;
-        const currentStartIdx = dataPoints.findIndex(
-          (d) => d.timestamp === Number(zoomDomain.x[0])
-        );
-        const currentEndIdx = dataPoints.findIndex(
-          (d) => d.timestamp === Number(zoomDomain.x[1])
+        const centerIdx = Math.round((currentStartIdx + currentEndIdx) / 2);
+        const newStartIdx = Math.max(0, centerIdx - Math.round(newRange / 2));
+        const newEndIdx = Math.min(
+          dataPoints.length - 1,
+          centerIdx + Math.round(newRange / 2)
         );
 
-        if (currentStartIdx !== -1 && currentEndIdx !== -1) {
-          const currentRange = currentEndIdx - currentStartIdx;
-          const zoomFactor = isZoomIn ? 0.8 : 1.2;
-          const newRange = Math.round(currentRange * zoomFactor);
-
-          const centerIdx = Math.round((currentStartIdx + currentEndIdx) / 2);
-          const newStartIdx = Math.max(0, centerIdx - Math.round(newRange / 2));
-          const newEndIdx = Math.min(
-            dataPoints.length - 1,
-            centerIdx + Math.round(newRange / 2)
-          );
-
-          if (newStartIdx >= 0 && newEndIdx < dataPoints.length) {
-            const newDomain = {
-              ...zoomDomain,
-              x: [
-                dataPoints[newStartIdx].timestamp,
-                dataPoints[newEndIdx].timestamp,
-              ] as [number, number],
-            };
-            setZoomDomain(newDomain);
-          }
+        if (newStartIdx >= 0 && newEndIdx < dataPoints.length) {
+          const newDomain = {
+            ...zoomDomain,
+            x: [
+              dataPoints[newStartIdx].timestamp,
+              dataPoints[newEndIdx].timestamp,
+            ] as [number, number],
+          };
+          setZoomDomain(newDomain);
         }
       }
     };
@@ -979,8 +975,36 @@ export default function MonitoringDetailPage({
     }
   };
 
+  // 팝업 하단 통계 계산 및 다운로드 함수 추가
+  const fromTime = selectedSensor?.detailedData?.[0]?.time || '-';
+  const toTime =
+    selectedSensor?.detailedData?.[selectedSensor.detailedData.length - 1]
+      ?.time || '-';
+  const values = selectedSensor?.detailedData?.map((d) => d.value) || [];
+  const maxValue = values.length ? Math.max(...values).toFixed(2) : '-';
+  const minValue = values.length ? Math.min(...values).toFixed(2) : '-';
+  const avgValue = values.length
+    ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+    : '-';
+
+  function handleDownloadCsv() {
+    if (!selectedSensor?.detailedData?.length) return;
+    const header = 'time,timestamp,value\n';
+    const rows = selectedSensor.detailedData
+      .map((d) => `${d.time},${d.timestamp},${d.value}`)
+      .join('\n');
+    const csv = header + rows;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedSensor.name}_상세그래프.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
-    <Container>
+    <div>
       <TopBanner>
         <BannerBackground>
           <DarkOverlay />
@@ -1001,6 +1025,7 @@ export default function MonitoringDetailPage({
           </Logo>
           <BannerTitle>삼척 교동 수소 스테이션</BannerTitle>
           <MainMenu>
+            <ThemeToggleButton />
             <Link href="/" passHref legacyBehavior>
               <NavLinkStyle active={pathname === '/'}>
                 <svg
@@ -1374,6 +1399,18 @@ export default function MonitoringDetailPage({
             <PopupHeader>
               <h2>{selectedSensor.name} 상세 그래프</h2>
               <div className="button-group">
+                <PopupButton onClick={handleDownloadCsv}>
+                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"
+                      stroke="#2563eb"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  다운로드
+                </PopupButton>
                 {zoomDomain && (
                   <PopupButton onClick={resetZoom}>
                     <svg
@@ -1394,15 +1431,10 @@ export default function MonitoringDetailPage({
               </div>
             </PopupHeader>
             <DetailedGraphContainer className="detailed-graph-container">
-              <ResponsiveContainer width="100%" height="100%" minWidth={2000}>
+              <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={selectedSensor.detailedData}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 20,
-                  }}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -1557,6 +1589,18 @@ export default function MonitoringDetailPage({
                 </AreaChart>
               </ResponsiveContainer>
             </DetailedGraphContainer>
+            <GraphStatsBar>
+              <span className="stat">From: {fromTime}</span>
+              <span className="stat">To: {toTime}</span>
+              <span className="stat">최대: {maxValue}g</span>
+              <span className="stat">최소: {minValue}g</span>
+              <span className="stat">평균: {avgValue}g</span>
+              <span className="legend">
+                <span className="dot normal" /> 정상
+                <span className="dot warning" /> 경고
+                <span className="dot danger" /> 위험
+              </span>
+            </GraphStatsBar>
           </>
         )}
       </DetailedGraphPopup>
@@ -1607,6 +1651,6 @@ export default function MonitoringDetailPage({
       </LogPopup>
 
       <PopupOverlay isOpen={isLogOpen} onClick={() => setIsLogOpen(false)} />
-    </Container>
+    </div>
   );
 }

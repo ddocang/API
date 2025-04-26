@@ -7,6 +7,28 @@ export const colors = {
     dark: '#2563EB', // 진한 브랜드 색상 - 클릭 상태, 중요 요소
   },
 
+  // 테마 색상
+  theme: {
+    dark: {
+      background: '#141414',
+      surface: '#1a1a1a',
+      border: '#202020',
+      text: {
+        primary: '#F8FAFC',
+        secondary: '#E2E8F0',
+      },
+    },
+    light: {
+      background: '#FFFFFF',
+      surface: '#F8FAFC',
+      border: '#E2E8F0',
+      text: {
+        primary: '#111827', // 더 진한 남색(네이비)로 변경 - 상단배너 등 주요 텍스트 가독성 향상
+        secondary: '#475569',
+      },
+    },
+  },
+
   // 페이지 배경 그라데이션 (/monitoring/detail/[id])
   gradient: {
     main: {

@@ -27,6 +27,8 @@ const ServiceCard = styled.div`
   overflow: hidden;
   position: relative;
   cursor: pointer;
+  background: #fafdff;
+  border: 1.5px solid #bae6fd;
 
   @media (max-width: 1024px) {
     width: 100%;
