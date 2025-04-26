@@ -1399,24 +1399,24 @@ export const SensorTooltip = styled.div<{
   status: 'normal' | 'warning' | 'danger';
 }>`
   position: absolute;
-  background: rgba(26, 32, 44, 0.95);
+  background: #fff;
   border: 1px solid
     ${({ status }) =>
       status === 'normal'
-        ? 'rgba(16, 185, 129, 0.5)'
+        ? 'rgba(16, 185, 129, 0.3)'
         : status === 'warning'
-        ? 'rgba(245, 158, 11, 0.5)'
-        : 'rgba(239, 68, 68, 0.5)'};
+        ? 'rgba(245, 158, 11, 0.3)'
+        : 'rgba(239, 68, 68, 0.3)'};
   border-radius: 8px;
   padding: 12px;
   min-width: 200px;
   backdrop-filter: blur(8px);
   box-shadow: ${({ status }) =>
     status === 'normal'
-      ? '0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.1)'
+      ? '0 0 15px rgba(16, 185, 129, 0.08), inset 0 0 20px rgba(16, 185, 129, 0.04)'
       : status === 'warning'
-      ? '0 0 15px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1)'
-      : '0 0 15px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.1)'};
+      ? '0 0 15px rgba(245, 158, 11, 0.08), inset 0 0 20px rgba(245, 158, 11, 0.04)'
+      : '0 0 15px rgba(239, 68, 68, 0.08), inset 0 0 20px rgba(239, 68, 68, 0.04)'};
   z-index: 1000;
   margin-bottom: 15px;
 
@@ -1430,7 +1430,7 @@ export const SensorTooltip = styled.div<{
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid rgba(26, 32, 44, 0.95);
+    border-top: 8px solid #fff;
   }
 
   &::before {
@@ -1446,10 +1446,10 @@ export const SensorTooltip = styled.div<{
     border-top: 9px solid
       ${({ status }) =>
         status === 'normal'
-          ? 'rgba(16, 185, 129, 0.5)'
+          ? 'rgba(16, 185, 129, 0.3)'
           : status === 'warning'
-          ? 'rgba(245, 158, 11, 0.5)'
-          : 'rgba(239, 68, 68, 0.5)'};
+          ? 'rgba(245, 158, 11, 0.3)'
+          : 'rgba(239, 68, 68, 0.3)'};
   }
 
   .tooltip-header {
@@ -1461,10 +1461,10 @@ export const SensorTooltip = styled.div<{
     border-bottom: 1px solid
       ${({ status }) =>
         status === 'normal'
-          ? 'rgba(16, 185, 129, 0.2)'
+          ? 'rgba(16, 185, 129, 0.12)'
           : status === 'warning'
-          ? 'rgba(245, 158, 11, 0.2)'
-          : 'rgba(239, 68, 68, 0.2)'};
+          ? 'rgba(245, 158, 11, 0.12)'
+          : 'rgba(239, 68, 68, 0.12)'};
 
     .status-indicator {
       width: 8px;
@@ -1479,16 +1479,16 @@ export const SensorTooltip = styled.div<{
       box-shadow: 0 0 12px
         ${({ status }) =>
           status === 'normal'
-            ? 'rgba(16, 185, 129, 0.8)'
+            ? 'rgba(16, 185, 129, 0.3)'
             : status === 'warning'
-            ? 'rgba(245, 158, 11, 0.8)'
-            : 'rgba(239, 68, 68, 0.8)'};
+            ? 'rgba(245, 158, 11, 0.3)'
+            : 'rgba(239, 68, 68, 0.3)'};
     }
 
     .name {
       font-size: 14px;
       font-weight: 600;
-      color: #ffffff;
+      color: #1e293b;
       flex: 1;
     }
 
@@ -1498,10 +1498,10 @@ export const SensorTooltip = styled.div<{
       border-radius: 4px;
       background-color: ${({ status }) =>
         status === 'normal'
-          ? 'rgba(16, 185, 129, 0.2)'
+          ? 'rgba(16, 185, 129, 0.08)'
           : status === 'warning'
-          ? 'rgba(245, 158, 11, 0.2)'
-          : 'rgba(239, 68, 68, 0.2)'};
+          ? 'rgba(245, 158, 11, 0.08)'
+          : 'rgba(239, 68, 68, 0.08)'};
       color: ${({ status }) =>
         status === 'normal'
           ? '#10B981'
@@ -1511,10 +1511,10 @@ export const SensorTooltip = styled.div<{
       border: 1px solid
         ${({ status }) =>
           status === 'normal'
-            ? 'rgba(16, 185, 129, 0.3)'
+            ? 'rgba(16, 185, 129, 0.18)'
             : status === 'warning'
-            ? 'rgba(245, 158, 11, 0.3)'
-            : 'rgba(239, 68, 68, 0.3)'};
+            ? 'rgba(245, 158, 11, 0.18)'
+            : 'rgba(239, 68, 68, 0.18)'};
     }
   }
 
@@ -1531,12 +1531,61 @@ export const SensorTooltip = styled.div<{
       }
 
       .label {
-        color: #94a3b8;
+        color: #64748b;
       }
 
       .value {
-        color: #ffffff;
+        color: #1e293b;
         font-weight: 500;
+      }
+    }
+  }
+
+  html.dark & {
+    background: rgba(26, 32, 44, 0.95);
+    border: 1px solid
+      ${({ status }) =>
+        status === 'normal'
+          ? 'rgba(16, 185, 129, 0.5)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.5)'
+          : 'rgba(239, 68, 68, 0.5)'};
+    box-shadow: ${({ status }) =>
+      status === 'normal'
+        ? '0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.1)'
+        : status === 'warning'
+        ? '0 0 15px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1)'
+        : '0 0 15px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.1)'};
+    &::after {
+      border-top: 8px solid rgba(26, 32, 44, 0.95);
+    }
+    &::before {
+      border-top: 9px solid
+        ${({ status }) =>
+          status === 'normal'
+            ? 'rgba(16, 185, 129, 0.5)'
+            : status === 'warning'
+            ? 'rgba(245, 158, 11, 0.5)'
+            : 'rgba(239, 68, 68, 0.5)'};
+    }
+    .tooltip-header {
+      border-bottom: 1px solid
+        ${({ status }) =>
+          status === 'normal'
+            ? 'rgba(16, 185, 129, 0.2)'
+            : status === 'warning'
+            ? 'rgba(245, 158, 11, 0.2)'
+            : 'rgba(239, 68, 68, 0.2)'};
+      .name {
+        color: #ffffff;
+      }
+    }
+    .tooltip-content {
+      .label {
+        color: #94a3b8;
+      }
+      .value {
+        color: #ffffff;
       }
     }
   }

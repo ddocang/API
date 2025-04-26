@@ -1170,17 +1170,17 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       </span>
                     </div>
                     <div className="tooltip-content">
-                      <div className="info-row">
-                        <span className="label">측정값</span>
+                      <div className="info-row" data-role="value">
+                        <span className="label">데이터</span>
                         <span className="value">
                           {tooltipSensor.value} {tooltipSensor.unit}
                         </span>
                       </div>
-                      <div className="info-row">
+                      <div className="info-row" data-role="status">
                         <span className="label">상태</span>
                         <span className="value">연결됨</span>
                       </div>
-                      <div className="info-row">
+                      <div className="info-row" data-role="updated">
                         <span className="label">업데이트</span>
                         <span className="value">{lastUpdateTime}</span>
                       </div>
