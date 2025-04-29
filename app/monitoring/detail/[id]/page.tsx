@@ -1,5 +1,5 @@
 'use client';
-
+import useWebSocket from '@/hooks/useWebSocket'; // ← 추가
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -410,11 +410,98 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     () =>
       FACILITY_DETAIL.sensors.vibration.map((sensor) => ({
         ...sensor,
-        value: sensor.value || '0.00',
+        value: '0',
+        unit: '',
         data: [],
         detailedData: [],
       }))
   );
+  useWebSocket(
+    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
+    (data) => {
+      console.log(
+        '📡 수신된 전체 WebSocket 데이터:',
+        JSON.stringify(data, null, 2)
+      );
+
+      // BASE/P001 토픽 데이터만 처리
+      if (data?.mqtt_data?.topic_id === 'BASE/P001') {
+        try {
+          // barr 데이터 파싱
+          const barrString = data.mqtt_data.data.barr;
+          if (!barrString) return;
+
+          const barrValues = barrString
+            .split(',')
+            .slice(0, 9) // 앞 9개 값만 사용
+            .map((value: string) => parseInt(value)); // 정수로 변환
+
+          if (barrValues.length !== 9) return; // 9개가 아니면 무시
+
+          console.log('🌟 BASE/P001 진동 데이터:', barrValues);
+
+          const now = new Date();
+          const timeStr = now.toTimeString().split(' ')[0];
+
+          // 진동 센서 데이터 업데이트
+          setVibrationSensors((prevSensors) =>
+            prevSensors.map((sensor, index) => {
+              if (index < 9) {
+                const value = barrValues[index];
+
+                // 새로운 데이터 포인트 생성
+                const newDataPoint: VibrationDataPoint = {
+                  time: timeStr,
+                  value: value,
+                };
+
+                const newDetailedDataPoint: DetailedVibrationDataPoint = {
+                  time: timeStr,
+                  timestamp: now.getTime(),
+                  value: value,
+                };
+
+                // 상태 결정 (500 기준)
+                const status = value >= 500 ? 'danger' : 'normal';
+
+                // 위험 상태일 때만 로그 추가
+                if (status === 'danger') {
+                  setLogItems((prevLogs) => [
+                    {
+                      time: timeStr,
+                      sensorName: sensor.name,
+                      status: status,
+                      value: value.toString(), // 정수로 표시
+                      unit: '', // 단위 제거
+                    },
+                    ...prevLogs,
+                  ]);
+                }
+
+                return {
+                  ...sensor,
+                  value: value.toString(), // 정수로 표시
+                  status: status,
+                  data: [...sensor.data.slice(-29), newDataPoint],
+                  detailedData: [
+                    ...sensor.detailedData.slice(-299),
+                    newDetailedDataPoint,
+                  ],
+                };
+              }
+              return sensor;
+            })
+          );
+
+          // 마지막 업데이트 시간 갱신
+          setLastUpdateTime(new Date().toLocaleTimeString());
+        } catch (error) {
+          console.error('진동 센서 데이터 처리 중 오류:', error);
+        }
+      }
+    }
+  );
+
   const [selectedSensorType, setSelectedSensorType] = useState<
     'all' | 'gas' | 'fire' | 'vibration'
   >('all');
@@ -481,100 +568,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }, {} as Record<number, ChartColorSet>);
   });
 
-  const generateDetailedData = useCallback((baseValue: number) => {
-    const data: DetailedVibrationDataPoint[] = [];
-    const now = new Date();
-    const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-
-    for (
-      let time = sixHoursAgo;
-      time <= now;
-      time = new Date(time.getTime() + 10000)
-    ) {
-      const hours = String(time.getHours()).padStart(2, '0');
-      const minutes = String(time.getMinutes()).padStart(2, '0');
-      const seconds = String(time.getSeconds()).padStart(2, '0');
-      const timeString = `${hours}:${minutes}:${seconds}`;
-
-      const variation = Math.random() * 0.4 - 0.2;
-      const value = Number((baseValue + variation).toFixed(2));
-      data.push({
-        time: timeString,
-        timestamp: time.getTime(),
-        value: Math.max(0, Math.min(2, value)),
-      });
-    }
-    return data;
-  }, []);
-
   const formatTime = useCallback((date: Date) => {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   }, []);
-
-  const updateData = useCallback(() => {
-    const now = new Date();
-    const updatedSensors = FACILITY_DETAIL.sensors.vibration.map((sensor) => {
-      const data = [];
-      const baseValue = 0.8 + Math.random() * 0.2;
-
-      for (let i = 11; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-        const hours = String(time.getHours()).padStart(2, '0');
-
-        let variation = 0;
-        if (hours >= '06' && hours <= '09') {
-          variation = 0.3;
-        } else if (hours >= '11' && hours <= '14') {
-          variation = 0.4;
-        } else if (hours >= '17' && hours <= '20') {
-          variation = 0.35;
-        } else if (hours >= '22' || hours <= '05') {
-          variation = -0.2;
-        }
-
-        const value = Number(
-          (baseValue + variation + (Math.random() * 0.2 - 0.1)).toFixed(2)
-        );
-        data.push({
-          time: `${hours}:00`,
-          value: Math.max(0.1, Math.min(1.9, value)),
-        });
-      }
-
-      const currentValue = data[data.length - 1].value.toFixed(2);
-
-      return {
-        ...sensor,
-        value: currentValue,
-        data,
-        detailedData: generateDetailedData(Number(currentValue)),
-      };
-    });
-
-    setVibrationSensors(updatedSensors);
-    setLastUpdateTime(formatTime(now));
-  }, [generateDetailedData, formatTime]);
-
-  useEffect(() => {
-    updateData();
-    const interval = setInterval(updateData, 10000); // 10초마다 데이터 업데이트
-    return () => clearInterval(interval);
-  }, [updateData]);
-
-  useEffect(() => {
-    setIsMounted(true);
-    const updateMapHeight = () => {
-      const width = window.innerWidth;
-      setMapHeight(Math.floor(width * aspectRatio));
-    };
-
-    updateMapHeight();
-    window.addEventListener('resize', updateMapHeight);
-    return () => window.removeEventListener('resize', updateMapHeight);
-  }, [aspectRatio]);
 
   const handleGraphClick = (sensor: VibrationSensor) => {
     setSelectedSensor(sensor);
@@ -599,6 +598,30 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     return vibrationSensors;
   }, [selectedSensorType, vibrationSensors]);
 
+  const getSensorInfo = (sensorId: string) => {
+    const type = sensorId.split('-')[0];
+    if (type === 'vibration') {
+      const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
+      const sensor = vibrationSensors[sensorIndex];
+      return {
+        name: sensor?.name || '',
+        value: sensor?.value || '0',
+        unit: '',
+        status: (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger',
+      };
+    } else {
+      return {
+        name:
+          FACILITY_DETAIL.sensors[type as 'gas' | 'fire'].find(
+            (s) => s.id.toString() === sensorId.split('-')[1]
+          )?.name || '',
+        value: '--',
+        unit: '--',
+        status: 'normal' as const,
+      };
+    }
+  };
+
   const handleSensorClick = (sensorId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     const target = event.currentTarget as Element;
@@ -620,28 +643,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         setSelectedSensorId(sensorId);
         setShowTooltip(true);
 
-        // Find the sensor from the arrays based on sensorId
-        const sensorType = sensorId.split('-')[0];
-        const sensor = [
-          ...GAS_SENSORS,
-          ...FIRE_SENSORS,
-          ...VIBRATION_SENSORS,
-        ].find((s) => s.id === sensorId);
-
-        if (sensor) {
-          setTooltipSensor({
-            id: sensorId,
-            name: sensor.name,
-            status: getSensorStatus(sensorId),
-            value:
-              sensorType === 'vibration'
-                ? FACILITY_DETAIL.sensors.vibration.find(
-                    (s) => s.id === parseInt(sensorId.split('-')[1])
-                  )?.value
-                : '--',
-            unit: sensorType === 'vibration' ? 'g' : '--',
-          });
-        }
+        const sensorInfo = getSensorInfo(sensorId);
+        setTooltipSensor({
+          id: sensorId,
+          name: sensorInfo.name,
+          status: sensorInfo.status,
+          value: sensorInfo.value,
+          unit: sensorInfo.unit,
+        });
       }
     }
   };
@@ -650,38 +659,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     sensorId: string
   ): 'normal' | 'warning' | 'danger' => {
     const type = sensorId.split('-')[0];
-
     if (type === 'vibration') {
-      // 진동감지기는 normal, warning, danger 3가지 상태
-      const statuses: Array<'normal' | 'warning' | 'danger'> = [
-        'normal',
-        'warning',
-        'danger',
-      ];
-      return statuses[Math.floor(Math.random() * 3)];
+      const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
+      const sensor = vibrationSensors[sensorIndex];
+      return (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger';
     } else {
-      // 가스감지기와 화재감지기는 normal, danger 2가지 상태
+      // 가스, 화재 센서는 기존 로직 유지
       return Math.random() < 0.5 ? 'normal' : 'danger';
     }
-  };
-
-  const getSensorInfo = (sensorId: string) => {
-    const type = sensorId.split('-')[0];
-    const sensor =
-      type === 'vibration'
-        ? vibrationSensors.find(
-            (s) => s.id.toString() === sensorId.split('-')[1]
-          )
-        : FACILITY_DETAIL.sensors[type as 'gas' | 'fire'].find(
-            (s) => s.id.toString() === sensorId.split('-')[1]
-          );
-
-    return {
-      name: sensor?.name || '',
-      value: sensor?.value || '--',
-      unit: sensor?.unit || '',
-      status: sensor?.status || 'normal',
-    };
   };
 
   useEffect(() => {
@@ -784,17 +769,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         enabled: false,
       },
     },
-    stroke: {
-      curve: 'smooth',
-      width: 2,
-      colors: ['#4D7298'],
-    },
-    markers: {
-      size: 0,
-      hover: {
-        size: 5,
-        sizeOffset: 3,
-      },
+    yaxis: {
+      min: 0,
+      max: 1000, // Y축 범위를 0-1000으로 조정
     },
   };
 
@@ -1058,7 +1035,11 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   홈
                 </NavLinkStyle>
               </Link>
-              <Link href="/tube-trailer" passHref legacyBehavior>
+              <Link
+                href={`/monitoring/detail/${params.id}/tube-trailer`}
+                passHref
+                legacyBehavior
+              >
                 <NavLinkStyle active={pathname.includes('tube-trailer')}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1381,12 +1362,17 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       />
                       <Tooltip
                         content={({ active, payload, label }) => {
-                          if (active && payload && payload.length) {
+                          if (
+                            active &&
+                            payload &&
+                            payload.length &&
+                            payload[0].value !== undefined
+                          ) {
                             return (
                               <CustomTooltip>
                                 <div className="time">{label}</div>
                                 <div className="value">
-                                  {Number(payload[0].value).toFixed(2)}g
+                                  {parseInt(payload[0].value as any)}
                                 </div>
                               </CustomTooltip>
                             );
@@ -1554,7 +1540,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
+                      if (
+                        active &&
+                        payload &&
+                        payload.length &&
+                        payload[0].value !== undefined
+                      ) {
                         const date = new Date(label);
                         return (
                           <CustomTooltip>
@@ -1567,7 +1558,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               })}
                             </div>
                             <div className="value">
-                              {Number(payload[0].value).toFixed(2)}g
+                              {parseInt(payload[0].value as any)}
                             </div>
                           </CustomTooltip>
                         );
