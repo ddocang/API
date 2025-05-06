@@ -127,21 +127,21 @@ interface FacilityDetail {
 
 // 가스 감지기 정보 배열
 const GAS_SENSORS = [
-  { id: 'gas-1', x: 128, y: 80, name: '가스감지기1' },
-  { id: 'gas-2', x: 263, y: 88, name: '가스감지기2' },
-  { id: 'gas-3', x: 333, y: 88, name: '가스감지기3' },
-  { id: 'gas-4', x: 263, y: 253, name: '가스감지기4' },
-  { id: 'gas-5', x: 333, y: 253, name: '가스감지기5' },
-  { id: 'gas-6', x: 448, y: 253, name: '가스감지기6' },
-  { id: 'gas-7', x: 448, y: 88, name: '가스감지기7' },
-  { id: 'gas-8', x: 522, y: 93, name: '가스감지기8' },
-  { id: 'gas-9', x: 522, y: 233, name: '가스감지기9' },
-  { id: 'gas-10', x: 559, y: 108, name: '가스감지기10' },
-  { id: 'gas-11', x: 559, y: 220, name: '가스감지기11' },
-  { id: 'gas-12', x: 612, y: 163, name: '가스감지기12' },
-  { id: 'gas-13', x: 662, y: 163, name: '가스감지기13' },
-  { id: 'gas-14', x: 328, y: 334, name: '가스감지기14' },
-  { id: 'gas-15', x: 458, y: 334, name: '가스감지기15' },
+  { id: 'gas-7', x: 128, y: 80, name: '가스감지기7' },
+  { id: 'gas-3', x: 263, y: 88, name: '가스감지기3' },
+  { id: 'gas-4', x: 333, y: 88, name: '가스감지기4' },
+  { id: 'gas-1', x: 263, y: 253, name: '가스감지기1' },
+  { id: 'gas-2', x: 333, y: 253, name: '가스감지기2' },
+  { id: 'gas-9', x: 448, y: 253, name: '가스감지기9' },
+  { id: 'gas-8', x: 448, y: 88, name: '가스감지기8' },
+  { id: 'gas-11', x: 522, y: 93, name: '가스감지기11' },
+  { id: 'gas-10', x: 522, y: 233, name: '가스감지기10' },
+  { id: 'gas-13', x: 559, y: 108, name: '가스감지기13' },
+  { id: 'gas-12', x: 559, y: 220, name: '가스감지기12' },
+  { id: 'gas-15', x: 612, y: 163, name: '가스감지기15' },
+  { id: 'gas-14', x: 662, y: 163, name: '가스감지기14' },
+  { id: 'gas-5', x: 328, y: 334, name: '가스감지기5' },
+  { id: 'gas-6', x: 458, y: 334, name: '가스감지기6' },
 ];
 
 // 화재 감지기 정보 배열
@@ -179,184 +179,109 @@ const FACILITY_DETAIL: FacilityDetail = {
   pressure: '700bar',
   sensors: {
     gas: [
-      {
-        id: 1,
-        name: '가스감지기1',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 2,
-        name: '가스감지기2',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 3,
-        name: '가스감지기3',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 4,
-        name: '가스감지기4',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 5,
-        name: '가스감지기5',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 6,
-        name: '가스감지기6',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 7,
-        name: '가스감지기7',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 8,
-        name: '가스감지기8',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 9,
-        name: '가스감지기9',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 10,
-        name: '가스감지기10',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 11,
-        name: '가스감지기11',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 12,
-        name: '가스감지기12',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 13,
-        name: '가스감지기13',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 14,
-        name: '가스감지기14',
-        unit: '--',
-        status: 'normal',
-      },
-      {
-        id: 15,
-        name: '가스감지기15',
-        unit: '--',
-        status: 'normal',
-      },
+      { id: 1, name: '가스감지기1', unit: '--', status: '--' },
+      { id: 2, name: '가스감지기2', unit: '--', status: '--' },
+      { id: 3, name: '가스감지기3', unit: '--', status: '--' },
+      { id: 4, name: '가스감지기4', unit: '--', status: '--' },
+      { id: 5, name: '가스감지기5', unit: '--', status: '--' },
+      { id: 6, name: '가스감지기6', unit: '--', status: '--' },
+      { id: 7, name: '가스감지기7', unit: '--', status: '--' },
+      { id: 8, name: '가스감지기8', unit: '--', status: '--' },
+      { id: 9, name: '가스감지기9', unit: '--', status: '--' },
+      { id: 10, name: '가스감지기10', unit: '--', status: '--' },
+      { id: 11, name: '가스감지기11', unit: '--', status: '--' },
+      { id: 12, name: '가스감지기12', unit: '--', status: '--' },
+      { id: 13, name: '가스감지기13', unit: '--', status: '--' },
+      { id: 14, name: '가스감지기14', unit: '--', status: '--' },
+      { id: 15, name: '가스감지기15', unit: '--', status: '--' },
     ],
     fire: [
-      { id: 16, name: '화재감지기1', unit: '--', status: 'normal' },
-      { id: 17, name: '화재감지기2', unit: '--', status: 'normal' },
-      { id: 18, name: '화재감지기3', unit: '--', status: 'normal' },
-      { id: 19, name: '화재감지기4', unit: '--', status: 'normal' },
-      { id: 20, name: '화재감지기5', unit: '--', status: 'normal' },
-      { id: 21, name: '화재감지기6', unit: '--', status: 'normal' },
+      { id: 16, name: '화재감지기1', unit: '--', status: '--' },
+      { id: 17, name: '화재감지기2', unit: '--', status: '--' },
+      { id: 18, name: '화재감지기3', unit: '--', status: '--' },
+      { id: 19, name: '화재감지기4', unit: '--', status: '--' },
+      { id: 20, name: '화재감지기5', unit: '--', status: '--' },
+      { id: 21, name: '화재감지기6', unit: '--', status: '--' },
     ],
     vibration: [
       {
         id: 22,
         name: '진동감지기1',
-        value: '0.85',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 23,
         name: '진동감지기2',
-        value: '0.92',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 24,
         name: '진동감지기3',
-        value: '0.78',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 25,
         name: '진동감지기4',
-        value: '0.88',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 26,
         name: '진동감지기5',
-        value: '0.95',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 27,
         name: '진동감지기6',
-        value: '0.82',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 28,
         name: '진동감지기7',
-        value: '0.87',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 29,
         name: '진동감지기8',
-        value: '0.91',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
       {
         id: 30,
         name: '진동감지기9',
-        value: '0.84',
         unit: 'g',
-        status: 'normal',
+        value: '',
+        status: '--',
         data: [],
         detailedData: [],
       },
@@ -416,6 +341,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         detailedData: [],
       }))
   );
+  const [gasStatus, setGasStatus] = useState<number | null>(null);
+  const [fireStatus, setFireStatus] = useState<number | null>(null);
+  const [gasStatusArr, setGasStatusArr] = useState<number[]>([]);
+  const [fireStatusArr, setFireStatusArr] = useState<number[]>([]);
 
   const handleWebSocketMessage = useCallback(
     async (data: any) => {
@@ -515,13 +444,39 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           .slice(0, 9) // 진동센서 9개
           .map((val: string) => parseFloat(val));
 
-        await fetch('https://hyge-830525911257.asia-northeast3.run.app/save', {
+        // 가스/화재감지기 신호 추출
+        const gdet = data.mqtt_data.data.gdet;
+        const fdet = data.mqtt_data.data.fdet;
+
+        if (typeof gdet !== 'undefined') setGasStatus(gdet);
+        if (typeof fdet !== 'undefined') setFireStatus(fdet);
+
+        const gdetArr = Array.isArray(gdet)
+          ? gdet
+          : typeof gdet === 'string'
+          ? gdet.split(',').map(Number)
+          : [];
+
+        setGasStatusArr(gdetArr);
+
+        const fdetArr = Array.isArray(fdet)
+          ? fdet
+          : typeof fdet === 'string'
+          ? fdet.split(',').map(Number)
+          : typeof fdet === 'number'
+          ? [fdet]
+          : [];
+        setFireStatusArr(fdetArr);
+
+        await fetch('http://localhost:8080/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             topic_id: data.mqtt_data.topic_id,
             timestamp: data.mqtt_data.data.last_update_time,
             values: vibrationValues,
+            gdet: gdet,
+            fdet: fdet,
           }),
         });
       }
@@ -542,7 +497,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   const [tooltipSensor, setTooltipSensor] = useState<{
     id: string;
     name: string;
-    status: 'normal' | 'warning' | 'danger';
+    status: '정상' | '경고' | '위험' | '--';
     value?: string;
     unit?: string;
   } | null>(null);
@@ -635,21 +590,65 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     if (type === 'vibration') {
       const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
       const sensor = vibrationSensors[sensorIndex];
+      // 진동 신호 판정
+      let signalText = '--';
+      let realtimeValue = '--';
+      if (
+        sensor &&
+        typeof sensor.value !== 'undefined' &&
+        sensor.value !== null &&
+        sensor.value !== ''
+      ) {
+        realtimeValue = sensor.value;
+        const numValue = Number(sensor.value);
+        if (!isNaN(numValue)) {
+          if (numValue > 1000) signalText = '위험';
+          else if (numValue > 500) signalText = '경고';
+          else signalText = '정상';
+        }
+      }
       return {
         name: sensor?.name || '',
-        value: sensor?.value || '0',
-        unit: '',
-        status: (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger',
+        value: realtimeValue,
+        unit: sensor?.unit || '',
+        status: signalText as '정상' | '경고' | '위험' | '--',
+      };
+    } else if (type === 'gas') {
+      const idx = parseInt(sensorId.split('-')[1]) - 1;
+      const value = gasStatusArr[idx];
+      let signalText = '--';
+      let realtimeValue = '--';
+      if (typeof value === 'number') {
+        realtimeValue = value.toString();
+        signalText = value === 1 ? '위험' : value === 0 ? '정상' : '--';
+      }
+      return {
+        name: FACILITY_DETAIL.sensors.gas[idx]?.name || '',
+        value: realtimeValue,
+        unit: '--',
+        status: signalText as '정상' | '위험' | '--',
+      };
+    } else if (type === 'fire') {
+      const idx = parseInt(sensorId.split('-')[1]) - 1;
+      const value = fireStatusArr[idx];
+      let signalText = '--';
+      let realtimeValue = '--';
+      if (typeof value === 'number') {
+        realtimeValue = value.toString();
+        signalText = value === 1 ? '위험' : value === 0 ? '정상' : '--';
+      }
+      return {
+        name: FACILITY_DETAIL.sensors.fire[idx]?.name || '',
+        value: realtimeValue,
+        unit: '--',
+        status: signalText as '정상' | '위험' | '--',
       };
     } else {
       return {
-        name:
-          FACILITY_DETAIL.sensors[type as 'gas' | 'fire'].find(
-            (s) => s.id.toString() === sensorId.split('-')[1]
-          )?.name || '',
+        name: '',
         value: '--',
         unit: '--',
-        status: 'normal' as const,
+        status: '--' as '정상' | '경고' | '위험' | '--',
       };
     }
   };
@@ -1023,12 +1022,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       setSelectedSensorId(sensorId);
       setShowTooltip(true);
 
+      const sensorInfo = getSensorInfo(sensorId);
       setTooltipSensor({
         id: sensorId,
-        name: sensor.name,
-        status: getSensorStatus(sensorId),
-        value: sensor.value || '--',
-        unit: sensor.unit || '--',
+        name: sensorInfo.name,
+        status: sensorInfo.status,
+        value: sensorInfo.value,
+        unit: sensorInfo.unit,
       });
 
       // 아이콘이 보이도록 스크롤
@@ -1204,7 +1204,15 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 </svg>
                 {showTooltip && tooltipSensor && (
                   <SensorTooltip
-                    status={tooltipSensor.status}
+                    status={
+                      tooltipSensor.status === '정상'
+                        ? 'normal'
+                        : tooltipSensor.status === '경고'
+                        ? 'warning'
+                        : tooltipSensor.status === '위험'
+                        ? 'danger'
+                        : 'normal'
+                    }
                     style={{
                       position: 'absolute',
                       left: `${tooltipPosition.x}px`,
@@ -1217,27 +1225,25 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <div className="status-indicator" />
                       <span className="name">{tooltipSensor.name}</span>
                       <span className="status-text">
-                        {tooltipSensor.id.split('-')[0] === 'vibration'
-                          ? tooltipSensor.status === 'normal'
-                            ? '정상'
-                            : tooltipSensor.status === 'warning'
-                            ? '경고'
-                            : '위험'
-                          : tooltipSensor.status === 'normal'
-                          ? '정상'
-                          : '위험'}
+                        {tooltipSensor.status}
                       </span>
                     </div>
                     <div className="tooltip-content">
                       <div className="info-row" data-role="value">
                         <span className="label">데이터</span>
                         <span className="value">
-                          {tooltipSensor.value} {tooltipSensor.unit}
+                          {tooltipSensor.value}
+                          {tooltipSensor.unit &&
+                          tooltipSensor.unit !== '--' &&
+                          tooltipSensor.unit !== '' &&
+                          tooltipSensor.name.includes('진동')
+                            ? ` ${tooltipSensor.unit}`
+                            : ''}
                         </span>
                       </div>
                       <div className="info-row" data-role="status">
                         <span className="label">상태</span>
-                        <span className="value">연결됨</span>
+                        <span className="value">{tooltipSensor.status}</span>
                       </div>
                       <div className="info-row" data-role="updated">
                         <span className="label">업데이트</span>
@@ -1310,6 +1316,45 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               <SensorList>
                 {filteredSensors.map((sensor, index) => {
                   const shortName = sensor.name.replace(/감지기(\d+)$/, '#$1');
+                  let realtimeValue = '--';
+                  let signalText = '--';
+                  if (sensor.name.startsWith('가스감지기')) {
+                    const idx =
+                      parseInt(sensor.name.replace('가스감지기', '')) - 1;
+                    const value = gasStatusArr[idx];
+                    if (typeof value === 'number') {
+                      realtimeValue = value.toString();
+                      signalText =
+                        value === 1 ? '위험' : value === 0 ? '정상' : '--';
+                    }
+                  } else if (sensor.name.startsWith('화재감지기')) {
+                    const idx =
+                      parseInt(sensor.name.replace('화재감지기', '')) - 1;
+                    const value = fireStatusArr[idx];
+                    if (typeof value === 'number') {
+                      realtimeValue = value.toString();
+                      signalText =
+                        value === 1 ? '위험' : value === 0 ? '정상' : '--';
+                    } else {
+                      realtimeValue = '--';
+                    }
+                  } else if (sensor.name.includes('진동')) {
+                    if (
+                      typeof sensor.value !== 'undefined' &&
+                      sensor.value !== null &&
+                      sensor.value !== ''
+                    ) {
+                      realtimeValue = sensor.value;
+                      const numValue = Number(sensor.value);
+                      if (!isNaN(numValue)) {
+                        if (numValue > 1000) signalText = '위험';
+                        else if (numValue > 500) signalText = '경고';
+                        else signalText = '정상';
+                      }
+                    } else {
+                      realtimeValue = '--';
+                    }
+                  }
                   return (
                     <SensorItem
                       key={sensor.id}
@@ -1326,11 +1371,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       </SensorType>
                       <SensorConnection>연결됨</SensorConnection>
                       <SensorStatus status={sensor.status}>
-                        {sensor.status === 'normal' ? '정상' : sensor.status}
+                        {signalText}
                       </SensorStatus>
-                      <SensorValue status={sensor.status}>
-                        {sensor.value || '--'}
-                        <span>{sensor.unit}</span>
+                      <SensorValue
+                        status={sensor.status}
+                        style={{ textAlign: 'center', width: '100%' }}
+                      >
+                        {realtimeValue}
+                        {sensor.name.includes('진동') && (
+                          <span>{sensor.unit}</span>
+                        )}
                       </SensorValue>
                       <span></span>
                     </SensorItem>

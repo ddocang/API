@@ -21,7 +21,25 @@ export default function useWebSocket(
     ws.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        onMessage(data);
+        const topicId = data?.mqtt_data?.topic_id;
+        if (topicId === 'BASE/P001' || topicId === 'BASE/P003') {
+          const mqtt = data?.mqtt_data?.data;
+          console.log('🔥 원본:', mqtt);
+
+          if (mqtt) {
+            const gdet = mqtt.gdet;
+            const fdet = mqtt.fdet;
+
+            console.log(
+              '🟢 gdet(가스감지기):',
+              gdet === 0 ? '정상' : gdet === 1 ? '위험' : gdet,
+              '🔴 fdet(화재감지기):',
+              fdet === 0 ? '정상' : fdet === 1 ? '위험' : fdet
+            );
+          }
+
+          onMessage(data);
+        }
       } catch (e) {
         console.error('⚠️ JSON 파싱 실패:', e);
       }
