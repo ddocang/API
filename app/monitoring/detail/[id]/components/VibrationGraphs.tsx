@@ -1,5 +1,5 @@
 // 진동 그래프 카드 리스트 컴포넌트
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Line,
 } from 'recharts';
 import {
   VibrationGraphContainer,
@@ -31,13 +32,33 @@ interface VibrationGraphsProps {
   vibrationSensors: VibrationDataPoint[];
   colorAssignments: Record<string, ChartColorSet>;
   handleGraphClick: (sensor: VibrationDataPoint) => void;
+  selectedSensor?: { detailedData: VibrationDataPoint[] };
 }
 
 const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
   vibrationSensors,
   colorAssignments,
   handleGraphClick,
+  selectedSensor,
 }) => {
+  const chartData = useMemo(() => {
+    if (!vibrationSensors || vibrationSensors.length === 0) return [];
+    // 모든 값이 같으면 더 큰 노이즈(0.01) 추가
+    if (
+      vibrationSensors.length > 1 &&
+      vibrationSensors.every((d) => d.value === vibrationSensors[0].value)
+    ) {
+      return vibrationSensors.map((item, i) => ({
+        ...item,
+        value:
+          typeof item.value === 'number'
+            ? item.value + (i % 2 === 0 ? 0.01 : -0.01)
+            : Number(item.value) + (i % 2 === 0 ? 0.01 : -0.01),
+      }));
+    }
+    return vibrationSensors;
+  }, [vibrationSensors]);
+
   return (
     <VibrationGraphContainer>
       {vibrationSensors.map((sensor) => (
@@ -53,7 +74,7 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
           <div className="graph-container">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={vibrationSensors}
+                data={chartData}
                 margin={{
                   top: 5,
                   right: 10,
@@ -106,7 +127,7 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
                   strokeDasharray="4 2"
                 />
                 <XAxis
-                  dataKey="time"
+                  dataKey="timestamp"
                   tick={{ fontSize: 12 }}
                   tickLine={false}
                   axisLine={{ stroke: colors.chart.axis.line }}
@@ -137,9 +158,21 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
                   type="monotone"
                   dataKey="value"
                   stroke={colorAssignments[sensor.time].line}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   fill={`url(#gradient-${sensor.time})`}
                   fillOpacity={1}
+                  isAnimationActive={false}
+                  dot={true}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#ff007a"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  connectNulls={true}
                   isAnimationActive={false}
                 />
               </AreaChart>

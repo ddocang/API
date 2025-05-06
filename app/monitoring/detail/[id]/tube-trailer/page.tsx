@@ -3,16 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import TopBanner from './TopBanner';
 import TubeTrailerList from './TubeTrailerList';
-import TubeTrailerMap from './TubeTrailerMap';
+import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import { colors } from '@/app/styles/colors';
 import { useParams, usePathname, useRouter } from 'next/navigation';
+import {
+  PopupOverlay,
+  DetailedGraphPopup,
+  PopupHeader,
+  CloseButton,
+  PopupButton,
+} from '../styles';
 
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 100vh;
+    padding: 0;
+  }
 `;
 
 const LayoutContainer = styled.div`
@@ -23,6 +35,11 @@ const LayoutContainer = styled.div`
   gap: 15px;
   padding: 15px;
   min-height: 0;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+  }
 `;
 
 const ColumnContainer = styled.div`
@@ -33,6 +50,10 @@ const ColumnContainer = styled.div`
   min-height: 0;
   height: 100%;
   overflow: hidden;
+  @media (max-width: 768px) {
+    gap: 8px;
+    height: auto;
+  }
 `;
 
 const TubeTrailerInfoContainer = styled.div`
@@ -49,6 +70,11 @@ const TubeTrailerInfoContainer = styled.div`
   font-family: 'Pretendard', sans-serif;
   overflow: hidden;
   min-height: 0;
+  @media (max-width: 768px) {
+    min-height: 220px;
+    height: 220px;
+    margin-bottom: 8px;
+  }
 `;
 
 const TubeTrailerBottomContainer = styled.div`
@@ -60,6 +86,14 @@ const TubeTrailerBottomContainer = styled.div`
   overflow: hidden;
   font-family: 'Pretendard', sans-serif;
   flex-shrink: 0;
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 120px;
+    img {
+      height: 80px;
+      object-fit: contain;
+    }
+  }
 `;
 
 const ListCard = styled.div`
@@ -67,15 +101,23 @@ const ListCard = styled.div`
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 20px 0 0 0;
+  margin: 0px 0 0px 0px;
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-height: 0;
-  height: 100%;
+  flex: 1;
   border: 1px solid ${colors.theme.light.border};
   font-family: 'Pretendard', sans-serif;
-  overflow: hidden;
+  @media (max-width: 768px) {
+    padding: 10px 0 0 0;
+    border-radius: 10px;
+  }
 `;
+
+// SSR 비활성화
+const TubeTrailerMap = dynamic(() => import('./TubeTrailerMap'), {
+  ssr: false,
+});
 
 const TubeTrailerPage = () => {
   const params = useParams() as { id: string };

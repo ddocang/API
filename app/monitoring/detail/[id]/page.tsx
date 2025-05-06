@@ -162,9 +162,9 @@ const VIBRATION_SENSORS = [
   { id: 'vibration-4', x: 390, y: 303, name: '진동감지기4' },
   { id: 'vibration-5', x: 407, y: 360, name: '진동감지기5' },
   { id: 'vibration-6', x: 427, y: 303, name: '진동감지기6' },
-  { id: 'vibration-7', x: 523, y: 118, name: '진동감지기7' },
-  { id: 'vibration-8', x: 523, y: 193, name: '진동감지기8' },
-  { id: 'vibration-9', x: 559, y: 133, name: '진동감지기9' },
+  { id: 'vibration-8', x: 523, y: 118, name: '진동감지기8' },
+  { id: 'vibration-9', x: 523, y: 193, name: '진동감지기9' },
+  { id: 'vibration-7', x: 559, y: 133, name: '진동감지기7' },
 ];
 
 const FACILITY_DETAIL: FacilityDetail = {
@@ -393,15 +393,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 const status = value >= 500 ? 'danger' : 'normal';
 
                 if (status === 'danger') {
-                  setLogItems((prevLogs) => [
-                    {
-                      time: timeStr,
-                      sensorName: sensor.name,
-                      status: status,
-                      value: value.toString(),
-                    },
-                    ...prevLogs,
-                  ]);
+                  addLogItem(sensor, status, '진동', value.toString());
                 }
 
                 return {
@@ -457,18 +449,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           ? [fdet]
           : [];
         setFireStatusArr(fdetArr);
-
-        await fetch('http://localhost:8080/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            topic_id: data.mqtt_data.topic_id,
-            timestamp: data.mqtt_data.data.last_update_time,
-            values: vibrationValues,
-            gdet: gdet,
-            fdet: fdet,
-          }),
-        });
       }
     },
     [vibrationSensors]
@@ -500,6 +480,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     Array<{
       time: string;
       sensorName: string;
+      type: '진동' | '가스' | '화재';
       status: 'warning' | 'danger';
       value?: string;
       unit?: string;
@@ -680,8 +661,8 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       const sensor = vibrationSensors[sensorIndex];
       return (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger';
     } else {
-      // 가스, 화재 센서는 기존 로직 유지
-      return Math.random() < 0.5 ? 'normal' : 'danger';
+      // 가스, 화재 센서는 항상 'normal' 반환 (랜덤 danger 제거)
+      return 'normal';
     }
   };
 
@@ -742,38 +723,27 @@ function DetailPageContent({ params }: { params: { id: string } }) {
 
   // 로그 아이템 추가 함수
   const addLogItem = useCallback(
-    (sensor: any, status: 'warning' | 'danger') => {
+    (
+      sensor: any,
+      status: 'warning' | 'danger',
+      type: '진동' | '가스' | '화재',
+      value: string
+    ) => {
       const now = new Date();
       const time = formatTime(now);
-
       setLogItems((prev) => [
         {
           time,
           sensorName: sensor.name,
+          type,
           status,
-          value: sensor.value,
+          value,
         },
         ...prev,
       ]);
     },
     [formatTime]
   );
-
-  // 센서 상태 변경 시 로그 추가
-  useEffect(() => {
-    const allSensors = [
-      ...FACILITY_DETAIL.sensors.gas,
-      ...FACILITY_DETAIL.sensors.fire,
-      ...vibrationSensors,
-    ];
-
-    allSensors.forEach((sensor) => {
-      const status = getSensorStatus(sensor.id.toString());
-      if (status === 'warning' || status === 'danger') {
-        addLogItem(sensor, status);
-      }
-    });
-  }, [addLogItem, vibrationSensors]);
 
   const options = {
     chart: {
@@ -1039,6 +1009,17 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   // 모바일 여부
   const isMobile = useMediaQuery('(max-width: 768px)');
 
+  // 상세그래프 AreaChart에 넘길 데이터 가공: 데이터가 1개면 가짜 점 추가
+  const chartData = useMemo(() => {
+    if (!selectedSensor?.detailedData) return [];
+    const data = selectedSensor.detailedData;
+    if (data.length === 1) {
+      // 데이터가 1개면 1초 뒤 같은 값으로 한 점 추가
+      return [data[0], { ...data[0], timestamp: data[0].timestamp + 1000 }];
+    }
+    return data;
+  }, [selectedSensor]);
+
   return (
     <div>
       <TopBanner>
@@ -1204,7 +1185,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       top: `${tooltipPosition.y}px`,
                       transform: 'translate(-50%, -100%)',
                     }}
-                    onClick={(e) => e.stopPropagation()} // 툴큭 클릭 시 이벤트 버블링 방지
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <div className="tooltip-header">
                       <div className="status-indicator" />
@@ -1220,11 +1201,42 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       </div>
                       <div className="info-row" data-role="status">
                         <span className="label">상태</span>
-                        <span className="value">{tooltipSensor.status}</span>
+                        <span className="value">
+                          {tooltipSensor.status === '정상' ||
+                          tooltipSensor.status === '경고' ||
+                          tooltipSensor.status === '위험'
+                            ? '연결됨'
+                            : '연결안됨'}
+                        </span>
                       </div>
                       <div className="info-row" data-role="updated">
                         <span className="label">업데이트</span>
-                        <span className="value">{lastUpdateTime}</span>
+                        <span className="value">
+                          {lastUpdateTime
+                            ? (() => {
+                                const d = new Date(lastUpdateTime);
+                                if (isNaN(d.getTime())) return lastUpdateTime;
+                                const MM = String(d.getMonth() + 1).padStart(
+                                  2,
+                                  '0'
+                                );
+                                const DD = String(d.getDate()).padStart(2, '0');
+                                const hh = String(d.getHours()).padStart(
+                                  2,
+                                  '0'
+                                );
+                                const mm = String(d.getMinutes()).padStart(
+                                  2,
+                                  '0'
+                                );
+                                const ss = String(d.getSeconds()).padStart(
+                                  2,
+                                  '0'
+                                );
+                                return `${MM}/${DD} ${hh}:${mm}:${ss}`;
+                              })()
+                            : ''}
+                        </span>
                       </div>
                     </div>
                   </SensorTooltip>
@@ -1292,28 +1304,60 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               </ListHeader>
               <SensorList>
                 {filteredSensors.map((sensor, index) => {
-                  const shortName = sensor.name.replace(/감지기(\d+)$/, '#$1');
                   let realtimeValue = '--';
                   let signalText = '--';
+                  let connectionText = '연결안됨';
+                  let gIdx: number | undefined;
+                  let fIdx: number | undefined;
+                  if (sensor.name.startsWith('진동감지기')) {
+                    const vIdx =
+                      parseInt(sensor.name.replace('진동감지기', '')) - 1;
+                    if (
+                      vibrationSensors[vIdx] &&
+                      vibrationSensors[vIdx].value !== undefined &&
+                      vibrationSensors[vIdx].value !== null &&
+                      vibrationSensors[vIdx].value !== ''
+                    ) {
+                      connectionText = '연결됨';
+                    }
+                  } else if (sensor.name.startsWith('가스감지기')) {
+                    gIdx = parseInt(sensor.name.replace('가스감지기', '')) - 1;
+                    if (typeof gasStatusArr[gIdx] === 'number') {
+                      connectionText = '연결됨';
+                    }
+                  } else if (sensor.name.startsWith('화재감지기')) {
+                    fIdx = parseInt(sensor.name.replace('화재감지기', '')) - 1;
+                    if (typeof fireStatusArr[fIdx] === 'number') {
+                      connectionText = '연결됨';
+                    }
+                  }
                   if (sensor.name.startsWith('가스감지기')) {
                     const idx =
-                      parseInt(sensor.name.replace('가스감지기', '')) - 1;
-                    const value = gasStatusArr[idx];
-                    if (typeof value === 'number') {
-                      realtimeValue = value.toString();
+                      gIdx !== undefined
+                        ? gIdx
+                        : parseInt(sensor.name.replace('가스감지기', '')) - 1;
+                    if (typeof gasStatusArr[idx] === 'number') {
+                      realtimeValue = gasStatusArr[idx].toString();
                       signalText =
-                        value === 1 ? '위험' : value === 0 ? '정상' : '--';
+                        gasStatusArr[idx] === 1
+                          ? '위험'
+                          : gasStatusArr[idx] === 0
+                          ? '정상'
+                          : '--';
                     }
                   } else if (sensor.name.startsWith('화재감지기')) {
                     const idx =
-                      parseInt(sensor.name.replace('화재감지기', '')) - 1;
-                    const value = fireStatusArr[idx];
-                    if (typeof value === 'number') {
-                      realtimeValue = value.toString();
+                      fIdx !== undefined
+                        ? fIdx
+                        : parseInt(sensor.name.replace('화재감지기', '')) - 1;
+                    if (typeof fireStatusArr[idx] === 'number') {
+                      realtimeValue = fireStatusArr[idx].toString();
                       signalText =
-                        value === 1 ? '위험' : value === 0 ? '정상' : '--';
-                    } else {
-                      realtimeValue = '--';
+                        fireStatusArr[idx] === 1
+                          ? '위험'
+                          : fireStatusArr[idx] === 0
+                          ? '정상'
+                          : '--';
                     }
                   } else if (sensor.name.includes('진동')) {
                     if (
@@ -1343,10 +1387,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         <span
                           className="sensor-name"
                           data-full-name={sensor.name}
-                          data-short-name={shortName}
+                          data-short-name={sensor.name.replace(
+                            /감지기(\d+)$/,
+                            '#$1'
+                          )}
                         />
                       </SensorType>
-                      <SensorConnection>연결됨</SensorConnection>
+                      <SensorConnection>{connectionText}</SensorConnection>
                       <SensorStatus status={sensor.status}>
                         {signalText}
                       </SensorStatus>
@@ -1414,12 +1461,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         vertical={false}
                         stroke={colors.chart.grid.line}
                         opacity={colors.chart.grid.opacity}
-                      />
-                      <ReferenceLine
-                        y={500}
-                        stroke="#D90429"
-                        strokeWidth={1}
-                        strokeDasharray="4 2"
                       />
                       <XAxis
                         dataKey="time"
@@ -1516,7 +1557,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             <DetailedGraphContainer className="detailed-graph-container">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={selectedSensor.detailedData}
+                  data={chartData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
@@ -1573,18 +1614,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     stroke="rgba(255, 255, 255, 0.1)"
                     opacity={0.5}
                   />
-                  <ReferenceLine
-                    y={500}
-                    stroke="#D90429"
-                    strokeWidth={1}
-                    strokeDasharray="4 2"
-                    label={{
-                      value: '위험',
-                      position: 'right',
-                      fill: '#D90429',
-                      fontSize: 12,
-                    }}
-                  />
                   <XAxis
                     dataKey="timestamp"
                     type="number"
@@ -1605,12 +1634,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   />
                   <YAxis
                     domain={
-                      zoomDomain?.y || [
-                        0,
-                        Math.max(
-                          ...selectedSensor.detailedData.map((d) => d.value)
-                        ),
-                      ]
+                      zoomDomain?.y ||
+                      (() => {
+                        const values = selectedSensor.detailedData.map(
+                          (d) => d.value
+                        );
+                        if (values.length === 0) return [0, 1];
+                        const min = Math.min(...values);
+                        const max = Math.max(...values);
+                        if (min === max) {
+                          // 값이 모두 같으면 위아래로 1씩 여유
+                          return [min - 1, max + 1];
+                        }
+                        return [min, max];
+                      })()
                     }
                     allowDataOverflow
                     tickFormatter={(value) => value.toFixed(0)}
@@ -1648,20 +1685,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     type="monotone"
                     dataKey="value"
                     stroke={colorAssignments[selectedSensor.id.toString()].line}
-                    strokeWidth={2}
+                    strokeWidth={3}
                     fill="url(#gradient-detailed)"
                     fillOpacity={1}
                     isAnimationActive={false}
-                    dot={false}
-                    activeDot={{
-                      r: 6,
-                      fill: colorAssignments[selectedSensor.id.toString()].line,
-                      stroke: '#ffffff',
-                      strokeWidth: 2,
-                      style: {
-                        filter: 'url(#glow)',
-                      },
-                    }}
+                    dot={true}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
                     style={{
                       filter: 'url(#areaGlow)',
                     }}

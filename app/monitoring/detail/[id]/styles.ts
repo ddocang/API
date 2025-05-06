@@ -490,6 +490,10 @@ export const ListHeader = styled.div`
     padding: 0 8px;
   }
 
+  span:nth-of-type(5) {
+    text-align: center !important;
+  }
+
   > * {
     text-align: center;
   }
@@ -967,7 +971,7 @@ export const SensorType = styled.span`
 export const SensorConnection = styled.span`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: #2e7d32;
+  color: ${({ children }) => (children === '연결안됨' ? '#ef4444' : '#2e7d32')};
   font-weight: 600;
   text-align: center;
 
@@ -1043,8 +1047,10 @@ export const SensorValue = styled.div<{ status?: string }>`
     status === 'normal'
       ? '#1e293b'
       : status === 'warning'
-      ? colors.status.warning.text
-      : colors.status.danger.text};
+      ? '#fbbf24'
+      : status === 'danger'
+      ? '#ef4444'
+      : '#1e293b'};
   text-align: center;
   display: flex;
   justify-content: flex-start;
@@ -1071,10 +1077,12 @@ export const SensorValue = styled.div<{ status?: string }>`
   html.dark & {
     color: ${({ status }) =>
       status === 'normal'
-        ? '#ffffff'
+        ? '#1e293b'
         : status === 'warning'
-        ? colors.status.warning.text
-        : colors.status.danger.text};
+        ? '#fbbf24'
+        : status === 'danger'
+        ? '#ef4444'
+        : '#1e293b'};
     span {
       color: rgba(255, 255, 255, 0.7);
     }
