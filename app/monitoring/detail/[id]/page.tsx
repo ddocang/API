@@ -416,63 +416,70 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         detailedData: [],
       }))
   );
-  useWebSocket(
-    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
-    (data) => {
-      console.log(
-        '📡 수신된 전체 WebSocket 데이터:',
-        JSON.stringify(data, null, 2)
-      );
+
+  const handleWebSocketMessage = useCallback(
+    async (data: any) => {
+      // 전체 데이터 구조 로깅
+      console.log('📡 수신된 WebSocket 데이터:', {
+        topic_id: data?.mqtt_data?.topic_id,
+        last_update_time: data?.mqtt_data?.data?.last_update_time,
+        barr: data?.mqtt_data?.data?.barr,
+      });
 
       // BASE/P001 토픽 데이터만 처리
       if (data?.mqtt_data?.topic_id === 'BASE/P001') {
         try {
-          // barr 데이터 파싱
           const barrString = data.mqtt_data.data.barr;
-          if (!barrString) return;
+          const lastUpdateTime = data.mqtt_data.data.last_update_time;
+
+          if (!barrString) {
+            console.warn('⚠️ barr 데이터가 없음');
+            return;
+          }
 
           const barrValues = barrString
             .split(',')
-            .slice(0, 9) // 앞 9개 값만 사용
-            .map((value: string) => parseInt(value)); // 정수로 변환
+            .slice(0, 9)
+            .map((value: string) => parseInt(value));
 
-          if (barrValues.length !== 9) return; // 9개가 아니면 무시
+          if (barrValues.length !== 9) {
+            console.warn('⚠️ barr 데이터 길이가 잘못됨:', barrValues.length);
+            return;
+          }
 
-          console.log('🌟 BASE/P001 진동 데이터:', barrValues);
+          // 이전 데이터와 비교를 위한 로깅
+          console.log('🔄 진동 데이터 업데이트:', {
+            last_update_time: lastUpdateTime,
+            previous_values: vibrationSensors.map((s) => s.value),
+            new_values: barrValues,
+          });
 
           const now = new Date();
           const timeStr = now.toTimeString().split(' ')[0];
 
-          // 진동 센서 데이터 업데이트
           setVibrationSensors((prevSensors) =>
             prevSensors.map((sensor, index) => {
               if (index < 9) {
                 const value = barrValues[index];
-
-                // 새로운 데이터 포인트 생성
-                const newDataPoint: VibrationDataPoint = {
+                const newDataPoint = {
                   time: timeStr,
                   value: value,
                 };
-
-                const newDetailedDataPoint: DetailedVibrationDataPoint = {
+                const newDetailedDataPoint = {
                   time: timeStr,
                   timestamp: now.getTime(),
                   value: value,
                 };
-
-                // 상태 결정 (500 기준)
                 const status = value >= 500 ? 'danger' : 'normal';
 
-                // 위험 상태일 때만 로그 추가
                 if (status === 'danger') {
                   setLogItems((prevLogs) => [
                     {
                       time: timeStr,
                       sensorName: sensor.name,
                       status: status,
-                      value: value.toString(), // 정수로 표시
-                      unit: '', // 단위 제거
+                      value: value.toString(),
+                      unit: '',
                     },
                     ...prevLogs,
                   ]);
@@ -480,7 +487,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
 
                 return {
                   ...sensor,
-                  value: value.toString(), // 정수로 표시
+                  value: value.toString(),
                   status: status,
                   data: [...sensor.data.slice(-29), newDataPoint],
                   detailedData: [
@@ -493,13 +500,38 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             })
           );
 
-          // 마지막 업데이트 시간 갱신
-          setLastUpdateTime(new Date().toLocaleTimeString());
+          setLastUpdateTime(lastUpdateTime || new Date().toLocaleTimeString());
         } catch (error) {
-          console.error('진동 센서 데이터 처리 중 오류:', error);
+          console.error('❌ 진동 센서 데이터 처리 중 오류:', error);
         }
       }
-    }
+
+      if (
+        data?.mqtt_data?.topic_id?.startsWith('BASE/') &&
+        data?.mqtt_data?.data?.barr
+      ) {
+        const vibrationValues = data.mqtt_data.data.barr
+          .split(',')
+          .slice(0, 9) // 진동센서 9개
+          .map((val: string) => parseFloat(val));
+
+        await fetch('https://hyge-830525911257.asia-northeast3.run.app/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic_id: data.mqtt_data.topic_id,
+            timestamp: data.mqtt_data.data.last_update_time,
+            values: vibrationValues,
+          }),
+        });
+      }
+    },
+    [vibrationSensors]
+  );
+
+  useWebSocket(
+    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
+    handleWebSocketMessage
   );
 
   const [selectedSensorType, setSelectedSensorType] = useState<
@@ -771,7 +803,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     },
     yaxis: {
       min: 0,
-      max: 1000, // Y축 범위를 0-1000으로 조정
+      max: Math.max(
+        ...vibrationSensors.map((s) => Math.max(...s.data.map((d) => d.value)))
+      ),
     },
   };
 
@@ -906,12 +940,23 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     if (!selectedSensor) return;
 
     const dataPoints = selectedSensor.detailedData;
+    if (dataPoints.length === 0) return;
+
+    // Y축 범위를 데이터의 최소/최대값 기준으로 설정
+    const values = dataPoints.map((d) => d.value);
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const padding = (maxValue - minValue) * 0.1; // 10% 여유 공간
+
     setZoomDomain({
       x: [
         dataPoints[0].timestamp,
         dataPoints[dataPoints.length - 1].timestamp,
       ] as [number, number],
-      y: [0, 2] as [number, number],
+      y: [Math.max(0, minValue - padding), maxValue + padding] as [
+        number,
+        number
+      ],
     });
   }, [selectedSensor]);
 
@@ -921,6 +966,30 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       resetZoom();
     }
   }, [isDetailedGraphOpen, selectedSensor, resetZoom]);
+
+  // 팝업 하단 통계 계산 수정
+  const graphStats = useMemo(() => {
+    if (!selectedSensor?.detailedData?.length) {
+      return {
+        fromTime: '-',
+        toTime: '-',
+        maxValue: '-',
+        minValue: '-',
+        avgValue: '-',
+      };
+    }
+
+    const data = selectedSensor.detailedData;
+    const values = data.map((d) => d.value);
+
+    return {
+      fromTime: data[0]?.time || '-',
+      toTime: data[data.length - 1]?.time || '-',
+      maxValue: Math.max(...values).toFixed(0),
+      minValue: Math.min(...values).toFixed(0),
+      avgValue: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(0),
+    };
+  }, [selectedSensor]);
 
   const handleSensorListItemClick = (
     sensor: GasSensor | FireSensor | VibrationSensor
@@ -967,18 +1036,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   };
 
-  // 팝업 하단 통계 계산 및 다운로드 함수 추가
-  const fromTime = selectedSensor?.detailedData?.[0]?.time || '-';
-  const toTime =
-    selectedSensor?.detailedData?.[selectedSensor.detailedData.length - 1]
-      ?.time || '-';
-  const values = selectedSensor?.detailedData?.map((d) => d.value) || [];
-  const maxValue = values.length ? Math.max(...values).toFixed(2) : '-';
-  const minValue = values.length ? Math.min(...values).toFixed(2) : '-';
-  const avgValue = values.length
-    ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
-    : '-';
-
+  // CSV 다운로드 함수
   function handleDownloadCsv() {
     if (!selectedSensor?.detailedData?.length) return;
     const header = 'time,timestamp,value\n';
@@ -1330,19 +1388,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         opacity={colors.chart.grid.opacity}
                       />
                       <ReferenceLine
-                        y={0.5}
-                        stroke="#04A777"
-                        strokeWidth={1}
-                        strokeDasharray="4 2"
-                      />
-                      <ReferenceLine
-                        y={1.0}
-                        stroke="#FFD600"
-                        strokeWidth={1}
-                        strokeDasharray="4 2"
-                      />
-                      <ReferenceLine
-                        y={1.5}
+                        y={500}
                         stroke="#D90429"
                         strokeWidth={1}
                         strokeDasharray="4 2"
@@ -1354,11 +1400,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         axisLine={{ stroke: colors.chart.axis.line }}
                       />
                       <YAxis
-                        domain={[0, 2]}
+                        domain={[
+                          0,
+                          Math.max(...sensor.data.map((d) => d.value)),
+                        ]}
                         tick={{ fontSize: 12 }}
                         tickLine={false}
                         axisLine={{ stroke: colors.chart.axis.line }}
-                        tickFormatter={(value) => value.toFixed(1)}
+                        tickFormatter={(value) => value.toFixed(0)}
                       />
                       <Tooltip
                         content={({ active, payload, label }) => {
@@ -1497,22 +1546,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     opacity={0.5}
                   />
                   <ReferenceLine
-                    y={0.5}
-                    stroke="#04A777"
-                    strokeWidth={1}
-                    strokeDasharray="4 2"
-                  />
-                  <ReferenceLine
-                    y={1.0}
-                    stroke="#FFD600"
-                    strokeWidth={1}
-                    strokeDasharray="4 2"
-                  />
-                  <ReferenceLine
-                    y={1.5}
+                    y={500}
                     stroke="#D90429"
                     strokeWidth={1}
                     strokeDasharray="4 2"
+                    label={{
+                      value: '위험',
+                      position: 'right',
+                      fill: '#D90429',
+                      fontSize: 12,
+                    }}
                   />
                   <XAxis
                     dataKey="timestamp"
@@ -1533,9 +1576,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     minTickGap={50}
                   />
                   <YAxis
-                    domain={zoomDomain?.y || [0, 2]}
+                    domain={
+                      zoomDomain?.y || [
+                        0,
+                        Math.max(
+                          ...selectedSensor.detailedData.map((d) => d.value)
+                        ),
+                      ]
+                    }
                     allowDataOverflow
-                    tickFormatter={(value) => value.toFixed(2)}
+                    tickFormatter={(value) => value.toFixed(0)}
                     stroke="rgba(255, 255, 255, 0.5)"
                   />
                   <Tooltip
@@ -1601,15 +1651,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               </ResponsiveContainer>
             </DetailedGraphContainer>
             <GraphStatsBar>
-              <span className="stat">From: {fromTime}</span>
-              <span className="stat">To: {toTime}</span>
-              <span className="stat">최대: {maxValue}g</span>
-              <span className="stat">최소: {minValue}g</span>
-              <span className="stat">평균: {avgValue}g</span>
+              <span className="stat">From: {graphStats.fromTime}</span>
+              <span className="stat">To: {graphStats.toTime}</span>
+              <span className="stat">최대: {graphStats.maxValue}</span>
+              <span className="stat">최소: {graphStats.minValue}</span>
+              <span className="stat">평균: {graphStats.avgValue}</span>
               <span className="legend">
                 <span className="dot normal" /> 정상
-                <span className="dot warning" /> 경고
-                <span className="dot danger" /> 위험
+                <span className="dot danger" /> 위험 (500 이상)
               </span>
             </GraphStatsBar>
           </>
