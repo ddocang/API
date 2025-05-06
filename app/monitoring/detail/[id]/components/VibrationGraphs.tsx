@@ -22,23 +22,15 @@ interface VibrationDataPoint {
   value: number;
 }
 
-interface VibrationSensor {
-  id: number;
-  name: string;
-  value: string;
-  data: VibrationDataPoint[];
-  detailedData: any[];
-}
-
 type ChartColorSet = {
   line: string;
   fill: string;
 };
 
 interface VibrationGraphsProps {
-  vibrationSensors: VibrationSensor[];
-  colorAssignments: Record<number, ChartColorSet>;
-  handleGraphClick: (sensor: VibrationSensor) => void;
+  vibrationSensors: VibrationDataPoint[];
+  colorAssignments: Record<string, ChartColorSet>;
+  handleGraphClick: (sensor: VibrationDataPoint) => void;
 }
 
 const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
@@ -50,18 +42,18 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
     <VibrationGraphContainer>
       {vibrationSensors.map((sensor) => (
         <VibrationGraphCard
-          key={sensor.id}
+          key={sensor.time}
           onClick={() => handleGraphClick(sensor)}
           style={{ cursor: 'pointer' }}
         >
           <h4>
-            {sensor.name}
+            {sensor.time}
             <span className="status">정상</span>
           </h4>
           <div className="graph-container">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={sensor.data}
+                data={vibrationSensors}
                 margin={{
                   top: 5,
                   right: 10,
@@ -71,7 +63,7 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
               >
                 <defs>
                   <linearGradient
-                    id={`gradient-${sensor.id}`}
+                    id={`gradient-${sensor.time}`}
                     x1="0"
                     y1="0"
                     x2="0"
@@ -79,12 +71,12 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
                   >
                     <stop
                       offset="5%"
-                      stopColor={colorAssignments[sensor.id].line}
+                      stopColor={colorAssignments[sensor.time].line}
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor={colorAssignments[sensor.id].line}
+                      stopColor={colorAssignments[sensor.time].line}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -144,9 +136,9 @@ const VibrationGraphs: React.FC<VibrationGraphsProps> = ({
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke={colorAssignments[sensor.id].line}
+                  stroke={colorAssignments[sensor.time].line}
                   strokeWidth={2}
-                  fill={`url(#gradient-${sensor.id})`}
+                  fill={`url(#gradient-${sensor.time})`}
                   fillOpacity={1}
                   isAnimationActive={false}
                 />

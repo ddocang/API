@@ -79,7 +79,6 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 interface SensorBase {
   id: number;
   name: string;
-  unit: string;
   status: string;
 }
 
@@ -104,6 +103,7 @@ interface VibrationDataPoint {
 
 interface VibrationSensor extends SensorBase {
   value: string;
+  status: string;
   data: VibrationDataPoint[];
   detailedData: DetailedVibrationDataPoint[];
 }
@@ -179,35 +179,34 @@ const FACILITY_DETAIL: FacilityDetail = {
   pressure: '700bar',
   sensors: {
     gas: [
-      { id: 1, name: '가스감지기1', unit: '--', status: '--' },
-      { id: 2, name: '가스감지기2', unit: '--', status: '--' },
-      { id: 3, name: '가스감지기3', unit: '--', status: '--' },
-      { id: 4, name: '가스감지기4', unit: '--', status: '--' },
-      { id: 5, name: '가스감지기5', unit: '--', status: '--' },
-      { id: 6, name: '가스감지기6', unit: '--', status: '--' },
-      { id: 7, name: '가스감지기7', unit: '--', status: '--' },
-      { id: 8, name: '가스감지기8', unit: '--', status: '--' },
-      { id: 9, name: '가스감지기9', unit: '--', status: '--' },
-      { id: 10, name: '가스감지기10', unit: '--', status: '--' },
-      { id: 11, name: '가스감지기11', unit: '--', status: '--' },
-      { id: 12, name: '가스감지기12', unit: '--', status: '--' },
-      { id: 13, name: '가스감지기13', unit: '--', status: '--' },
-      { id: 14, name: '가스감지기14', unit: '--', status: '--' },
-      { id: 15, name: '가스감지기15', unit: '--', status: '--' },
+      { id: 1, name: '가스감지기1', status: '--' },
+      { id: 2, name: '가스감지기2', status: '--' },
+      { id: 3, name: '가스감지기3', status: '--' },
+      { id: 4, name: '가스감지기4', status: '--' },
+      { id: 5, name: '가스감지기5', status: '--' },
+      { id: 6, name: '가스감지기6', status: '--' },
+      { id: 7, name: '가스감지기7', status: '--' },
+      { id: 8, name: '가스감지기8', status: '--' },
+      { id: 9, name: '가스감지기9', status: '--' },
+      { id: 10, name: '가스감지기10', status: '--' },
+      { id: 11, name: '가스감지기11', status: '--' },
+      { id: 12, name: '가스감지기12', status: '--' },
+      { id: 13, name: '가스감지기13', status: '--' },
+      { id: 14, name: '가스감지기14', status: '--' },
+      { id: 15, name: '가스감지기15', status: '--' },
     ],
     fire: [
-      { id: 16, name: '화재감지기1', unit: '--', status: '--' },
-      { id: 17, name: '화재감지기2', unit: '--', status: '--' },
-      { id: 18, name: '화재감지기3', unit: '--', status: '--' },
-      { id: 19, name: '화재감지기4', unit: '--', status: '--' },
-      { id: 20, name: '화재감지기5', unit: '--', status: '--' },
-      { id: 21, name: '화재감지기6', unit: '--', status: '--' },
+      { id: 16, name: '화재감지기1', status: '--' },
+      { id: 17, name: '화재감지기2', status: '--' },
+      { id: 18, name: '화재감지기3', status: '--' },
+      { id: 19, name: '화재감지기4', status: '--' },
+      { id: 20, name: '화재감지기5', status: '--' },
+      { id: 21, name: '화재감지기6', status: '--' },
     ],
     vibration: [
       {
         id: 22,
         name: '진동감지기1',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -216,7 +215,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 23,
         name: '진동감지기2',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -225,7 +223,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 24,
         name: '진동감지기3',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -234,7 +231,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 25,
         name: '진동감지기4',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -243,7 +239,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 26,
         name: '진동감지기5',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -252,7 +247,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 27,
         name: '진동감지기6',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -261,7 +255,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 28,
         name: '진동감지기7',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -270,7 +263,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 29,
         name: '진동감지기8',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -279,7 +271,6 @@ const FACILITY_DETAIL: FacilityDetail = {
       {
         id: 30,
         name: '진동감지기9',
-        unit: 'g',
         value: '',
         status: '--',
         data: [],
@@ -336,7 +327,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       FACILITY_DETAIL.sensors.vibration.map((sensor) => ({
         ...sensor,
         value: '0',
-        unit: '',
+        status: '',
         data: [],
         detailedData: [],
       }))
@@ -408,7 +399,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       sensorName: sensor.name,
                       status: status,
                       value: value.toString(),
-                      unit: '',
                     },
                     ...prevLogs,
                   ]);
@@ -528,31 +518,31 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   const [isMounted, setIsMounted] = useState(false);
 
   // 색상 세트를 랜덤하게 섞어서 배분
-  const [colorAssignments] = useState<Record<number, ChartColorSet>>(() => {
+  const [colorAssignments] = useState<Record<string, ChartColorSet>>(() => {
     return vibrationSensors.reduce((acc, sensor, index) => {
       // 1-6번 차트는 #04A777
       if (index < 6) {
-        acc[sensor.id] = {
+        acc[sensor.id.toString()] = {
           line: '#04A777',
           fill: '#04A777',
         };
       }
       // 7-8번 차트는 #D90368
       else if (index < 8) {
-        acc[sensor.id] = {
+        acc[sensor.id.toString()] = {
           line: '#D90368',
           fill: '#D90368',
         };
       }
       // 9번 차트는 #FB8B24
       else {
-        acc[sensor.id] = {
+        acc[sensor.id.toString()] = {
           line: '#FB8B24',
           fill: '#FB8B24',
         };
       }
       return acc;
-    }, {} as Record<number, ChartColorSet>);
+    }, {} as Record<string, ChartColorSet>);
   });
 
   const formatTime = useCallback((date: Date) => {
@@ -610,7 +600,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       return {
         name: sensor?.name || '',
         value: realtimeValue,
-        unit: sensor?.unit || '',
         status: signalText as '정상' | '경고' | '위험' | '--',
       };
     } else if (type === 'gas') {
@@ -625,7 +614,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       return {
         name: FACILITY_DETAIL.sensors.gas[idx]?.name || '',
         value: realtimeValue,
-        unit: '--',
         status: signalText as '정상' | '위험' | '--',
       };
     } else if (type === 'fire') {
@@ -640,14 +628,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       return {
         name: FACILITY_DETAIL.sensors.fire[idx]?.name || '',
         value: realtimeValue,
-        unit: '--',
         status: signalText as '정상' | '위험' | '--',
       };
     } else {
       return {
         name: '',
         value: '--',
-        unit: '--',
         status: '--' as '정상' | '경고' | '위험' | '--',
       };
     }
@@ -680,7 +666,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           name: sensorInfo.name,
           status: sensorInfo.status,
           value: sensorInfo.value,
-          unit: sensorInfo.unit,
         });
       }
     }
@@ -749,7 +734,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   // 컴포넌트가 마운트될 때 한 번만 애니메이션 딜레이 계산
   useEffect(() => {
     const delays = filteredSensorIcons.reduce((acc, sensor) => {
-      acc[sensor.id] = Math.random() * 1.5;
+      acc[sensor.id.toString()] = Math.random() * 1.5;
       return acc;
     }, {} as Record<string, number>);
     setAnimationDelays(delays);
@@ -767,7 +752,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           sensorName: sensor.name,
           status,
           value: sensor.value,
-          unit: sensor.unit,
         },
         ...prev,
       ]);
@@ -1028,7 +1012,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         name: sensorInfo.name,
         status: sensorInfo.status,
         value: sensorInfo.value,
-        unit: sensorInfo.unit,
       });
 
       // 아이콘이 보이도록 스크롤
@@ -1183,9 +1166,11 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         handleSensorClick(sensor.id, e);
                       }}
                       style={
-                        animationDelays[sensor.id]
+                        animationDelays[sensor.id.toString()]
                           ? {
-                              animationDelay: `${animationDelays[sensor.id]}s`,
+                              animationDelay: `${
+                                animationDelays[sensor.id.toString()]
+                              }s`,
                             }
                           : undefined
                       }
@@ -1231,15 +1216,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     <div className="tooltip-content">
                       <div className="info-row" data-role="value">
                         <span className="label">데이터</span>
-                        <span className="value">
-                          {tooltipSensor.value}
-                          {tooltipSensor.unit &&
-                          tooltipSensor.unit !== '--' &&
-                          tooltipSensor.unit !== '' &&
-                          tooltipSensor.name.includes('진동')
-                            ? ` ${tooltipSensor.unit}`
-                            : ''}
-                        </span>
+                        <span className="value">{tooltipSensor.value}</span>
                       </div>
                       <div className="info-row" data-role="status">
                         <span className="label">상태</span>
@@ -1378,9 +1355,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         style={{ textAlign: 'center', width: '100%' }}
                       >
                         {realtimeValue}
-                        {sensor.name.includes('진동') && (
-                          <span>{sensor.unit}</span>
-                        )}
                       </SensorValue>
                       <span></span>
                     </SensorItem>
@@ -1421,12 +1395,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         >
                           <stop
                             offset="5%"
-                            stopColor={colorAssignments[sensor.id].line}
+                            stopColor={
+                              colorAssignments[sensor.id.toString()].line
+                            }
                             stopOpacity={0.3}
                           />
                           <stop
                             offset="95%"
-                            stopColor={colorAssignments[sensor.id].line}
+                            stopColor={
+                              colorAssignments[sensor.id.toString()].line
+                            }
                             stopOpacity={0}
                           />
                         </linearGradient>
@@ -1482,7 +1460,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <Area
                         type="monotone"
                         dataKey="value"
-                        stroke={colorAssignments[sensor.id].line}
+                        stroke={colorAssignments[sensor.id.toString()].line}
                         strokeWidth={2}
                         fill={`url(#gradient-${sensor.id})`}
                         fillOpacity={1}
@@ -1555,14 +1533,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <stop
                         offset="5%"
                         stopColor={
-                          colorAssignments[selectedSensor.id || 0].line
+                          colorAssignments[selectedSensor.id.toString()].line
                         }
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
                         stopColor={
-                          colorAssignments[selectedSensor.id || 0].line
+                          colorAssignments[selectedSensor.id.toString()].line
                         }
                         stopOpacity={0}
                       />
@@ -1578,7 +1556,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <feGaussianBlur stdDeviation="4" result="blur" />
                       <feFlood
                         floodColor={
-                          colorAssignments[selectedSensor.id || 0].line
+                          colorAssignments[selectedSensor.id.toString()].line
                         }
                         floodOpacity="0.2"
                       />
@@ -1669,7 +1647,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   <Area
                     type="monotone"
                     dataKey="value"
-                    stroke={colorAssignments[selectedSensor.id || 0].line}
+                    stroke={colorAssignments[selectedSensor.id.toString()].line}
                     strokeWidth={2}
                     fill="url(#gradient-detailed)"
                     fillOpacity={1}
@@ -1677,7 +1655,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     dot={false}
                     activeDot={{
                       r: 6,
-                      fill: colorAssignments[selectedSensor.id || 0].line,
+                      fill: colorAssignments[selectedSensor.id.toString()].line,
                       stroke: '#ffffff',
                       strokeWidth: 2,
                       style: {
@@ -1693,7 +1671,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       x1={refAreaLeft}
                       x2={refAreaRight}
                       strokeOpacity={0.3}
-                      fill={colorAssignments[selectedSensor.id || 0].line}
+                      fill={colorAssignments[selectedSensor.id.toString()].line}
                       fillOpacity={0.1}
                     />
                   )}
@@ -1737,10 +1715,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           {logItems.map((item, index) => (
             <LogItem key={index} severity={item.status}>
               <span className="time">{item.time}</span>
-              <span className="content">
-                {item.sensorName}
-                {item.value && item.unit && ` (${item.value}${item.unit})`}
-              </span>
+              <span className="content">{item.sensorName}</span>
               <span className="status">
                 {item.status === 'warning' ? '경고' : '위험'}
               </span>

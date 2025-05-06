@@ -1046,6 +1046,10 @@ export const SensorValue = styled.div<{ status?: string }>`
       ? colors.status.warning.text
       : colors.status.danger.text};
   text-align: center;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 60px;
 
   span {
     font-size: 12px;
