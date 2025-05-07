@@ -1503,6 +1503,7 @@ export const ContentSection = styled.div`
 
 export const SensorTooltip = styled.div<{
   status: 'normal' | 'warning' | 'danger';
+  arrowDirection?: 'up' | 'down';
 }>`
   position: absolute;
   background: #fff;
@@ -1529,33 +1530,63 @@ export const SensorTooltip = styled.div<{
   &::after {
     content: '';
     position: absolute;
-    bottom: -8px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid #fff;
+    ${({ arrowDirection }) =>
+      arrowDirection === 'up'
+        ? `
+      top: -8px;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid #fff;
+      border-top: none;
+    `
+        : `
+      bottom: -8px;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #fff;
+      border-bottom: none;
+    `}
   }
 
   &::before {
     content: '';
     position: absolute;
-    bottom: -9px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 9px solid transparent;
-    border-right: 9px solid transparent;
-    border-top: 9px solid
-      ${({ status }) =>
+    ${({ arrowDirection, status }) =>
+      arrowDirection === 'up'
+        ? `
+      top: -9px;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-bottom: 9px solid ${
         status === 'normal'
           ? 'rgba(16, 185, 129, 0.3)'
           : status === 'warning'
           ? 'rgba(245, 158, 11, 0.3)'
-          : 'rgba(239, 68, 68, 0.3)'};
+          : 'rgba(239, 68, 68, 0.3)'
+      };
+      border-top: none;
+    `
+        : `
+      bottom: -9px;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top: 9px solid ${
+        status === 'normal'
+          ? 'rgba(16, 185, 129, 0.3)'
+          : status === 'warning'
+          ? 'rgba(245, 158, 11, 0.3)'
+          : 'rgba(239, 68, 68, 0.3)'
+      };
+      border-bottom: none;
+    `}
   }
 
   .tooltip-header {

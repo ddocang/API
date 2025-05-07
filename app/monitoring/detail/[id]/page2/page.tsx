@@ -1250,11 +1250,17 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         ? 'danger'
                         : 'normal'
                     }
+                    arrowDirection={
+                      tooltipSensor.id === 'fire-2' ? 'up' : 'down'
+                    }
                     style={{
                       position: 'absolute',
                       left: `${tooltipPosition.x}px`,
                       top: `${tooltipPosition.y}px`,
-                      transform: 'translate(-50%, -100%)',
+                      transform:
+                        tooltipSensor.id === 'fire-2'
+                          ? 'translate(-50%, 40px)'
+                          : 'translate(-50%, -100%)',
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
