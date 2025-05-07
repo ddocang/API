@@ -508,18 +508,25 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           fill: '#04A777',
         };
       }
-      // 7-8번 차트는 #D90368
-      else if (index < 8) {
+      // 7번(index 6)은 원래 #D90368 → #FB8B24로 변경
+      else if (index === 6) {
+        acc[sensor.id.toString()] = {
+          line: '#FB8B24',
+          fill: '#FB8B24',
+        };
+      }
+      // 8번(index 7)은 #D90368 그대로
+      else if (index === 7) {
         acc[sensor.id.toString()] = {
           line: '#D90368',
           fill: '#D90368',
         };
       }
-      // 9번 차트는 #FB8B24
+      // 9번(index 8)은 원래 #FB8B24 → #D90368로 변경
       else {
         acc[sensor.id.toString()] = {
-          line: '#FB8B24',
-          fill: '#FB8B24',
+          line: '#D90368',
+          fill: '#D90368',
         };
       }
       return acc;
@@ -1478,6 +1485,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         axisLine={{ stroke: colors.chart.axis.line }}
                         tickFormatter={(value) => value.toFixed(0)}
                       />
+                      {/* y축 2번째 그리드(눈금) 위치에 현재 데이터값 표시 */}
+                      {sensor.data.length > 0 && (
+                        <text
+                          x="50%"
+                          dx="10"
+                          y="50%"
+                          textAnchor="middle"
+                          fontSize="16"
+                          fontWeight="bold"
+                          fill={colorAssignments[sensor.id.toString()].line}
+                        >
+                          {sensor.data[sensor.data.length - 1].value}
+                        </text>
+                      )}
                       <Tooltip
                         content={({ active, payload, label }) => {
                           if (
@@ -1749,6 +1770,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               <span className="status">
                 {item.status === 'warning' ? '경고' : '위험'}
               </span>
+              {item.value !== undefined && (
+                <span className="value">{item.value}</span>
+              )}
             </LogItem>
           ))}
           {logItems.length === 0 && (
