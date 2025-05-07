@@ -287,6 +287,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   const [gasStatusArr, setGasStatusArr] = useState<number[]>([]);
   const [fireStatusArr, setFireStatusArr] = useState<number[]>([]);
 
+  // 1초마다 현재 시간으로 lastUpdateTime 갱신
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const MM = String(now.getMonth() + 1).padStart(2, '0');
+      const DD = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      setLastUpdateTime(`${MM}/${DD} ${hh}:${mm}:${ss}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleWebSocketMessage = useCallback(
     async (data: any) => {
       // 전체 데이터 구조 로깅
@@ -351,7 +365,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             return sensor;
           })
         );
-        setLastUpdateTime(lastUpdateTime || new Date().toLocaleTimeString());
         // 가스/화재 데이터 처리
         const gdet = data.mqtt_data.data.gdet;
         const fdet = data.mqtt_data.data.fdet;
@@ -1173,7 +1186,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 </svg>
                 전단계
               </NavLinkStyle>
-              <UpdateTime>업데이트: {lastUpdateTime}</UpdateTime>
+              <UpdateTime>현재시간: {lastUpdateTime}</UpdateTime>
             </MainMenu>
           )}
         </GNB>

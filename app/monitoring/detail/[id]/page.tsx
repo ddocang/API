@@ -1146,6 +1146,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   }, [hasDanger, alarmAllowed]);
 
+  // 1초마다 현재 시간으로 lastUpdateTime 갱신
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const MM = String(now.getMonth() + 1).padStart(2, '0');
+      const DD = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      setLastUpdateTime(`${MM}/${DD} ${hh}:${mm}:${ss}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -1285,7 +1299,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 </svg>
                 전단계
               </NavLinkStyle>
-              <UpdateTime>업데이트: {lastUpdateTime}</UpdateTime>
+              <UpdateTime>현재시간: {lastUpdateTime}</UpdateTime>
             </MainMenu>
           )}
         </GNB>
