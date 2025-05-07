@@ -751,6 +751,20 @@ export const MapView = styled.div`
       }
     }
   }
+
+  .sensor-icon.danger {
+    filter: drop-shadow(0 0 24px #ff2d55) brightness(2) !important;
+    animation: danger-blink 0.7s infinite alternate !important;
+  }
+
+  @keyframes danger-blink {
+    0% {
+      filter: drop-shadow(0 0 24px #ff2d55) brightness(2);
+    }
+    100% {
+      filter: drop-shadow(0 0 48px #ff2d55) brightness(3);
+    }
+  }
 `;
 
 export const MapContainer = styled.div`
@@ -897,6 +911,25 @@ export const SensorItem = styled.div`
     padding-right: 0;
   }
 
+  &.danger {
+    background: #fff0f3;
+    border: 2px solid #ff2d55;
+    color: #ff2d55;
+    animation: danger-blink-row 0.7s infinite alternate;
+    box-shadow: 0 0 16px #ff2d55, 0 0 32px #ff2d5533;
+  }
+
+  @keyframes danger-blink-row {
+    0% {
+      background: #fff0f3;
+      box-shadow: 0 0 16px #ff2d55, 0 0 32px #ff2d5533;
+    }
+    100% {
+      background: #ffe5ea;
+      box-shadow: 0 0 32px #ff2d55, 0 0 64px #ff2d5533;
+    }
+  }
+
   @media (max-width: 1600px) {
     gap: 6px;
     padding: 10px 12px;
@@ -971,7 +1004,12 @@ export const SensorType = styled.span`
 export const SensorConnection = styled.span`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: ${({ children }) => (children === '연결안됨' ? '#ef4444' : '#2e7d32')};
+  color: ${({ children }) =>
+    children === '연결됨'
+      ? '#34d399'
+      : children === '연결안됨'
+      ? '#ef4444'
+      : '#2e7d32'};
   font-weight: 600;
   text-align: center;
 
@@ -983,59 +1021,60 @@ export const SensorConnection = styled.span`
 export const SensorStatus = styled.div<{ status?: string }>`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: #2563eb;
   font-weight: 600;
   text-align: center;
   display: flex;
   justify-content: center;
 
-  ${(props) =>
-    props.status &&
-    `
-    padding: 4px 12px;
-    background: #eaf3fb;
-    color: #2563eb;
-    border: 1px solid #bae6fd;
-    border-radius: 12px;
-    margin: 0 auto;
-  `}
+  color: ${({ status }) =>
+    status === 'normal'
+      ? '#34d399'
+      : status === 'danger'
+      ? '#ef4444'
+      : '#2563eb'} !important;
+  background: ${({ status }) =>
+    status === 'normal'
+      ? 'rgba(52, 211, 153, 0.12)'
+      : status === 'danger'
+      ? 'rgba(239, 68, 68, 0.12)'
+      : '#eaf3fb'} !important;
+  border: 1px solid
+    ${({ status }) =>
+      status === 'normal'
+        ? 'rgba(52, 211, 153, 0.32)'
+        : status === 'danger'
+        ? 'rgba(239, 68, 68, 0.32)'
+        : '#bae6fd'} !important;
+  border-radius: 12px;
+  margin: 0 auto;
+  padding: 4px 12px;
 
   @media (max-width: 768px) {
     font-size: 11px;
-    ${(props) =>
-      props.status &&
-      `
-      padding: 2px 8px;
-      border-radius: 8px;
-    `}
+    padding: 2px 8px;
+    border-radius: 8px;
   }
 
   html.dark & {
-    ${(props) =>
-      props.status &&
-      `
-      background: ${
-        props.status === 'normal'
-          ? 'rgba(16, 185, 129, 0.18)'
-          : props.status === 'warning'
-          ? 'rgba(245, 158, 11, 0.18)'
-          : 'rgba(239, 68, 68, 0.18)'
-      };
-      color: ${
-        props.status === 'normal'
-          ? '#34d399'
-          : props.status === 'warning'
-          ? '#fbbf24'
-          : '#f87171'
-      };
-      border: 1.5px solid ${
-        props.status === 'normal'
-          ? 'rgba(16, 185, 129, 0.5)'
-          : props.status === 'warning'
-          ? 'rgba(245, 158, 11, 0.5)'
-          : 'rgba(239, 68, 68, 0.5)'
-      };
-    `}
+    color: ${({ status }) =>
+      status === 'normal'
+        ? '#34d399'
+        : status === 'danger'
+        ? '#ef4444'
+        : '#2563eb'} !important;
+    background: ${({ status }) =>
+      status === 'normal'
+        ? 'rgba(52, 211, 153, 0.18)'
+        : status === 'danger'
+        ? 'rgba(239, 68, 68, 0.18)'
+        : '#eaf3fb'} !important;
+    border: 1px solid
+      ${({ status }) =>
+        status === 'normal'
+          ? 'rgba(52, 211, 153, 0.32)'
+          : status === 'danger'
+          ? 'rgba(239, 68, 68, 0.32)'
+          : '#bae6fd'} !important;
   }
 `;
 
@@ -1045,9 +1084,7 @@ export const SensorValue = styled.div<{ status?: string }>`
   font-size: 13px;
   color: ${({ status }) =>
     status === 'normal'
-      ? '#1e293b'
-      : status === 'warning'
-      ? '#fbbf24'
+      ? '#34d399'
       : status === 'danger'
       ? '#ef4444'
       : '#1e293b'};
@@ -1077,9 +1114,7 @@ export const SensorValue = styled.div<{ status?: string }>`
   html.dark & {
     color: ${({ status }) =>
       status === 'normal'
-        ? '#1e293b'
-        : status === 'warning'
-        ? '#fbbf24'
+        ? '#34d399'
         : status === 'danger'
         ? '#ef4444'
         : '#1e293b'};

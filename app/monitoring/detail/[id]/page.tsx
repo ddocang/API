@@ -167,6 +167,9 @@ const VIBRATION_SENSORS = [
   { id: 'vibration-7', x: 559, y: 133, name: '진동감지기7' },
 ];
 
+// 진동감지기 위험 임계값 상수
+const VIBRATION_DANGER_THRESHOLD = 500;
+
 const FACILITY_DETAIL: FacilityDetail = {
   name: '삼척 교동 수소 스테이션',
   type: '대체연료충전소',
@@ -390,7 +393,8 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   timestamp: now.getTime(),
                   value: value,
                 };
-                const status = value >= 500 ? 'danger' : 'normal';
+                const status =
+                  value >= VIBRATION_DANGER_THRESHOLD ? 'danger' : 'normal';
 
                 if (status === 'danger') {
                   addLogItem(sensor, status, '진동', value.toString());
@@ -550,18 +554,61 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     setSelectedSensor(null);
   };
 
+  // getSensorStatus를 useMemo 위로 이동
+  const getSensorStatus = (
+    sensorId: string
+  ): 'normal' | 'warning' | 'danger' => {
+    const type = sensorId.split('-')[0];
+    if (type === 'vibration') {
+      const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
+      const sensor = vibrationSensors[sensorIndex];
+      return (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger';
+    } else {
+      // 가스, 화재 센서는 항상 'normal' 반환 (랜덤 danger 제거)
+      return 'normal';
+    }
+  };
+
   const filteredSensors = useMemo(() => {
+    let sensors: (GasSensor | FireSensor | VibrationSensor)[] = [];
     if (selectedSensorType === 'all') {
-      return [
+      sensors = [
         ...FACILITY_DETAIL.sensors.gas,
         ...FACILITY_DETAIL.sensors.fire,
         ...vibrationSensors,
       ];
+    } else if (selectedSensorType === 'gas') {
+      sensors = FACILITY_DETAIL.sensors.gas;
+    } else if (selectedSensorType === 'fire') {
+      sensors = FACILITY_DETAIL.sensors.fire;
+    } else {
+      sensors = vibrationSensors;
     }
-    if (selectedSensorType === 'gas') return FACILITY_DETAIL.sensors.gas;
-    if (selectedSensorType === 'fire') return FACILITY_DETAIL.sensors.fire;
-    return vibrationSensors;
-  }, [selectedSensorType, vibrationSensors]);
+    // 위험 센서가 최상단에 오도록 정렬
+    return sensors.slice().sort((a, b) => {
+      const aStatus = getSensorStatus(
+        a.name.startsWith('가스감지기')
+          ? `gas-${a.id}`
+          : a.name.startsWith('화재감지기')
+          ? `fire-${a.id - 15}`
+          : a.name.startsWith('진동감지기')
+          ? `vibration-${a.id - 21}`
+          : ''
+      );
+      const bStatus = getSensorStatus(
+        b.name.startsWith('가스감지기')
+          ? `gas-${b.id}`
+          : b.name.startsWith('화재감지기')
+          ? `fire-${b.id - 15}`
+          : b.name.startsWith('진동감지기')
+          ? `vibration-${b.id - 21}`
+          : ''
+      );
+      if (aStatus === 'danger' && bStatus !== 'danger') return -1;
+      if (aStatus !== 'danger' && bStatus === 'danger') return 1;
+      return 0;
+    });
+  }, [selectedSensorType, vibrationSensors, gasStatusArr, fireStatusArr]);
 
   const getSensorInfo = (sensorId: string) => {
     const type = sensorId.split('-')[0];
@@ -580,8 +627,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         realtimeValue = sensor.value;
         const numValue = Number(sensor.value);
         if (!isNaN(numValue)) {
-          if (numValue > 1000) signalText = '위험';
-          else if (numValue > 500) signalText = '경고';
+          if (numValue >= VIBRATION_DANGER_THRESHOLD) signalText = '위험';
           else signalText = '정상';
         }
       }
@@ -656,20 +702,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           value: sensorInfo.value,
         });
       }
-    }
-  };
-
-  const getSensorStatus = (
-    sensorId: string
-  ): 'normal' | 'warning' | 'danger' => {
-    const type = sensorId.split('-')[0];
-    if (type === 'vibration') {
-      const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
-      const sensor = vibrationSensors[sensorIndex];
-      return (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger';
-    } else {
-      // 가스, 화재 센서는 항상 'normal' 반환 (랜덤 danger 제거)
-      return 'normal';
     }
   };
 
@@ -1145,7 +1177,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   {filteredSensorIcons.map((sensor) => (
                     <g
                       key={sensor.id}
-                      className="sensor-icon"
+                      className={`sensor-icon${
+                        getSensorStatus(sensor.id) === 'danger' ? ' danger' : ''
+                      }`}
                       data-type={sensor.id.split('-')[0]}
                       data-sensor-id={sensor.id}
                       transform={`translate(${sensor.x}, ${sensor.y})`}
@@ -1375,8 +1409,8 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       realtimeValue = sensor.value;
                       const numValue = Number(sensor.value);
                       if (!isNaN(numValue)) {
-                        if (numValue > 1000) signalText = '위험';
-                        else if (numValue > 500) signalText = '경고';
+                        if (numValue >= VIBRATION_DANGER_THRESHOLD)
+                          signalText = '위험';
                         else signalText = '정상';
                       }
                     } else {
@@ -1388,6 +1422,18 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       key={sensor.id}
                       onClick={() => handleSensorListItemClick(sensor)}
                       style={{ cursor: 'pointer' }}
+                      className={(() => {
+                        const status = getSensorStatus(
+                          sensor.name.startsWith('가스감지기')
+                            ? `gas-${sensor.id}`
+                            : sensor.name.startsWith('화재감지기')
+                            ? `fire-${sensor.id - 15}`
+                            : sensor.name.startsWith('진동감지기')
+                            ? `vibration-${sensor.id - 21}`
+                            : ''
+                        );
+                        return status === 'danger' ? 'danger' : '';
+                      })()}
                     >
                       <SensorNo>{index + 1}</SensorNo>
                       <SensorType>
@@ -1401,11 +1447,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         />
                       </SensorType>
                       <SensorConnection>{connectionText}</SensorConnection>
-                      <SensorStatus status={sensor.status}>
+                      <SensorStatus
+                        status={signalText === '위험' ? 'danger' : 'normal'}
+                      >
                         {signalText}
                       </SensorStatus>
                       <SensorValue
-                        status={sensor.status}
+                        status={signalText === '위험' ? 'danger' : 'normal'}
                         style={{ textAlign: 'center', width: '100%' }}
                       >
                         {realtimeValue}
