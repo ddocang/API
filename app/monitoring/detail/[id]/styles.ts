@@ -780,6 +780,12 @@ export const MapView = styled.div`
       filter: drop-shadow(0 0 48px #ff2d55) brightness(3);
     }
   }
+
+  .sensor-icon.dimmed {
+    filter: grayscale(1) opacity(0.3) !important;
+    pointer-events: none;
+    transition: filter 0.3s;
+  }
 `;
 
 export const MapContainer = styled.div`

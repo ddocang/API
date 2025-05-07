@@ -3,7 +3,7 @@ import useWebSocket from '@/hooks/useWebSocket'; // ← 추가
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   AreaChart,
   Area,
@@ -29,7 +29,6 @@ import {
   MapSection,
   LeftColumn,
   MapView,
-  SensorIcon,
   SensorCard,
   ListHeader,
   SensorList,
@@ -75,6 +74,7 @@ import { ChevronDown } from 'lucide-react';
 import ThemeToggleButton from '@/app/components/ThemeToggleButton';
 import { ThemeProvider } from '@/app/contexts/ThemeContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import styled from '@emotion/styled';
 
 interface SensorBase {
   id: number;
@@ -1126,8 +1126,81 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     );
   }
 
+  // 위험상황일 때 danger 센서 id 배열 구하기
+  const dangerSensorIds = filteredSensorIcons
+    .filter((sensor) => getSensorStatus(sensor.id) === 'danger')
+    .map((sensor) => sensor.id);
+
+  const [showAlarmPermission, setShowAlarmPermission] = useState(true);
+  const [alarmAllowed, setAlarmAllowed] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // 위험상황 감지 useEffect
+  useEffect(() => {
+    if (alarmAllowed && hasDanger && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    } else if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [hasDanger, alarmAllowed]);
+
   return (
     <div>
+      {/* 경보음 듣기 허용 팝업 */}
+      {showAlarmPermission && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '36px 32px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              textAlign: 'center',
+              minWidth: 320,
+            }}
+          >
+            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 16 }}>
+              경보음 듣기 허용
+            </div>
+            <div style={{ fontSize: 16, color: '#555', marginBottom: 28 }}>
+              위험상황 발생 시 경보음을 자동으로 들으시겠습니까?
+            </div>
+            <button
+              style={{
+                background: '#ef4444',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 16,
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 32px',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setAlarmAllowed(true);
+                setShowAlarmPermission(false);
+              }}
+            >
+              허용
+            </button>
+          </div>
+        </div>
+      )}
       <TopBanner>
         <BannerBackground>
           <DarkOverlay />
@@ -1244,41 +1317,40 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     height="672"
                     preserveAspectRatio="xMidYMid meet"
                   />
-                  {filteredSensorIcons.map((sensor) => (
-                    <g
-                      key={sensor.id}
-                      className={`sensor-icon${
-                        getSensorStatus(sensor.id) === 'danger' ? ' danger' : ''
-                      }`}
-                      data-type={sensor.id.split('-')[0]}
-                      data-sensor-id={sensor.id}
-                      transform={`translate(${sensor.x}, ${sensor.y})`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSensorClick(sensor.id, e);
-                      }}
-                      style={
-                        animationDelays[sensor.id.toString()]
-                          ? {
-                              animationDelay: `${
-                                animationDelays[sensor.id.toString()]
-                              }s`,
-                            }
-                          : undefined
-                      }
-                    >
-                      <image
-                        href={`/images/monitoring/detail/${
-                          sensor.id.split('-')[0]
-                        }_box.svg`}
-                        x="-30"
-                        y="-23"
-                        width="60"
-                        height="60"
-                      />
-                    </g>
-                  ))}
+                  {filteredSensorIcons.map((sensor) => {
+                    const isDanger = getSensorStatus(sensor.id) === 'danger';
+                    const isDimmed = dangerSensorIds.length > 0 && !isDanger;
+                    // 센서별 위치 정보
+                    const { x, y } = sensor;
+                    return (
+                      <g
+                        key={sensor.id}
+                        data-type={sensor.id.split('-')[0]}
+                        data-sensor-id={sensor.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSensorClick(sensor.id, e);
+                        }}
+                        className={`sensor-icon${isDanger ? ' danger' : ''}${
+                          isDimmed ? ' dimmed' : ''
+                        }`}
+                        style={{ cursor: 'pointer' }}
+                        transform={`translate(${x},${y})`}
+                      >
+                        <image
+                          href={`/images/monitoring/detail/${
+                            sensor.id.split('-')[0]
+                          }_box.svg`}
+                          width="60"
+                          height="60"
+                          x={-30}
+                          y={-30}
+                        />
+                      </g>
+                    );
+                  })}
                 </svg>
+                {/* 툴팁 등은 svg 바깥에서 렌더링 */}
                 {showTooltip && tooltipSensor && (
                   <SensorTooltip
                     status={
@@ -1910,13 +1982,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       <PopupOverlay isOpen={isLogOpen} onClick={() => setIsLogOpen(false)} />
 
       {/* 경보음 */}
-      <audio
-        src="/alarm.mp3"
-        autoPlay={hasDanger}
-        loop
-        style={{ display: 'none' }}
-        id="danger-audio"
-      />
+      <audio ref={audioRef} src="/alarm.mp3" loop style={{ display: 'none' }} />
     </div>
   );
 }
