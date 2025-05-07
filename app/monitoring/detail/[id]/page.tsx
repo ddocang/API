@@ -1059,6 +1059,73 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     return data;
   }, [selectedSensor]);
 
+  // 위험 센서가 하나라도 있는지 체크
+  const hasDanger = useMemo(() => {
+    return filteredSensors.some((sensor) => {
+      const status = signalTextForSensor(sensor);
+      return status === '위험';
+    });
+  }, [filteredSensors]);
+
+  // 센서별 signalText 계산 함수(중복 로직 함수화)
+  function signalTextForSensor(sensor: any) {
+    let signalText = '--';
+    let gIdx, fIdx;
+    if (sensor.name.startsWith('가스감지기')) {
+      gIdx = parseInt(sensor.name.replace('가스감지기', '')) - 1;
+      if (typeof gasStatusArr[gIdx] === 'number') {
+        signalText =
+          gasStatusArr[gIdx] === 1
+            ? '위험'
+            : gasStatusArr[gIdx] === 0
+            ? '정상'
+            : '--';
+      }
+    } else if (sensor.name.startsWith('화재감지기')) {
+      fIdx = parseInt(sensor.name.replace('화재감지기', '')) - 1;
+      if (typeof fireStatusArr[fIdx] === 'number') {
+        signalText =
+          fireStatusArr[fIdx] === 1
+            ? '위험'
+            : fireStatusArr[fIdx] === 0
+            ? '정상'
+            : '--';
+      }
+    } else if (sensor.name.includes('진동')) {
+      if (
+        typeof sensor.value !== 'undefined' &&
+        sensor.value !== null &&
+        sensor.value !== ''
+      ) {
+        const numValue = Number(sensor.value);
+        if (!isNaN(numValue)) {
+          signalText = numValue >= VIBRATION_DANGER_THRESHOLD ? '위험' : '정상';
+        }
+      }
+    }
+    return signalText;
+  }
+
+  // 삼척 수소충전소(id=2)는 빈 페이지(준비중)로 분기
+  if (params.id === '2') {
+    return (
+      <div
+        style={{
+          width: '100%',
+          minHeight: '600px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 24,
+          color: '#888',
+        }}
+      >
+        <div>삼척 수소충전소 상세페이지는 준비중입니다.</div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <TopBanner>
@@ -1154,7 +1221,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       <ContentSection>
         <MapSection>
           <LeftColumn>
-            <MapView style={{ height: isMounted ? `${mapHeight}px` : 'auto' }}>
+            <MapView
+              className={hasDanger ? 'danger' : ''}
+              style={{ height: isMounted ? `${mapHeight}px` : 'auto' }}
+            >
               <MapContainer
                 className="map-container"
                 onClick={() => {
@@ -1838,6 +1908,15 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       </LogPopup>
 
       <PopupOverlay isOpen={isLogOpen} onClick={() => setIsLogOpen(false)} />
+
+      {/* 경보음 */}
+      <audio
+        src="/alarm.mp3"
+        autoPlay={hasDanger}
+        loop
+        style={{ display: 'none' }}
+        id="danger-audio"
+      />
     </div>
   );
 }

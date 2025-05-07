@@ -684,6 +684,21 @@ export const MapView = styled.div`
   border: 1px solid ${colors.theme.light.border};
   box-shadow: ${colors.borderPreset.card.glow};
 
+  &.danger {
+    animation: danger-map-blink 0.7s infinite alternate;
+  }
+
+  @keyframes danger-map-blink {
+    0% {
+      background: #fff0f3;
+      box-shadow: 0 0 32px #ff2d55, 0 0 64px #ff2d5533;
+    }
+    100% {
+      background: #ffe5ea;
+      box-shadow: 0 0 64px #ff2d55, 0 0 128px #ff2d5533;
+    }
+  }
+
   html.dark & {
     background: ${colors.background.primary};
     border: ${colors.borderPreset.card.width} ${colors.borderPreset.card.style}
