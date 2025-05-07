@@ -25,9 +25,9 @@ const DUMMY_LIST = [
     id: 1,
     name: '삼척 교동 수소 스테이션',
     address: '강원특별자치도 삼척시 교동 산 209',
-    gasStatus: 'normal',
-    fireStatus: 'normal',
-    vibrationStatus: 'normal',
+    gasStatus: 'inactive',
+    fireStatus: 'inactive',
+    vibrationStatus: 'inactive',
     type: '대체연료충전소',
     status: 'open',
     phone: '033-575-5189',
@@ -37,9 +37,9 @@ const DUMMY_LIST = [
     id: 2,
     name: '삼척 수소충전소',
     address: '강원특별자치도 삼척시 동해대로 3846',
-    gasStatus: 'warning',
-    fireStatus: 'normal',
-    vibrationStatus: 'normal',
+    gasStatus: 'inactive',
+    fireStatus: 'inactive',
+    vibrationStatus: 'inactive',
     type: '수소충전소',
     status: 'open',
     phone: '033-570-3391',
@@ -161,7 +161,17 @@ export default function MonitoringPage() {
     'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
     (data: any) => {
       // 예시: topic_id로 시설 구분, barr/gdet/fdet로 상태 추출
-      if (!data?.mqtt_data?.topic_id) return;
+      if (!data?.mqtt_data?.topic_id) {
+        setFacilityStatusList((prev) =>
+          prev.map((f) => ({
+            ...f,
+            gasStatus: 'inactive',
+            fireStatus: 'inactive',
+            vibrationStatus: 'inactive',
+          }))
+        );
+        return;
+      }
       // 예시: topic_id에서 id 추출 (BASE/P001 → 1)
       const id = (() => {
         const match = data.mqtt_data.topic_id.match(/BASE\/P(\d+)/);
@@ -571,7 +581,10 @@ export default function MonitoringPage() {
                   ? {}
                   : {
                       onDetailClick: () =>
-                        (window.location.href = `/monitoring/detail/${facility.id}`),
+                        (window.location.href =
+                          facility.id === 2
+                            ? '/monitoring/detail/2/page2'
+                            : `/monitoring/detail/${facility.id}`),
                     })}
               />
             ))}

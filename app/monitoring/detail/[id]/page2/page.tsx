@@ -14,6 +14,7 @@ import {
   Tooltip,
   ReferenceArea,
   ReferenceLine,
+  LabelList,
 } from 'recharts';
 import {
   Container,
@@ -68,13 +69,23 @@ import {
   FilterMenuItem,
   PopupButton,
   GraphStatsBar,
-} from './styles';
+} from '../styles';
 import { colors } from '@/app/styles/colors';
 import { ChevronDown } from 'lucide-react';
 import ThemeToggleButton from '@/app/components/ThemeToggleButton';
 import { ThemeProvider } from '@/app/contexts/ThemeContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import styled from '@emotion/styled';
+
+// 진동 그래프 세로 배치용 컨테이너
+const VibrationGraphContainerColumn = styled(VibrationGraphContainer)`
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  gap: 24px;
+  width: 100%;
+`;
 
 interface SensorBase {
   id: number;
@@ -127,44 +138,28 @@ interface FacilityDetail {
 
 // 가스 감지기 정보 배열
 const GAS_SENSORS = [
-  { id: 'gas-7', x: 128, y: 80, name: '가스감지기7' },
-  { id: 'gas-3', x: 263, y: 88, name: '가스감지기3' },
-  { id: 'gas-4', x: 333, y: 88, name: '가스감지기4' },
-  { id: 'gas-1', x: 263, y: 253, name: '가스감지기1' },
-  { id: 'gas-2', x: 333, y: 253, name: '가스감지기2' },
-  { id: 'gas-9', x: 448, y: 253, name: '가스감지기9' },
-  { id: 'gas-8', x: 448, y: 88, name: '가스감지기8' },
-  { id: 'gas-11', x: 522, y: 93, name: '가스감지기11' },
-  { id: 'gas-10', x: 522, y: 233, name: '가스감지기10' },
-  { id: 'gas-13', x: 559, y: 108, name: '가스감지기13' },
-  { id: 'gas-12', x: 559, y: 220, name: '가스감지기12' },
-  { id: 'gas-15', x: 612, y: 163, name: '가스감지기15' },
-  { id: 'gas-14', x: 662, y: 163, name: '가스감지기14' },
-  { id: 'gas-5', x: 328, y: 334, name: '가스감지기5' },
-  { id: 'gas-6', x: 458, y: 334, name: '가스감지기6' },
+  { id: 'gas-2', x: 385, y: 123, name: '가스감지기2' },
+  { id: 'gas-5', x: 80, y: 123, name: '가스감지기5' },
+  { id: 'gas-1', x: 540, y: 360, name: '가스감지기1' },
+  { id: 'gas-4', x: 360, y: 360, name: '가스감지기4' },
+  { id: 'gas-3', x: 150, y: 360, name: '가스감지기3' },
+  { id: 'gas-6', x: 520, y: 550, name: '가스감지기6' },
+  { id: 'gas-7', x: 720, y: 130, name: '가스감지기7' },
+  { id: 'gas-8', x: 552, y: 130, name: '가스감지기8' },
 ];
 
 // 화재 감지기 정보 배열
 const FIRE_SENSORS = [
-  { id: 'fire-1', x: 210, y: 263, name: '화재감지기1' },
-  { id: 'fire-2', x: 210, y: 375, name: '화재감지기2' },
-  { id: 'fire-3', x: 485, y: 263, name: '화재감지기3' },
-  { id: 'fire-4', x: 575, y: 249, name: '화재감지기4' },
-  { id: 'fire-5', x: 485, y: 76, name: '화재감지기5' },
-  { id: 'fire-6', x: 602, y: 76, name: '화재감지기6' },
+  { id: 'fire-1', x: 520, y: 500, name: '화재감지기1' },
+  { id: 'fire-2', x: 800, y: 50, name: '화재감지기2' },
+  { id: 'fire-3', x: 42, y: 460, name: '화재감지기3' },
 ];
 
 // 진동 감지기 정보 배열
 const VIBRATION_SENSORS = [
-  { id: 'vibration-1', x: 260, y: 303, name: '진동감지기1' },
-  { id: 'vibration-2', x: 277, y: 360, name: '진동감지기2' },
-  { id: 'vibration-3', x: 295, y: 303, name: '진동감지기3' },
-  { id: 'vibration-4', x: 390, y: 303, name: '진동감지기4' },
-  { id: 'vibration-5', x: 407, y: 360, name: '진동감지기5' },
-  { id: 'vibration-6', x: 427, y: 303, name: '진동감지기6' },
-  { id: 'vibration-8', x: 523, y: 118, name: '진동감지기8' },
-  { id: 'vibration-9', x: 523, y: 193, name: '진동감지기9' },
-  { id: 'vibration-7', x: 559, y: 133, name: '진동감지기7' },
+  { id: 'vibration-1', x: 385, y: 155, name: '진동감지기1' },
+  { id: 'vibration-2', x: 585, y: 130, name: '진동감지기2' },
+  { id: 'vibration-3', x: 685, y: 130, name: '진동감지기3' },
 ];
 
 // 진동감지기 위험 임계값 상수
@@ -190,25 +185,15 @@ const FACILITY_DETAIL: FacilityDetail = {
       { id: 6, name: '가스감지기6', status: '--' },
       { id: 7, name: '가스감지기7', status: '--' },
       { id: 8, name: '가스감지기8', status: '--' },
-      { id: 9, name: '가스감지기9', status: '--' },
-      { id: 10, name: '가스감지기10', status: '--' },
-      { id: 11, name: '가스감지기11', status: '--' },
-      { id: 12, name: '가스감지기12', status: '--' },
-      { id: 13, name: '가스감지기13', status: '--' },
-      { id: 14, name: '가스감지기14', status: '--' },
-      { id: 15, name: '가스감지기15', status: '--' },
     ],
     fire: [
-      { id: 16, name: '화재감지기1', status: '--' },
-      { id: 17, name: '화재감지기2', status: '--' },
-      { id: 18, name: '화재감지기3', status: '--' },
-      { id: 19, name: '화재감지기4', status: '--' },
-      { id: 20, name: '화재감지기5', status: '--' },
-      { id: 21, name: '화재감지기6', status: '--' },
+      { id: 9, name: '화재감지기1', status: '--' },
+      { id: 10, name: '화재감지기2', status: '--' },
+      { id: 11, name: '화재감지기3', status: '--' },
     ],
     vibration: [
       {
-        id: 22,
+        id: 12,
         name: '진동감지기1',
         value: '',
         status: '--',
@@ -216,7 +201,7 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 23,
+        id: 13,
         name: '진동감지기2',
         value: '',
         status: '--',
@@ -224,56 +209,8 @@ const FACILITY_DETAIL: FacilityDetail = {
         detailedData: [],
       },
       {
-        id: 24,
+        id: 14,
         name: '진동감지기3',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 25,
-        name: '진동감지기4',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 26,
-        name: '진동감지기5',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 27,
-        name: '진동감지기6',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 28,
-        name: '진동감지기7',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 29,
-        name: '진동감지기8',
-        value: '',
-        status: '--',
-        data: [],
-        detailedData: [],
-      },
-      {
-        id: 30,
-        name: '진동감지기9',
         value: '',
         status: '--',
         data: [],
@@ -303,6 +240,16 @@ function useMediaQuery(query: string): boolean {
   }, [matches, query]);
   return matches;
 }
+
+// 지도+목록 넓게, 그래프 좁게 오버라이드
+const LeftColumnWide = styled(LeftColumn)`
+  width: 45% !important;
+  min-width: 0;
+`;
+const VibrationGraphContainerNarrow = styled(VibrationGraphContainerColumn)`
+  width: 55% !important;
+  min-width: 0;
+`;
 
 export default function MonitoringDetailPage({
   params,
@@ -349,102 +296,73 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         barr: data?.mqtt_data?.data?.barr,
       });
 
-      // BASE/P001 토픽 데이터만 처리
-      if (data?.mqtt_data?.topic_id === 'BASE/P001') {
-        try {
-          const barrString = data.mqtt_data.data.barr;
-          const lastUpdateTime = data.mqtt_data.data.last_update_time;
-
-          if (!barrString) {
-            console.warn('⚠️ barr 데이터가 없음');
-            return;
-          }
-
-          const barrValues = barrString
-            .split(',')
-            .slice(0, 9)
-            .map((value: string) => parseInt(value));
-
-          if (barrValues.length !== 9) {
-            console.warn('⚠️ barr 데이터 길이가 잘못됨:', barrValues.length);
-            return;
-          }
-
-          // 이전 데이터와 비교를 위한 로깅
-          console.log('🔄 진동 데이터 업데이트:', {
-            last_update_time: lastUpdateTime,
-            previous_values: vibrationSensors.map((s) => s.value),
-            new_values: barrValues,
-          });
-
-          const now = new Date();
-          const timeStr = now.toTimeString().split(' ')[0];
-
-          setVibrationSensors((prevSensors) =>
-            prevSensors.map((sensor, index) => {
-              if (index < 9) {
-                const value = barrValues[index];
-                const newDataPoint = {
-                  time: timeStr,
-                  value: value,
-                };
-                const newDetailedDataPoint = {
-                  time: timeStr,
-                  timestamp: now.getTime(),
-                  value: value,
-                };
-                const status =
-                  value >= VIBRATION_DANGER_THRESHOLD ? 'danger' : 'normal';
-
-                if (status === 'danger') {
-                  addLogItem(sensor, status, '진동', value.toString());
-                }
-
-                return {
-                  ...sensor,
-                  value: value.toString(),
-                  status: status,
-                  data: [...sensor.data.slice(-29), newDataPoint],
-                  detailedData: [
-                    ...sensor.detailedData.slice(-299),
-                    newDetailedDataPoint,
-                  ],
-                };
-              }
-              return sensor;
-            })
-          );
-
-          setLastUpdateTime(lastUpdateTime || new Date().toLocaleTimeString());
-        } catch (error) {
-          console.error('❌ 진동 센서 데이터 처리 중 오류:', error);
-        }
+      // 삼척수소충전소(P003) 데이터만 처리, 그 외는 무시
+      if (data?.mqtt_data?.topic_id !== 'BASE/P003') {
+        return;
       }
 
-      if (
-        data?.mqtt_data?.topic_id?.startsWith('BASE/') &&
-        data?.mqtt_data?.data?.barr
-      ) {
-        const vibrationValues = data.mqtt_data.data.barr
+      // 삼척수소충전소(P003) 데이터 처리
+      try {
+        const barrString = data.mqtt_data.data.barr;
+        const lastUpdateTime = data.mqtt_data.data.last_update_time;
+        if (!barrString) {
+          console.warn('⚠️ barr 데이터가 없음');
+          return;
+        }
+        const barrValues = barrString
           .split(',')
-          .slice(0, 9) // 진동센서 9개
-          .map((val: string) => parseFloat(val));
-
-        // 가스/화재감지기 신호 추출
+          .slice(0, 3)
+          .map((value: string) => parseInt(value));
+        if (barrValues.length !== 3) {
+          console.warn('⚠️ barr 데이터 길이가 잘못됨:', barrValues.length);
+          return;
+        }
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0];
+        setVibrationSensors((prevSensors) =>
+          prevSensors.map((sensor, index) => {
+            if (index < 3) {
+              const value = barrValues[index];
+              const newDataPoint = {
+                time: timeStr,
+                value: value,
+              };
+              const newDetailedDataPoint = {
+                time: timeStr,
+                timestamp: now.getTime(),
+                value: value,
+              };
+              const status =
+                value >= VIBRATION_DANGER_THRESHOLD ? 'danger' : 'normal';
+              if (status === 'danger') {
+                addLogItem(sensor, status, '진동', value.toString());
+              }
+              return {
+                ...sensor,
+                value: value.toString(),
+                status: status,
+                data: [...sensor.data.slice(-29), newDataPoint],
+                detailedData: [
+                  ...sensor.detailedData.slice(-299),
+                  newDetailedDataPoint,
+                ],
+              };
+            }
+            return sensor;
+          })
+        );
+        setLastUpdateTime(lastUpdateTime || new Date().toLocaleTimeString());
+        // 가스/화재 데이터 처리
         const gdet = data.mqtt_data.data.gdet;
         const fdet = data.mqtt_data.data.fdet;
-
         if (typeof gdet !== 'undefined') setGasStatus(gdet);
         if (typeof fdet !== 'undefined') setFireStatus(fdet);
-
         const gdetArr = Array.isArray(gdet)
           ? gdet
           : typeof gdet === 'string'
           ? gdet.split(',').map(Number)
           : [];
-
         setGasStatusArr(gdetArr);
-
         const fdetArr = Array.isArray(fdet)
           ? fdet
           : typeof fdet === 'string'
@@ -453,6 +371,8 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           ? [fdet]
           : [];
         setFireStatusArr(fdetArr);
+      } catch (error) {
+        console.error('❌ 삼척수소충전소(P003) 데이터 처리 중 오류:', error);
       }
     },
     [vibrationSensors]
@@ -505,32 +425,18 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   // 색상 세트를 랜덤하게 섞어서 배분
   const [colorAssignments] = useState<Record<string, ChartColorSet>>(() => {
     return vibrationSensors.reduce((acc, sensor, index) => {
-      // 1-6번 차트는 #04A777
-      if (index < 6) {
+      // 1번 진동감지기: 주황
+      if (index === 0) {
         acc[sensor.id.toString()] = {
-          line: '#04A777',
-          fill: '#04A777',
-        };
-      }
-      // 7번(index 6)은 원래 #D90368 → #FB8B24로 변경
-      else if (index === 6) {
-        acc[sensor.id.toString()] = {
-          line: '#FB8B24',
+          line: '#FB8B24', // 주황
           fill: '#FB8B24',
         };
       }
-      // 8번(index 7)은 #D90368 그대로
-      else if (index === 7) {
+      // 2, 3번: 초록
+      else if (index === 1 || index === 2) {
         acc[sensor.id.toString()] = {
-          line: '#D90368',
-          fill: '#D90368',
-        };
-      }
-      // 9번(index 8)은 원래 #FB8B24 → #D90368로 변경
-      else {
-        acc[sensor.id.toString()] = {
-          line: '#D90368',
-          fill: '#D90368',
+          line: '#04A777',
+          fill: '#04A777',
         };
       }
       return acc;
@@ -796,7 +702,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     yaxis: {
       min: 0,
       max: Math.max(
-        ...vibrationSensors.map((s) => Math.max(...s.data.map((d) => d.value)))
+        ...vibrationSensors.map((s) =>
+          Math.max(...s.data.map((d: VibrationDataPoint) => d.value))
+        )
       ),
     },
   };
@@ -983,38 +891,40 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     };
   }, [selectedSensor]);
 
+  // 센서 이름으로 센서 배열에서 id를 찾아 반환하는 함수
+  function getSensorDomId(
+    sensor: GasSensor | FireSensor | VibrationSensor
+  ): string {
+    if (sensor.name.startsWith('가스감지기')) {
+      const found = GAS_SENSORS.find((s) => s.name === sensor.name);
+      return found ? found.id : '';
+    } else if (sensor.name.startsWith('화재감지기')) {
+      const found = FIRE_SENSORS.find((s) => s.name === sensor.name);
+      return found ? found.id : '';
+    } else if (sensor.name.startsWith('진동감지기')) {
+      const found = VIBRATION_SENSORS.find((s) => s.name === sensor.name);
+      return found ? found.id : '';
+    }
+    return '';
+  }
+
+  // 센서 목록 클릭 시 툴팁 정확히 뜨도록 id 매핑 개선
   const handleSensorListItemClick = (
     sensor: GasSensor | FireSensor | VibrationSensor
   ) => {
-    // 센서 ID 형식 변환 (예: 1 -> 'gas-1')
-    let sensorType = '';
-    if (sensor.id <= 15) sensorType = 'gas';
-    else if (sensor.id <= 21) sensorType = 'fire';
-    else sensorType = 'vibration';
-
-    const sensorId = `${sensorType}-${
-      sensor.id <= 15
-        ? sensor.id
-        : sensor.id <= 21
-        ? sensor.id - 15
-        : sensor.id - 21
-    }`;
-
-    // 센서 아이콘의 위치 찾기
+    // 센서 이름으로 정확한 id 생성
+    const sensorId = getSensorDomId(sensor);
     const sensorIcon = document.querySelector(`[data-sensor-id="${sensorId}"]`);
     const mapContainer = document.querySelector('.map-container');
 
     if (sensorIcon && mapContainer) {
       const rect = sensorIcon.getBoundingClientRect();
       const mapRect = mapContainer.getBoundingClientRect();
-
       const x = rect.left - mapRect.left + rect.width / 2;
       const y = rect.top - mapRect.top;
-
       setTooltipPosition({ x, y });
       setSelectedSensorId(sensorId);
       setShowTooltip(true);
-
       const sensorInfo = getSensorInfo(sensorId);
       setTooltipSensor({
         id: sensorId,
@@ -1022,8 +932,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         status: sensorInfo.status,
         value: sensorInfo.value,
       });
-
-      // 아이콘이 보이도록 스크롤
       sensorIcon.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
@@ -1104,26 +1012,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       }
     }
     return signalText;
-  }
-
-  // 삼척 수소충전소(id=2)는 빈 페이지(준비중)로 분기
-  if (params.id === '2') {
-    return (
-      <div
-        style={{
-          width: '100%',
-          minHeight: '600px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 24,
-          color: '#888',
-        }}
-      >
-        <div>삼척 수소충전소 상세페이지는 준비중입니다.</div>
-      </div>
-    );
   }
 
   // 위험상황일 때 danger 센서 id 배열 구하기
@@ -1293,7 +1181,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
 
       <ContentSection>
         <MapSection>
-          <LeftColumn>
+          <LeftColumnWide>
             <MapView
               className={hasDanger ? 'danger' : ''}
               style={{ height: isMounted ? `${mapHeight}px` : 'auto' }}
@@ -1312,7 +1200,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <image
-                    href="/images/monitoring/detail/map.svg"
+                    href="/images/monitoring/detail/5bun.svg"
                     width="828"
                     height="672"
                     preserveAspectRatio="xMidYMid meet"
@@ -1341,10 +1229,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                           href={`/images/monitoring/detail/${
                             sensor.id.split('-')[0]
                           }_box.svg`}
-                          width="60"
-                          height="60"
-                          x={-30}
-                          y={-30}
+                          width="70"
+                          height="70"
+                          x={-35}
+                          y={-35}
                         />
                       </g>
                     );
@@ -1581,6 +1469,11 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <SensorType>
                         <span
                           className="sensor-name"
+                          data-full-name={sensor.name}
+                          data-short-name={sensor.name.replace(
+                            /감지기(\d+)$/,
+                            '#$1'
+                          )}
                           style={{
                             color: sensor.name.startsWith('가스감지기')
                               ? '#04A777'
@@ -1591,9 +1484,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               : undefined,
                             fontWeight: 700,
                           }}
-                        >
-                          {sensor.name}
-                        </span>
+                        />
                       </SensorType>
                       <SensorConnection>{connectionText}</SensorConnection>
                       <SensorStatus
@@ -1613,124 +1504,158 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 })}
               </SensorList>
             </SensorCard>
-          </LeftColumn>
-          <VibrationGraphContainer>
-            {vibrationSensors.map((sensor) => (
-              <VibrationGraphCard
-                key={sensor.id}
-                onClick={() => handleGraphClick(sensor)}
-                style={{ cursor: 'pointer' }}
-              >
-                <h4>
-                  {sensor.name}
-                  <span className="status">정상</span>
-                </h4>
-                <div className="graph-container">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={sensor.data}
-                      margin={{
-                        top: 5,
-                        right: 10,
-                        left: -20,
-                        bottom: 0,
+          </LeftColumnWide>
+          <VibrationGraphContainerNarrow>
+            {filteredSensors
+              .filter((sensor) => sensor.name.startsWith('진동감지기'))
+              .slice(0, 3)
+              .map((sensor, idx) => {
+                const vibrationSensor = sensor as VibrationSensor;
+                let realtimeValue = '--';
+                if (
+                  vibrationSensor.value !== undefined &&
+                  vibrationSensor.value !== null &&
+                  vibrationSensor.value !== ''
+                ) {
+                  realtimeValue = vibrationSensor.value;
+                }
+                return (
+                  <VibrationGraphCard key={vibrationSensor.id}>
+                    <h4
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <defs>
-                        <linearGradient
-                          id={`gradient-${sensor.id}`}
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
+                      <span>{vibrationSensor.name}</span>
+                      <span className="status">정상</span>
+                    </h4>
+                    <div className="graph-container">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={vibrationSensor.data}
+                          margin={{
+                            top: 5,
+                            right: 10,
+                            left: -20,
+                            bottom: 0,
+                          }}
                         >
-                          <stop
-                            offset="5%"
-                            stopColor={
-                              colorAssignments[sensor.id.toString()].line
-                            }
-                            stopOpacity={0.3}
+                          <defs>
+                            <linearGradient
+                              id={`gradient-${vibrationSensor.id}`}
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor={
+                                  colorAssignments[
+                                    vibrationSensor.id.toString()
+                                  ].line
+                                }
+                                stopOpacity={0.3}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor={
+                                  colorAssignments[
+                                    vibrationSensor.id.toString()
+                                  ].line
+                                }
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                            stroke={colors.chart.grid.line}
+                            opacity={colors.chart.grid.opacity}
                           />
-                          <stop
-                            offset="95%"
-                            stopColor={
-                              colorAssignments[sensor.id.toString()].line
-                            }
-                            stopOpacity={0}
+                          <XAxis
+                            dataKey="time"
+                            tick={{ fontSize: 12 }}
+                            tickLine={false}
+                            axisLine={{ stroke: colors.chart.axis.line }}
                           />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke={colors.chart.grid.line}
-                        opacity={colors.chart.grid.opacity}
-                      />
-                      <XAxis
-                        dataKey="time"
-                        tick={{ fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={{ stroke: colors.chart.axis.line }}
-                      />
-                      <YAxis
-                        domain={[
-                          0,
-                          Math.max(...sensor.data.map((d) => d.value)),
-                        ]}
-                        tick={{ fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={{ stroke: colors.chart.axis.line }}
-                        tickFormatter={(value) => value.toFixed(0)}
-                      />
-                      {/* y축 2번째 그리드(눈금) 위치에 현재 데이터값 표시 */}
-                      {sensor.data.length > 0 && (
-                        <text
-                          x="50%"
-                          dx="10"
-                          y="50%"
-                          textAnchor="middle"
-                          fontSize="16"
-                          fontWeight="bold"
-                          fill={colorAssignments[sensor.id.toString()].line}
-                        >
-                          {sensor.data[sensor.data.length - 1].value}
-                        </text>
-                      )}
-                      <Tooltip
-                        content={({ active, payload, label }) => {
-                          if (
-                            active &&
-                            payload &&
-                            payload.length &&
-                            payload[0].value !== undefined
-                          ) {
-                            return (
-                              <CustomTooltip>
-                                <div className="time">{label}</div>
-                                <div className="value">
-                                  {parseInt(payload[0].value as any)}
-                                </div>
-                              </CustomTooltip>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="value"
-                        stroke={colorAssignments[sensor.id.toString()].line}
-                        strokeWidth={2}
-                        fill={`url(#gradient-${sensor.id})`}
-                        fillOpacity={1}
-                        isAnimationActive={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </VibrationGraphCard>
-            ))}
-          </VibrationGraphContainer>
+                          <YAxis
+                            domain={[
+                              0,
+                              Math.max(
+                                ...vibrationSensor.data.map(
+                                  (d: VibrationDataPoint) => d.value
+                                )
+                              ),
+                            ]}
+                            tick={{ fontSize: 12 }}
+                            tickLine={false}
+                            axisLine={{ stroke: colors.chart.axis.line }}
+                            tickFormatter={(value) => value.toFixed(0)}
+                          />
+                          <Tooltip
+                            content={({ active, payload, label }) => {
+                              if (
+                                active &&
+                                payload &&
+                                payload.length &&
+                                payload[0].value !== undefined
+                              ) {
+                                return (
+                                  <CustomTooltip>
+                                    <div className="time">{label}</div>
+                                    <div className="value">
+                                      {parseInt(payload[0].value as any)}
+                                    </div>
+                                  </CustomTooltip>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="value"
+                            stroke={
+                              colorAssignments[vibrationSensor.id.toString()]
+                                .line
+                            }
+                            strokeWidth={2}
+                            fill={`url(#gradient-${vibrationSensor.id})`}
+                            fillOpacity={1}
+                            isAnimationActive={false}
+                          />
+                          {/* 마지막 데이터값을 그래프 중앙에 SVG text로 표시 */}
+                          {vibrationSensor.data.length > 0 && (
+                            <text
+                              x="50%"
+                              dx="10"
+                              y="50%"
+                              textAnchor="middle"
+                              fontSize="16"
+                              fontWeight="bold"
+                              fill={
+                                colorAssignments[vibrationSensor.id.toString()]
+                                  .line
+                              }
+                            >
+                              {
+                                vibrationSensor.data[
+                                  vibrationSensor.data.length - 1
+                                ].value
+                              }
+                            </text>
+                          )}
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </VibrationGraphCard>
+                );
+              })}
+          </VibrationGraphContainerNarrow>
         </MapSection>
       </ContentSection>
 
@@ -1913,7 +1838,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     style={{
                       filter: 'url(#areaGlow)',
                     }}
-                  />
+                  >
+                    <LabelList
+                      dataKey="value"
+                      position="top"
+                      formatter={(v: any) => v?.toString()}
+                    />
+                  </Area>
                   {isZooming && refAreaLeft && refAreaRight && (
                     <ReferenceArea
                       x1={refAreaLeft}

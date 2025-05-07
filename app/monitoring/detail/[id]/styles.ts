@@ -644,7 +644,7 @@ export const FilterMenuItem = styled.button<{ $active?: boolean }>`
 export const MapSection = styled.div`
   width: 100%;
   display: flex;
-  gap: 15px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   align-items: stretch;
@@ -679,10 +679,11 @@ export const MapView = styled.div`
   position: relative;
   background: ${colors.theme.light.surface};
   border-radius: ${colors.borderPreset.card.radius};
-  padding: 15px;
+  padding: 0;
   aspect-ratio: 828 / 672;
   border: 1px solid ${colors.theme.light.border};
   box-shadow: ${colors.borderPreset.card.glow};
+  height: 95%;
 
   &.danger {
     animation: danger-map-blink 0.7s infinite alternate;
@@ -715,7 +716,8 @@ export const MapView = styled.div`
   svg {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    display: block;
   }
 
   .sensor-icon {
@@ -852,7 +854,7 @@ export const SensorCard = styled.div`
   min-height: 0;
   background: ${colors.theme.light.surface};
   border-radius: ${colors.borderPreset.card.radius};
-  padding: 15px;
+  padding: 8px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -876,7 +878,7 @@ export const SensorList = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 0 8px;
+  padding: 0 4px;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -991,7 +993,6 @@ export const SensorNo = styled.span`
 export const SensorType = styled.span`
   font-family: 'Pretendard';
   font-size: 13px;
-  color: ${colors.theme.light.text.secondary};
   text-align: center;
 
   @media (max-width: 768px) {
@@ -1015,10 +1016,6 @@ export const SensorType = styled.span`
     .sensor-name-short {
       display: none;
     }
-  }
-
-  html.dark & {
-    color: ${colors.theme.dark.text.secondary};
   }
 `;
 
@@ -1220,7 +1217,7 @@ export const VibrationGraphContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 15px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
 
