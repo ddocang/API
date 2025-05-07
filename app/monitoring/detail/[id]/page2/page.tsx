@@ -1107,7 +1107,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             </LogoImageWrapper>
             <span>HyGE&nbsp;Safety&nbsp;Monitoring</span>
           </Logo>
-          <BannerTitle>삼척 교동 수소 스테이션</BannerTitle>
+          <BannerTitle>삼척 수소충전소</BannerTitle>
           {!isMobile && (
             <MainMenu>
               <ThemeToggleButton />
