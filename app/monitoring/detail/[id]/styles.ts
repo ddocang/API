@@ -655,6 +655,16 @@ export const MapSection = styled.div`
     gap: 15px;
     overflow: visible;
   }
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    gap: 8px;
+    align-items: stretch;
+    overflow-x: hidden;
+  }
 `;
 
 export const LeftColumn = styled.div`
@@ -669,6 +679,13 @@ export const LeftColumn = styled.div`
     width: 100%;
     height: auto;
     min-height: auto;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    gap: 8px;
   }
 `;
 
@@ -711,6 +728,15 @@ export const MapView = styled.div`
     aspect-ratio: auto;
     height: 300px;
     flex: none;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    border-radius: 0;
+    overflow-x: hidden;
   }
 
   svg {
@@ -871,6 +897,14 @@ export const SensorCard = styled.div`
     height: 300px;
     min-height: 300px;
     flex: none;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0 2px;
+    border-radius: 0;
+    overflow-x: hidden;
   }
 `;
 
@@ -1495,10 +1529,13 @@ export const ContentSection = styled.div`
     min-height: 100vh;
     padding: 15px;
   }
-
   @media (max-width: 768px) {
     height: 100vh;
-    padding: 10px;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    overflow-x: hidden;
   }
 `;
 

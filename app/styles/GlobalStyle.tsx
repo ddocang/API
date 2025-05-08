@@ -9,6 +9,11 @@ const GlobalStyle = () => (
         background: #f8fafc;
         color: #1e293b;
         transition: background 0.2s, color 0.2s;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
       }
       html.dark body {
         background: #141414;

@@ -181,50 +181,40 @@ export default function MonitoringPage() {
 
       // 삼척 교동 수소 스테이션(P001)만 아래 로직 적용
       if (data.mqtt_data.topic_id === 'BASE/P001') {
-        let vibrationStatus: 'normal' | 'warning' | 'inactive' = 'normal';
-        let gasStatus: 'normal' | 'warning' | 'inactive' = 'normal';
-        let fireStatus: 'normal' | 'warning' | 'inactive' = 'normal';
-        let isAllNormal = true;
         // 진동
+        let vibrationStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
         if (data.mqtt_data.data?.barr) {
           const barrArr = data.mqtt_data.data.barr
             .split(',')
             .slice(0, 9)
             .map((v: string) => parseInt(v));
-          if (!barrArr.every((v: number) => v < 500)) isAllNormal = false;
-        } else {
-          isAllNormal = false;
+          vibrationStatus = barrArr.every((v: number) => v < 500)
+            ? 'normal'
+            : 'warning';
         }
         // 가스
+        let gasStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
         if (data.mqtt_data.data?.gdet) {
           const gdetArr = Array.isArray(data.mqtt_data.data.gdet)
             ? data.mqtt_data.data.gdet
             : typeof data.mqtt_data.data.gdet === 'string'
             ? data.mqtt_data.data.gdet.split(',').map(Number)
             : [];
-          if (!gdetArr.every((v: number) => v === 0)) isAllNormal = false;
-        } else {
-          isAllNormal = false;
+          gasStatus = gdetArr.every((v: number) => v === 0)
+            ? 'normal'
+            : 'warning';
         }
         // 화재
+        let fireStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
         if (data.mqtt_data.data?.fdet) {
           const fdetArr = Array.isArray(data.mqtt_data.data.fdet)
             ? data.mqtt_data.data.fdet
             : typeof data.mqtt_data.data.fdet === 'string'
             ? data.mqtt_data.data.fdet.split(',').map(Number)
             : [];
-          if (!fdetArr.every((v: number) => v === 0)) isAllNormal = false;
-        } else {
-          isAllNormal = false;
-        }
-        if (isAllNormal) {
-          vibrationStatus = 'normal';
-          gasStatus = 'normal';
-          fireStatus = 'normal';
-        } else {
-          vibrationStatus = 'warning';
-          gasStatus = 'warning';
-          fireStatus = 'warning';
+          fireStatus = fdetArr.every((v: number) => v === 0)
+            ? 'normal'
+            : 'warning';
         }
         setFacilityStatusList((prev) => {
           return prev.map((f) => {
