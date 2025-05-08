@@ -168,7 +168,7 @@ const VIBRATION_SENSORS = [
 ];
 
 // 진동감지기 위험 임계값 상수
-const VIBRATION_DANGER_THRESHOLD = 500;
+const VIBRATION_DANGER_THRESHOLD = 1000;
 
 const FACILITY_DETAIL: FacilityDetail = {
   name: '삼척 교동 수소 스테이션',

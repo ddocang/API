@@ -188,7 +188,7 @@ export default function MonitoringPage() {
             .split(',')
             .slice(0, 9)
             .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 500)
+          vibrationStatus = barrArr.every((v: number) => v < 1000)
             ? 'normal'
             : 'warning';
         }
@@ -241,7 +241,7 @@ export default function MonitoringPage() {
             .split(',')
             .slice(0, 3)
             .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 500)
+          vibrationStatus = barrArr.every((v: number) => v < 1000)
             ? 'normal'
             : 'warning';
         }
@@ -292,7 +292,7 @@ export default function MonitoringPage() {
             .split(',')
             .slice(0, 9)
             .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 500)
+          vibrationStatus = barrArr.every((v: number) => v < 1000)
             ? 'normal'
             : 'warning';
         }
