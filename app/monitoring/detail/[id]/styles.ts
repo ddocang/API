@@ -1562,7 +1562,7 @@ export const SensorTooltip = styled.div<{
       : status === 'warning'
       ? '0 0 15px rgba(245, 158, 11, 0.08), inset 0 0 20px rgba(245, 158, 11, 0.04)'
       : '0 0 15px rgba(239, 68, 68, 0.08), inset 0 0 20px rgba(239, 68, 68, 0.04)'};
-  z-index: 1000;
+  z-index: 2000;
   margin-bottom: 15px;
 
   &::after {

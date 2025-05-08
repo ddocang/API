@@ -76,6 +76,7 @@ import ThemeToggleButton from '@/app/components/ThemeToggleButton';
 import { ThemeProvider } from '@/app/contexts/ThemeContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import styled from '@emotion/styled';
+import { createPortal } from 'react-dom';
 
 // 진동 그래프 세로 배치용 컨테이너
 const VibrationGraphContainerColumn = styled(VibrationGraphContainer)`
@@ -452,6 +453,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   const [aspectRatio] = useState(357 / 1920);
   const [mapHeight, setMapHeight] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [tooltipWindowPos, setTooltipWindowPos] = useState({ x: 0, y: 0 });
 
   // 색상 세트를 랜덤하게 섞어서 배분
   const [colorAssignments] = useState<Record<string, ChartColorSet>>(() => {
@@ -1065,6 +1067,30 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   }, [hasDanger, alarmAllowed]);
 
+  // GNB(상단 네비게이션 바) 높이 구하기
+  const gnbRef = useRef<HTMLDivElement>(null);
+  const [gnbHeight, setGnbHeight] = useState(0);
+  useEffect(() => {
+    if (gnbRef.current) {
+      setGnbHeight(gnbRef.current.offsetHeight);
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (showTooltip && selectedSensorId) {
+      const sensorIcon = document.querySelector(
+        `[data-sensor-id="${selectedSensorId}"]`
+      );
+      if (sensorIcon) {
+        const iconRect = sensorIcon.getBoundingClientRect();
+        setTooltipWindowPos({
+          x: iconRect.left + iconRect.width / 2,
+          y: iconRect.top,
+        });
+      }
+    }
+  }, [showTooltip, selectedSensorId]);
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -1124,7 +1150,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         <BannerBackground>
           <DarkOverlay />
         </BannerBackground>
-        <GNB>
+        <GNB ref={gnbRef}>
           <Logo>
             <LogoImageWrapper>
               <Image
@@ -1283,85 +1309,93 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   })}
                 </svg>
                 {/* 툴팁 등은 svg 바깥에서 렌더링 */}
-                {showTooltip && tooltipSensor && (
-                  <SensorTooltip
-                    status={
-                      tooltipSensor.status === '정상'
-                        ? 'normal'
-                        : tooltipSensor.status === '경고'
-                        ? 'warning'
-                        : tooltipSensor.status === '위험'
-                        ? 'danger'
-                        : 'normal'
-                    }
-                    arrowDirection={
-                      tooltipSensor.id === 'fire-2' ? 'up' : 'down'
-                    }
-                    style={{
-                      position: 'absolute',
-                      left: `${tooltipPosition.x}px`,
-                      top: `${tooltipPosition.y}px`,
-                      transform:
-                        tooltipSensor.id === 'fire-2'
-                          ? 'translate(-50%, 40px)'
-                          : 'translate(-50%, -100%)',
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="tooltip-header">
-                      <div className="status-indicator" />
-                      <span className="name">{tooltipSensor.name}</span>
-                      <span className="status-text">
-                        {tooltipSensor.status}
-                      </span>
-                    </div>
-                    <div className="tooltip-content">
-                      <div className="info-row" data-role="value">
-                        <span className="label">데이터</span>
-                        <span className="value">{tooltipSensor.value}</span>
-                      </div>
-                      <div className="info-row" data-role="status">
-                        <span className="label">상태</span>
-                        <span className="value">
-                          {tooltipSensor.status === '정상' ||
-                          tooltipSensor.status === '경고' ||
-                          tooltipSensor.status === '위험'
-                            ? '연결됨'
-                            : '연결안됨'}
+                {showTooltip &&
+                  tooltipSensor &&
+                  typeof window !== 'undefined' &&
+                  createPortal(
+                    <SensorTooltip
+                      status={
+                        tooltipSensor.status === '정상'
+                          ? 'normal'
+                          : tooltipSensor.status === '경고'
+                          ? 'warning'
+                          : tooltipSensor.status === '위험'
+                          ? 'danger'
+                          : 'normal'
+                      }
+                      arrowDirection={
+                        tooltipSensor.id === 'fire-2' ? 'up' : 'down'
+                      }
+                      style={{
+                        position: 'fixed',
+                        left: `${tooltipWindowPos.x}px`,
+                        top: `${tooltipWindowPos.y}px`,
+                        zIndex: 2000,
+                        transform:
+                          tooltipSensor.id === 'fire-2'
+                            ? 'translate(-50%, 40px)'
+                            : 'translate(-50%, -100%)',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="tooltip-header">
+                        <div className="status-indicator" />
+                        <span className="name">{tooltipSensor.name}</span>
+                        <span className="status-text">
+                          {tooltipSensor.status}
                         </span>
                       </div>
-                      <div className="info-row" data-role="updated">
-                        <span className="label">업데이트</span>
-                        <span className="value">
-                          {lastUpdateTime
-                            ? (() => {
-                                const d = new Date(lastUpdateTime);
-                                if (isNaN(d.getTime())) return lastUpdateTime;
-                                const MM = String(d.getMonth() + 1).padStart(
-                                  2,
-                                  '0'
-                                );
-                                const DD = String(d.getDate()).padStart(2, '0');
-                                const hh = String(d.getHours()).padStart(
-                                  2,
-                                  '0'
-                                );
-                                const mm = String(d.getMinutes()).padStart(
-                                  2,
-                                  '0'
-                                );
-                                const ss = String(d.getSeconds()).padStart(
-                                  2,
-                                  '0'
-                                );
-                                return `${MM}/${DD} ${hh}:${mm}:${ss}`;
-                              })()
-                            : ''}
-                        </span>
+                      <div className="tooltip-content">
+                        <div className="info-row" data-role="value">
+                          <span className="label">데이터</span>
+                          <span className="value">{tooltipSensor.value}</span>
+                        </div>
+                        <div className="info-row" data-role="status">
+                          <span className="label">상태</span>
+                          <span className="value">
+                            {tooltipSensor.status === '정상' ||
+                            tooltipSensor.status === '경고' ||
+                            tooltipSensor.status === '위험'
+                              ? '연결됨'
+                              : '연결안됨'}
+                          </span>
+                        </div>
+                        <div className="info-row" data-role="updated">
+                          <span className="label">업데이트</span>
+                          <span className="value">
+                            {lastUpdateTime
+                              ? (() => {
+                                  const d = new Date(lastUpdateTime);
+                                  if (isNaN(d.getTime())) return lastUpdateTime;
+                                  const MM = String(d.getMonth() + 1).padStart(
+                                    2,
+                                    '0'
+                                  );
+                                  const DD = String(d.getDate()).padStart(
+                                    2,
+                                    '0'
+                                  );
+                                  const hh = String(d.getHours()).padStart(
+                                    2,
+                                    '0'
+                                  );
+                                  const mm = String(d.getMinutes()).padStart(
+                                    2,
+                                    '0'
+                                  );
+                                  const ss = String(d.getSeconds()).padStart(
+                                    2,
+                                    '0'
+                                  );
+                                  return `${MM}/${DD} ${hh}:${mm}:${ss}`;
+                                })()
+                              : ''}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </SensorTooltip>
-                )}
+                    </SensorTooltip>,
+                    document.body
+                  )}
               </MapContainer>
             </MapView>
             <SensorCard>
