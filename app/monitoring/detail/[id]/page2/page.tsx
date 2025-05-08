@@ -136,30 +136,53 @@ interface FacilityDetail {
   };
 }
 
+// 좌표 변환 함수 (10% 여백, 80% 영역)
+function convertX(x: number) {
+  return 0.1 * 828 + x * 0.8;
+}
+function convertY(y: number) {
+  return 0.1 * 672 + y * 0.8;
+}
+
 // 가스 감지기 정보 배열
 const GAS_SENSORS = [
-  { id: 'gas-2', x: 385, y: 123, name: '가스감지기2' },
-  { id: 'gas-5', x: 80, y: 123, name: '가스감지기5' },
-  { id: 'gas-1', x: 540, y: 360, name: '가스감지기1' },
-  { id: 'gas-4', x: 360, y: 360, name: '가스감지기4' },
-  { id: 'gas-3', x: 150, y: 360, name: '가스감지기3' },
-  { id: 'gas-6', x: 520, y: 550, name: '가스감지기6' },
-  { id: 'gas-7', x: 720, y: 130, name: '가스감지기7' },
-  { id: 'gas-8', x: 552, y: 130, name: '가스감지기8' },
+  { id: 'gas-2', x: convertX(385), y: convertY(123), name: '가스감지기2' },
+  { id: 'gas-5', x: convertX(80), y: convertY(123), name: '가스감지기5' },
+  { id: 'gas-1', x: convertX(540), y: convertY(360), name: '가스감지기1' },
+  { id: 'gas-4', x: convertX(360), y: convertY(360), name: '가스감지기4' },
+  { id: 'gas-3', x: convertX(150), y: convertY(360), name: '가스감지기3' },
+  { id: 'gas-6', x: convertX(520), y: convertY(550), name: '가스감지기6' },
+  { id: 'gas-7', x: convertX(720), y: convertY(130), name: '가스감지기7' },
+  { id: 'gas-8', x: convertX(552), y: convertY(130), name: '가스감지기8' },
 ];
 
 // 화재 감지기 정보 배열
 const FIRE_SENSORS = [
-  { id: 'fire-1', x: 520, y: 500, name: '화재감지기1' },
-  { id: 'fire-2', x: 800, y: 50, name: '화재감지기2' },
-  { id: 'fire-3', x: 42, y: 460, name: '화재감지기3' },
+  { id: 'fire-1', x: convertX(520), y: convertY(500), name: '화재감지기1' },
+  { id: 'fire-2', x: convertX(800), y: convertY(50), name: '화재감지기2' },
+  { id: 'fire-3', x: convertX(42), y: convertY(460), name: '화재감지기3' },
 ];
 
 // 진동 감지기 정보 배열
 const VIBRATION_SENSORS = [
-  { id: 'vibration-1', x: 385, y: 155, name: '진동감지기1' },
-  { id: 'vibration-2', x: 585, y: 130, name: '진동감지기2' },
-  { id: 'vibration-3', x: 685, y: 130, name: '진동감지기3' },
+  {
+    id: 'vibration-1',
+    x: convertX(385),
+    y: convertY(155),
+    name: '진동감지기1',
+  },
+  {
+    id: 'vibration-2',
+    x: convertX(585),
+    y: convertY(130),
+    name: '진동감지기2',
+  },
+  {
+    id: 'vibration-3',
+    x: convertX(685),
+    y: convertY(130),
+    name: '진동감지기3',
+  },
 ];
 
 // 진동감지기 위험 임계값 상수
@@ -245,10 +268,18 @@ function useMediaQuery(query: string): boolean {
 const LeftColumnWide = styled(LeftColumn)`
   width: 45% !important;
   min-width: 0;
+  @media (max-width: 768px) {
+    width: 100% !important;
+    display: block;
+  }
 `;
 const VibrationGraphContainerNarrow = styled(VibrationGraphContainerColumn)`
   width: 55% !important;
   min-width: 0;
+  @media (max-width: 768px) {
+    width: 100% !important;
+    display: block;
+  }
 `;
 
 export default function MonitoringDetailPage({
@@ -1184,10 +1215,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           <LeftColumnWide>
             <MapView
               className={hasDanger ? 'danger' : ''}
-              style={{ height: isMounted ? `${mapHeight}px` : 'auto' }}
+              style={{
+                width: '100%',
+                height: isMounted ? `${mapHeight}px` : 'auto',
+                overflow: 'hidden',
+                maxWidth: '100vw',
+              }}
             >
               <MapContainer
                 className="map-container"
+                style={{
+                  width: '100%',
+                  overflow: 'hidden',
+                  maxWidth: '100vw',
+                }}
                 onClick={() => {
                   setShowTooltip(false);
                   setSelectedSensorId(null);
@@ -1198,11 +1239,14 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   viewBox="0 0 828 672"
                   preserveAspectRatio="xMidYMid meet"
                   xmlns="http://www.w3.org/2000/svg"
+                  style={{ width: '100%', height: 'auto' }}
                 >
                   <image
                     href="/images/monitoring/detail/5bun.svg"
-                    width="828"
-                    height="672"
+                    x="10%"
+                    y="10%"
+                    width="80%"
+                    height="80%"
                     preserveAspectRatio="xMidYMid meet"
                   />
                   {filteredSensorIcons.map((sensor) => {
