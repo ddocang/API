@@ -127,44 +127,44 @@ interface FacilityDetail {
 
 // 가스 감지기 정보 배열
 const GAS_SENSORS = [
-  { id: 'gas-7', x: 128, y: 80, name: '가스감지기7' },
-  { id: 'gas-3', x: 263, y: 88, name: '가스감지기3' },
-  { id: 'gas-4', x: 333, y: 88, name: '가스감지기4' },
-  { id: 'gas-1', x: 263, y: 253, name: '가스감지기1' },
-  { id: 'gas-2', x: 333, y: 253, name: '가스감지기2' },
-  { id: 'gas-9', x: 448, y: 253, name: '가스감지기9' },
-  { id: 'gas-8', x: 448, y: 88, name: '가스감지기8' },
-  { id: 'gas-11', x: 522, y: 93, name: '가스감지기11' },
-  { id: 'gas-10', x: 522, y: 233, name: '가스감지기10' },
-  { id: 'gas-13', x: 559, y: 108, name: '가스감지기13' },
-  { id: 'gas-12', x: 559, y: 220, name: '가스감지기12' },
-  { id: 'gas-15', x: 612, y: 163, name: '가스감지기15' },
-  { id: 'gas-14', x: 662, y: 163, name: '가스감지기14' },
-  { id: 'gas-5', x: 328, y: 334, name: '가스감지기5' },
-  { id: 'gas-6', x: 458, y: 334, name: '가스감지기6' },
+  { id: 'gas-7', x: 128, y: 85, name: '가스감지기7' },
+  { id: 'gas-3', x: 263, y: 95, name: '가스감지기3' },
+  { id: 'gas-4', x: 333, y: 95, name: '가스감지기4' },
+  { id: 'gas-1', x: 263, y: 258, name: '가스감지기1' },
+  { id: 'gas-2', x: 333, y: 258, name: '가스감지기2' },
+  { id: 'gas-9', x: 448, y: 258, name: '가스감지기9' },
+  { id: 'gas-8', x: 448, y: 95, name: '가스감지기8' },
+  { id: 'gas-11', x: 522, y: 98, name: '가스감지기11' },
+  { id: 'gas-10', x: 522, y: 238, name: '가스감지기10' },
+  { id: 'gas-13', x: 559, y: 113, name: '가스감지기13' },
+  { id: 'gas-12', x: 559, y: 225, name: '가스감지기12' },
+  { id: 'gas-15', x: 612, y: 168, name: '가스감지기15' },
+  { id: 'gas-14', x: 662, y: 168, name: '가스감지기14' },
+  { id: 'gas-5', x: 328, y: 339, name: '가스감지기5' },
+  { id: 'gas-6', x: 458, y: 339, name: '가스감지기6' },
 ];
 
 // 화재 감지기 정보 배열
 const FIRE_SENSORS = [
-  { id: 'fire-1', x: 210, y: 263, name: '화재감지기1' },
-  { id: 'fire-2', x: 210, y: 375, name: '화재감지기2' },
-  { id: 'fire-3', x: 485, y: 263, name: '화재감지기3' },
-  { id: 'fire-4', x: 575, y: 249, name: '화재감지기4' },
-  { id: 'fire-5', x: 485, y: 76, name: '화재감지기5' },
-  { id: 'fire-6', x: 602, y: 76, name: '화재감지기6' },
+  { id: 'fire-1', x: 210, y: 268, name: '화재감지기1' },
+  { id: 'fire-2', x: 210, y: 380, name: '화재감지기2' },
+  { id: 'fire-3', x: 485, y: 268, name: '화재감지기3' },
+  { id: 'fire-4', x: 575, y: 254, name: '화재감지기4' },
+  { id: 'fire-5', x: 485, y: 81, name: '화재감지기5' },
+  { id: 'fire-6', x: 602, y: 81, name: '화재감지기6' },
 ];
 
 // 진동 감지기 정보 배열
 const VIBRATION_SENSORS = [
-  { id: 'vibration-1', x: 260, y: 303, name: '진동감지기1' },
-  { id: 'vibration-2', x: 277, y: 360, name: '진동감지기2' },
-  { id: 'vibration-3', x: 295, y: 303, name: '진동감지기3' },
-  { id: 'vibration-4', x: 390, y: 303, name: '진동감지기4' },
-  { id: 'vibration-5', x: 407, y: 360, name: '진동감지기5' },
-  { id: 'vibration-6', x: 427, y: 303, name: '진동감지기6' },
-  { id: 'vibration-8', x: 523, y: 118, name: '진동감지기8' },
-  { id: 'vibration-9', x: 523, y: 193, name: '진동감지기9' },
-  { id: 'vibration-7', x: 559, y: 133, name: '진동감지기7' },
+  { id: 'vibration-1', x: 260, y: 308, name: '진동감지기1' },
+  { id: 'vibration-2', x: 277, y: 365, name: '진동감지기2' },
+  { id: 'vibration-3', x: 295, y: 308, name: '진동감지기3' },
+  { id: 'vibration-4', x: 390, y: 308, name: '진동감지기4' },
+  { id: 'vibration-5', x: 407, y: 365, name: '진동감지기5' },
+  { id: 'vibration-6', x: 427, y: 308, name: '진동감지기6' },
+  { id: 'vibration-8', x: 523, y: 123, name: '진동감지기8' },
+  { id: 'vibration-9', x: 523, y: 198, name: '진동감지기9' },
+  { id: 'vibration-7', x: 559, y: 138, name: '진동감지기7' },
 ];
 
 // 진동감지기 위험 임계값 상수
