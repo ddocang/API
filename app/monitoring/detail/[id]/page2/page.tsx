@@ -965,7 +965,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         status: sensorInfo.status,
         value: sensorInfo.value,
       });
-      sensorIcon.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // sensorIcon.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
