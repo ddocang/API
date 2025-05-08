@@ -1253,34 +1253,35 @@ export const VibrationGraphCard = styled.div`
     color: #1e293b;
     margin: 0 0 15px 0;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background: #eaf3fb;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 16px;
     border: 1px solid #bae6fd;
+    border-bottom: 1px solid #bae6fd;
     position: relative;
 
     .status {
-      position: absolute;
-      right: 8px;
       font-size: 13px;
       padding: 4px 10px;
       background: #eaf3fb;
       color: #2563eb;
       border-radius: 8px;
       border: 1px solid #bae6fd;
+      margin-left: auto;
     }
   }
 
   .graph-container {
     flex: 1;
     background: #fff;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 15px;
     min-height: 0;
     height: calc(100% - 46px);
     border: 1px solid #e0e7ef;
+    border-top: 1px solid #e0e7ef !important;
     color: #334155;
   }
 

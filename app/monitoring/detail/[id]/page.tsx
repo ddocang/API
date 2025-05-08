@@ -1619,13 +1619,38 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               <VibrationGraphCard
                 key={sensor.id}
                 onClick={() => handleGraphClick(sensor)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', position: 'relative' }}
               >
-                <h4>
-                  {sensor.name}
+                <h4
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '100%',
+                    height: 40,
+                  }}
+                >
+                  <span style={{ fontWeight: 700 }}>{sensor.name}</span>
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      color: colorAssignments[sensor.id.toString()].line,
+                      fontSize: '1.1em',
+                      lineHeight: 1,
+                      textAlign: 'center',
+                      flex: 1,
+                      marginLeft: 4,
+                    }}
+                  >
+                    {sensor.data.length > 0
+                      ? sensor.data[sensor.data.length - 1].value
+                      : '--'}
+                  </span>
                   <span className="status">정상</span>
                 </h4>
-                <div className="graph-container">
+                <div
+                  className="graph-container"
+                  style={{ borderTop: '1px solid #e0e7ef' }}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={sensor.data}
@@ -1682,20 +1707,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         axisLine={{ stroke: colors.chart.axis.line }}
                         tickFormatter={(value) => value.toFixed(0)}
                       />
-                      {/* y축 2번째 그리드(눈금) 위치에 현재 데이터값 표시 */}
-                      {sensor.data.length > 0 && (
-                        <text
-                          x="50%"
-                          dx="10"
-                          y="50%"
-                          textAnchor="middle"
-                          fontSize="16"
-                          fontWeight="bold"
-                          fill={colorAssignments[sensor.id.toString()].line}
-                        >
-                          {sensor.data[sensor.data.length - 1].value}
-                        </text>
-                      )}
                       <Tooltip
                         content={({ active, payload, label }) => {
                           if (

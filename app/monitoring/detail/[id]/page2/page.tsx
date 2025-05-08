@@ -1531,10 +1531,32 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
+                        width: '100%',
+                        height: 40,
                       }}
                     >
-                      <span>{vibrationSensor.name}</span>
+                      <span style={{ fontWeight: 700 }}>
+                        {vibrationSensor.name}
+                      </span>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          color:
+                            colorAssignments[vibrationSensor.id.toString()]
+                              .line,
+                          fontSize: '1.1em',
+                          lineHeight: 1,
+                          textAlign: 'center',
+                          flex: 1,
+                          marginLeft: 4,
+                        }}
+                      >
+                        {vibrationSensor.data.length > 0
+                          ? vibrationSensor.data[
+                              vibrationSensor.data.length - 1
+                            ].value
+                          : '--'}
+                      </span>
                       <span className="status">정상</span>
                     </h4>
                     <div className="graph-container">
@@ -1634,27 +1656,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                             fillOpacity={1}
                             isAnimationActive={false}
                           />
-                          {/* 마지막 데이터값을 그래프 중앙에 SVG text로 표시 */}
-                          {vibrationSensor.data.length > 0 && (
-                            <text
-                              x="50%"
-                              dx="10"
-                              y="50%"
-                              textAnchor="middle"
-                              fontSize="16"
-                              fontWeight="bold"
-                              fill={
-                                colorAssignments[vibrationSensor.id.toString()]
-                                  .line
-                              }
-                            >
-                              {
-                                vibrationSensor.data[
-                                  vibrationSensor.data.length - 1
-                                ].value
-                              }
-                            </text>
-                          )}
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
