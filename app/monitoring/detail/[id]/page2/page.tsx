@@ -1091,6 +1091,25 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   }, [showTooltip, selectedSensorId]);
 
+  // 1️⃣ 센서별 변환 함수 (name 기반)
+  const plcToDisplayValue = (value: number, sensorName: string) => {
+    if (sensorName === '진동감지기1') {
+      // 0~4000 → 0~2g → 0~19.6m/s²
+      const clamped = Math.max(0, Math.min(4000, value));
+      return (clamped / 4000) * 2 * 9.8;
+    }
+    // 2, 3번: 0~50mm/s
+    const clamped = Math.max(0, Math.min(4000, value));
+    return (clamped / 4000) * 50;
+  };
+
+  // 상태 추가
+  const [showVibrationThresholdModal, setShowVibrationThresholdModal] =
+    useState(false);
+  const [vibrationThresholdInput, setVibrationThresholdInput] = useState(
+    VIBRATION_DANGER_THRESHOLD
+  );
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -1168,6 +1187,34 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           {!isMobile && (
             <MainMenu>
               <ThemeToggleButton />
+              {/* 진동 위험값 설정 버튼 추가 */}
+              <button
+                style={{
+                  margin: '0 12px',
+                  padding: '8px 16px',
+                  background: '#fff',
+                  border: '1px solid #FB8B24',
+                  borderRadius: 8,
+                  color: '#FB8B24',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+                onClick={() => setShowVibrationThresholdModal(true)}
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M12 3v18m9-9H3"
+                    stroke="#FB8B24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                진동 위험값 설정
+              </button>
               <Link href="/" passHref legacyBehavior>
                 <NavLinkStyle active={pathname === '/'}>
                   <svg
@@ -1348,7 +1395,35 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <div className="tooltip-content">
                         <div className="info-row" data-role="value">
                           <span className="label">데이터</span>
-                          <span className="value">{tooltipSensor.value}</span>
+                          <span className="value">
+                            {(() => {
+                              if (tooltipSensor.name.startsWith('진동감지기')) {
+                                const vIdx =
+                                  parseInt(
+                                    tooltipSensor.name.replace('진동감지기', '')
+                                  ) - 1;
+                                const plcVal = Number(
+                                  vibrationSensors[vIdx]?.value ?? ''
+                                );
+                                const plcRaw =
+                                  vibrationSensors[vIdx]?.value ?? '';
+                                if (!isNaN(plcVal) && plcRaw !== '') {
+                                  const val = plcToDisplayValue(
+                                    plcVal,
+                                    tooltipSensor.name
+                                  );
+                                  const unit =
+                                    tooltipSensor.name === '진동감지기1'
+                                      ? 'm/s²'
+                                      : 'mm/s';
+                                  return `${plcRaw} → ${val.toFixed(
+                                    2
+                                  )} ${unit}`;
+                                }
+                              }
+                              return tooltipSensor.value;
+                            })()}
+                          </span>
                         </div>
                         <div className="info-row" data-role="status">
                           <span className="label">상태</span>
@@ -1464,6 +1539,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   let connectionText = '연결안됨';
                   let gIdx: number | undefined;
                   let fIdx: number | undefined;
+                  let displayValue = '--';
+                  let displayUnit = '';
+                  let plcRawValue = '';
                   if (sensor.name.startsWith('진동감지기')) {
                     const vIdx =
                       parseInt(sensor.name.replace('진동감지기', '')) - 1;
@@ -1474,16 +1552,28 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       vibrationSensors[vIdx].value !== ''
                     ) {
                       connectionText = '연결됨';
+                      // PLC값 → 변환값 + 단위
+                      const plcVal = Number(vibrationSensors[vIdx].value);
+                      plcRawValue = vibrationSensors[vIdx].value;
+                      const val = plcToDisplayValue(plcVal, sensor.name);
+                      displayValue =
+                        typeof val === 'number' ? val.toFixed(2) : '--';
+                      displayUnit =
+                        sensor.name === '진동감지기1' ? 'm/s²' : 'mm/s';
                     }
                   } else if (sensor.name.startsWith('가스감지기')) {
                     gIdx = parseInt(sensor.name.replace('가스감지기', '')) - 1;
                     if (typeof gasStatusArr[gIdx] === 'number') {
                       connectionText = '연결됨';
+                      displayValue = gasStatusArr[gIdx].toString();
+                      displayUnit = '';
                     }
                   } else if (sensor.name.startsWith('화재감지기')) {
                     fIdx = parseInt(sensor.name.replace('화재감지기', '')) - 1;
                     if (typeof fireStatusArr[fIdx] === 'number') {
                       connectionText = '연결됨';
+                      displayValue = fireStatusArr[fIdx].toString();
+                      displayUnit = '';
                     }
                   }
                   if (sensor.name.startsWith('가스감지기')) {
@@ -1535,7 +1625,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     <SensorItem
                       key={sensor.id}
                       onClick={() => handleSensorListItemClick(sensor)}
-                      style={{ cursor: 'pointer' }}
                       className={(() => {
                         const status = getSensorStatus(
                           sensor.name.startsWith('가스감지기')
@@ -1578,9 +1667,29 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       </SensorStatus>
                       <SensorValue
                         status={signalText === '위험' ? 'danger' : 'normal'}
-                        style={{ textAlign: 'center', width: '100%' }}
+                        style={{
+                          textAlign: 'center',
+                          width: 'auto',
+                          minWidth: 120,
+                          whiteSpace: 'nowrap',
+                        }}
                       >
-                        {realtimeValue}
+                        {sensor.name.startsWith('진동감지기') && plcRawValue ? (
+                          <>
+                            {plcRawValue}
+                            <span style={{ color: '#222', margin: '0 2px' }}>
+                              →
+                            </span>
+                            {displayValue}
+                            <span style={{ color: '#222', marginLeft: 2 }}>
+                              {displayUnit}
+                            </span>
+                          </>
+                        ) : (
+                          `${displayValue}${
+                            displayUnit ? ` ${displayUnit}` : ''
+                          }`
+                        )}
                       </SensorValue>
                       <span></span>
                     </SensorItem>
@@ -1615,6 +1724,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     >
                       <span style={{ fontWeight: 700 }}>
                         {vibrationSensor.name}
+                        {/* 센서별 범위 표시 */}
+                        {vibrationSensor.name === '진동감지기1'
+                          ? ' (0~19.6m/s²)'
+                          : ' (0~50mm/s)'}
                       </span>
                       <span
                         style={{
@@ -1630,9 +1743,20 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         }}
                       >
                         {vibrationSensor.data.length > 0
-                          ? vibrationSensor.data[
-                              vibrationSensor.data.length - 1
-                            ].value
+                          ? (() => {
+                              const isVibration1 =
+                                vibrationSensor.name === '진동감지기1';
+                              const val = plcToDisplayValue(
+                                vibrationSensor.data[
+                                  vibrationSensor.data.length - 1
+                                ].value,
+                                vibrationSensor.name // name 기준으로 변경
+                              );
+                              const unit = isVibration1 ? 'm/s²' : 'mm/s';
+                              return `${
+                                typeof val === 'number' ? val.toFixed(2) : '--'
+                              } ${unit}`;
+                            })()
                           : '--'}
                       </span>
                       <span className="status">정상</span>
@@ -1693,14 +1817,36 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               0,
                               Math.max(
                                 ...vibrationSensor.data.map(
-                                  (d: VibrationDataPoint) => d.value
+                                  (d: VibrationDataPoint) =>
+                                    plcToDisplayValue(
+                                      d.value,
+                                      vibrationSensor.name // name 기준으로 변경
+                                    )
                                 )
                               ),
                             ]}
                             tick={{ fontSize: 12 }}
                             tickLine={false}
                             axisLine={{ stroke: colors.chart.axis.line }}
-                            tickFormatter={(value) => value.toFixed(0)}
+                            tickFormatter={(value) =>
+                              plcToDisplayValue(
+                                value,
+                                vibrationSensor.name // name 기준으로 변경
+                              ).toFixed(2)
+                            }
+                            label={{
+                              value:
+                                vibrationSensor.name === '진동감지기1'
+                                  ? 'Acceleration (m/s²)'
+                                  : 'Velocity (mm/s)',
+                              angle: -90,
+                              position: 'insideLeft',
+                              style: {
+                                textAnchor: 'middle',
+                                fontSize: 13,
+                                fill: '#64748b',
+                              },
+                            }}
                           />
                           <Tooltip
                             content={({ active, payload, label }) => {
@@ -1710,11 +1856,22 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                                 payload.length &&
                                 payload[0].value !== undefined
                               ) {
+                                const val = plcToDisplayValue(
+                                  parseFloat(payload[0].value as any),
+                                  vibrationSensor.name // name 기준으로 변경
+                                );
+                                const unit =
+                                  vibrationSensor.name === '진동감지기1'
+                                    ? 'm/s²'
+                                    : 'mm/s';
                                 return (
                                   <CustomTooltip>
                                     <div className="time">{label}</div>
                                     <div className="value">
-                                      {parseInt(payload[0].value as any)}
+                                      {typeof val === 'number'
+                                        ? val.toFixed(2)
+                                        : '--'}{' '}
+                                      {unit}
                                     </div>
                                   </CustomTooltip>
                                 );
@@ -2006,6 +2163,97 @@ function DetailPageContent({ params }: { params: { id: string } }) {
 
       {/* 경보음 */}
       <audio ref={audioRef} src="/alarm.mp3" loop style={{ display: 'none' }} />
+
+      {/* 진동 위험값 설정 모달 */}
+      {showVibrationThresholdModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '32px 28px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              textAlign: 'center',
+              minWidth: 320,
+            }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
+              진동 위험값 설정
+            </div>
+            <div style={{ fontSize: 15, color: '#555', marginBottom: 18 }}>
+              진동감지기 위험 임계값을 입력하세요.
+              <br />
+              (현재: {VIBRATION_DANGER_THRESHOLD})
+            </div>
+            <input
+              type="number"
+              value={vibrationThresholdInput}
+              min={0}
+              max={10000}
+              step={1}
+              onChange={(e) =>
+                setVibrationThresholdInput(Number(e.target.value))
+              }
+              style={{
+                fontSize: 18,
+                padding: '8px 16px',
+                border: '1px solid #FB8B24',
+                borderRadius: 6,
+                width: 120,
+                marginBottom: 18,
+                textAlign: 'center',
+              }}
+            />
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button
+                style={{
+                  background: '#FB8B24',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 28px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  window.location.reload(); // 새로고침으로 위험값 반영(간단 처리)
+                }}
+              >
+                저장
+              </button>
+              <button
+                style={{
+                  background: '#eee',
+                  color: '#333',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 28px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setShowVibrationThresholdModal(false)}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
