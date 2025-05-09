@@ -383,7 +383,11 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           setVibrationSensors((prevSensors) =>
             prevSensors.map((sensor, index) => {
               if (index < 9) {
-                const value = barrValues[index];
+                // 8,9번(7,8) 센서는 PLC 값을 0~4000으로 clamp해서 저장
+                let value = barrValues[index];
+                if (index === 7 || index === 8) {
+                  value = clampPlcValue(value);
+                }
                 const newDataPoint = {
                   time: timeStr,
                   value: value,
@@ -1146,6 +1150,49 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   }, [hasDanger, alarmAllowed]);
 
+  // 1️⃣ 센서별 변환 함수 (id 기반, 8/9번은 클램프 포함)
+  const plcToMms = (value: number, sensorId?: string | number) => {
+    if (
+      [
+        'vibration-1',
+        'vibration-2',
+        'vibration-3',
+        'vibration-4',
+        'vibration-5',
+        'vibration-6',
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+      ].includes(sensorId as any)
+    ) {
+      // 0~4000 → 0~100mm/s
+      const clamped = Math.max(0, Math.min(4000, value));
+      return (clamped / 4000) * 100;
+    }
+    if (
+      sensorId === 'vibration-8' ||
+      sensorId === 'vibration-9' ||
+      sensorId === 29 ||
+      sensorId === 30
+    ) {
+      // 0~4000 → 0~50mm/s
+      const clamped = Math.max(0, Math.min(4000, value));
+      return (clamped / 4000) * 50;
+    }
+    if (sensorId === 'vibration-7' || sensorId === 28) {
+      // 0~4000 → 0~2g
+      const clamped = Math.max(0, Math.min(4000, value));
+      return (clamped / 4000) * 2;
+    }
+    return value * 0.025;
+  };
+
+  // PLC 값 클램프 함수 추가
+  const clampPlcValue = (value: number) => Math.max(0, Math.min(4000, value));
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -1603,9 +1650,39 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       </SensorStatus>
                       <SensorValue
                         status={signalText === '위험' ? 'danger' : 'normal'}
-                        style={{ textAlign: 'center', width: '100%' }}
+                        style={{
+                          textAlign: 'center',
+                          width: 'auto',
+                          minWidth: 120,
+                          whiteSpace: 'nowrap',
+                        }}
                       >
-                        {realtimeValue}
+                        {(() => {
+                          if (sensor.name.startsWith('진동감지기')) {
+                            const vIdx =
+                              parseInt(sensor.name.replace('진동감지기', '')) -
+                              1;
+                            const plcValue =
+                              vibrationSensors[vIdx]?.value ?? '--';
+                            const id = vibrationSensors[vIdx]?.id;
+                            const converted =
+                              plcValue !== '--'
+                                ? plcToMms(Number(plcValue), id).toFixed(2)
+                                : '--';
+                            const unit =
+                              String(id) === 'vibration-7' ||
+                              String(id) === '28'
+                                ? 'g'
+                                : String(id) === 'vibration-8' ||
+                                  String(id) === '29' ||
+                                  String(id) === 'vibration-9' ||
+                                  String(id) === '30'
+                                ? 'mm/s'
+                                : 'mm/s';
+                            return `${plcValue} → ${converted} ${unit}`;
+                          }
+                          return realtimeValue;
+                        })()}
                       </SensorValue>
                       <span></span>
                     </SensorItem>
@@ -1632,17 +1709,43 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   <span style={{ fontWeight: 700 }}>{sensor.name}</span>
                   <span
                     style={{
-                      fontWeight: 700,
-                      color: colorAssignments[sensor.id.toString()].line,
-                      fontSize: '1.1em',
-                      lineHeight: 1,
-                      textAlign: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center', // 가운데 정렬
+                      gap: 4,
                       flex: 1,
                       marginLeft: 4,
                     }}
                   >
                     {sensor.data.length > 0
-                      ? sensor.data[sensor.data.length - 1].value
+                      ? (() => {
+                          const val = plcToMms(
+                            sensor.data[sensor.data.length - 1].value,
+                            sensor.id + ''
+                          );
+                          const isAccel =
+                            String(sensor.id) === 'vibration-7' ||
+                            String(sensor.id) === '28';
+                          return (
+                            <>
+                              <span>
+                                {typeof val === 'number'
+                                  ? val.toFixed(2)
+                                  : '--'}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.9em',
+                                  fontWeight: 400,
+                                  color: '#64748b',
+                                  marginLeft: 2,
+                                }}
+                              >
+                                {isAccel ? 'g' : 'mm/s'}
+                              </span>
+                            </>
+                          );
+                        })()
                       : '--'}
                   </span>
                   <span className="status">정상</span>
@@ -1700,12 +1803,28 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       <YAxis
                         domain={[
                           0,
-                          Math.max(...sensor.data.map((d) => d.value)),
+                          Math.max(
+                            ...sensor.data.map((d) =>
+                              plcToMms(d.value, sensor.id + '')
+                            )
+                          ),
                         ]}
                         tick={{ fontSize: 12 }}
                         tickLine={false}
                         axisLine={{ stroke: colors.chart.axis.line }}
-                        tickFormatter={(value) => value.toFixed(0)}
+                        tickFormatter={(value) =>
+                          plcToMms(value, sensor.id + '').toFixed(2)
+                        }
+                        label={{
+                          value: 'Velocity (mm/s)',
+                          angle: -90,
+                          position: 'insideLeft',
+                          style: {
+                            textAnchor: 'middle',
+                            fontSize: 13,
+                            fill: '#64748b',
+                          },
+                        }}
                       />
                       <Tooltip
                         content={({ active, payload, label }) => {
@@ -1717,10 +1836,23 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                           ) {
                             return (
                               <CustomTooltip>
-                                <div className="time">{label}</div>
-                                <div className="value">
-                                  {parseInt(payload[0].value as any)}
-                                </div>
+                                {label && <div className="time">{label}</div>}
+                                {payload && payload[0] && (
+                                  <div className="value">
+                                    {(() => {
+                                      const val = plcToMms(
+                                        parseFloat(payload[0].value as any),
+                                        selectedSensor
+                                          ? selectedSensor.id + ''
+                                          : ''
+                                      );
+                                      return typeof val === 'number'
+                                        ? val.toFixed(2)
+                                        : '--';
+                                    })()}{' '}
+                                    mm/s
+                                  </div>
+                                )}
                               </CustomTooltip>
                             );
                           }
@@ -1863,24 +1995,37 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   />
                   <YAxis
                     domain={
-                      zoomDomain?.y ||
-                      (() => {
-                        const values = selectedSensor.detailedData.map(
-                          (d) => d.value
-                        );
-                        if (values.length === 0) return [0, 1];
-                        const min = Math.min(...values);
-                        const max = Math.max(...values);
-                        if (min === max) {
-                          // 값이 모두 같으면 위아래로 1씩 여유
-                          return [min - 1, max + 1];
-                        }
-                        return [min, max];
-                      })()
+                      zoomDomain?.y
+                        ? [
+                            plcToMms(zoomDomain.y[0], selectedSensor.id + ''),
+                            plcToMms(zoomDomain.y[1], selectedSensor.id + ''),
+                          ]
+                        : (() => {
+                            const values = selectedSensor.detailedData.map(
+                              (d) => plcToMms(d.value, selectedSensor.id + '')
+                            );
+                            if (values.length === 0) return [0, 1];
+                            const min = Math.min(...values);
+                            const max = Math.max(...values);
+                            if (min === max) {
+                              return [min - 1, max + 1];
+                            }
+                            return [min, max];
+                          })()
                     }
                     allowDataOverflow
-                    tickFormatter={(value) => value.toFixed(0)}
+                    tickFormatter={(value) => value.toFixed(2)}
                     stroke="rgba(255, 255, 255, 0.5)"
+                    label={{
+                      value: 'Velocity (mm/s)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: 13,
+                        fill: '#cbd5e1',
+                      },
+                    }}
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
@@ -1902,7 +2047,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               })}
                             </div>
                             <div className="value">
-                              {parseInt(payload[0].value as any)}
+                              {plcToMms(
+                                parseFloat(payload[0].value as any),
+                                selectedSensor.id + ''
+                              ).toFixed(2)}
                             </div>
                           </CustomTooltip>
                         );

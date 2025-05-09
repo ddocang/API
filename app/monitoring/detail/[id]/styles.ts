@@ -1341,6 +1341,7 @@ export const VibrationGraphCard = styled.div`
     .graph-container {
       background: ${colors.theme.dark.surface};
       border: 1px solid ${colors.theme.dark.border};
+      border-top: 1px solid ${colors.theme.dark.border} !important;
     }
     p,
     span,
