@@ -1,5 +1,8 @@
 // 진동감지기별 위험 임계값과 단위 정보를 한 곳에서만 관리
-const VIBRATION_THRESHOLDS: Record<string, { value: number; unit: string }> = {
+export const VIBRATION_THRESHOLDS: Record<
+  string,
+  { value: number; unit: string }
+> = {
   'vibration-1': { value: 45, unit: 'mm/s' },
   'vibration-2': { value: 45, unit: 'mm/s' },
   'vibration-3': { value: 45, unit: 'mm/s' },

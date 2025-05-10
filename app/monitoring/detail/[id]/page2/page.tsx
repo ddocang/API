@@ -83,6 +83,12 @@ import {
   getVibrationSensorKey,
 } from '@/hooks/useVibrationThresholds';
 import VibrationThresholdModal from '@/components/VibrationThresholdModal';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://wxsmvftivxerlchikwpl.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4c212ZnRpdnhlcmxjaGlrd3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0MTQ2MzUsImV4cCI6MjA1Njk5MDYzNX0.uv3ZYHgjppKya4V79xfaSUd0C91ehOj5gnzoWznLw7M'
+);
 
 // 진동 그래프 세로 배치용 컨테이너
 const VibrationGraphContainerColumn = styled(VibrationGraphContainer)`
@@ -1321,6 +1327,51 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     value: string;
   } | null>(null);
 
+  useEffect(() => {
+    async function fetchInitialVibrationData() {
+      console.log('Supabase fetch 시작!');
+      const { data, error } = await supabase
+        .from('realtime_data')
+        .select('last_update_time, barr')
+        .eq('topic_id', 'BASE/P003')
+        .order('last_update_time', { ascending: false })
+        .limit(100);
+      console.log('supabase data:', data, error);
+      if (!error && data) {
+        // 센서별로 데이터 가공
+        const sensors = FACILITY_DETAIL.sensors.vibration.map((sensor, idx) => {
+          // sensorData를 reverse()로 뒤집어서 시간순 정렬
+          const sensorData = data
+            .map((row) => {
+              const barrArr = String(row.barr || '').split(',');
+              const value = isNaN(Number(barrArr[idx]))
+                ? 0
+                : parseInt(barrArr[idx] || '0', 10);
+              const date = new Date(row.last_update_time);
+              const time = date.toLocaleTimeString('ko-KR', { hour12: false });
+              return {
+                time,
+                value,
+                timestamp: date.getTime(),
+              };
+            })
+            .reverse();
+          return {
+            ...sensor,
+            value:
+              sensorData.length > 0
+                ? String(sensorData[sensorData.length - 1].value)
+                : '0',
+            data: sensorData.map((d) => ({ time: d.time, value: d.value })),
+            detailedData: sensorData,
+          };
+        });
+        setVibrationSensors(sensors);
+      }
+    }
+    fetchInitialVibrationData();
+  }, []);
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -2353,28 +2404,29 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         payload.length &&
                         payload[0].value !== undefined
                       ) {
-                        const date = new Date(label);
+                        const val = payload[0].value;
                         const isAccel = selectedSensor.name === '진동감지기1';
                         return (
                           <CustomTooltip>
                             <div className="time">
-                              {date.toLocaleTimeString('ko-KR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit',
-                                hour12: false,
-                              })}
+                              {(() => {
+                                if (
+                                  typeof label === 'string' &&
+                                  /^\d{2}:\d{2}:\d{2}$/.test(label)
+                                ) {
+                                  return label;
+                                }
+                                const date = new Date(label);
+                                if (!isNaN(date.getTime())) {
+                                  return date.toLocaleTimeString('ko-KR', {
+                                    hour12: false,
+                                  });
+                                }
+                                return String(label);
+                              })()}
                             </div>
                             <div className="value">
-                              {(() => {
-                                const val = plcToMms(
-                                  parseFloat(payload[0].value as any),
-                                  selectedSensor.id
-                                );
-                                return typeof val === 'number'
-                                  ? val.toFixed(2)
-                                  : '--';
-                              })()}{' '}
+                              {typeof val === 'number' ? val.toFixed(2) : '--'}{' '}
                               {isAccel ? 'm/s²' : 'mm/s'}
                             </div>
                           </CustomTooltip>

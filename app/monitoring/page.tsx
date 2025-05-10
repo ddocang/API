@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Footer from '../../components/main/sections/Footer';
 import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
+import useWebSocket from '@/hooks/useWebSocket';
+import { VIBRATION_THRESHOLDS } from '@/hooks/useVibrationThresholds';
 
 // 더미 데이터
 const DUMMY_FACILITY = {
@@ -146,6 +148,20 @@ function VibrationDataFetcher() {
   );
 }
 
+// PLC값을 실제 단위로 변환하는 함수
+function convertPLCtoRealValue(plcValue: number, key: string): number {
+  if (plcValue === 65488) return NaN;
+  if (key.startsWith('vibration-') && /^[1-6]$/.test(key.slice(-1)))
+    return (plcValue / 4000) * 100;
+  if (key === 'vibration-7') return (plcValue / 4000) * 19.6;
+  if (key === 'vibration-8' || key === 'vibration-9')
+    return (plcValue / 4000) * 50;
+  if (key === 'vibration2-1') return (plcValue / 4000) * 19.6;
+  if (key === 'vibration2-2') return (plcValue / 4000) * 50;
+  if (key === 'vibration2-3') return (plcValue / 4000) * 50;
+  return plcValue;
+}
+
 export default function MonitoringPage() {
   const [selectedFacility, setSelectedFacility] = useState(DUMMY_LIST[0]);
   const [facilityStatusList, setFacilityStatusList] = useState<
@@ -211,34 +227,91 @@ export default function MonitoringPage() {
     }, 200);
   };
 
-  // 실시간 상태 fetch (API Route)
-  useEffect(() => {
-    async function fetchStatus() {
-      try {
-        const res = await fetch('/api/supabase-status');
-        const json = await res.json();
-        if (res.ok && json.data) {
-          // 예시: id=2(삼척 수소충전소)에만 실시간 데이터 반영
-          setFacilityStatusList((prev) =>
-            prev.map((item) =>
-              item.id === 2
-                ? {
-                    ...item,
-                    gasStatus: json.data.gas_status || 'inactive',
-                    fireStatus: json.data.fire_status || 'inactive',
-                    vibrationStatus: json.data.vibration_status || 'inactive',
-                  }
-                : item
-            )
-          );
+  // WebSocket으로 실시간 상태 갱신
+  useWebSocket(
+    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
+    (data) => {
+      const topicId = data?.mqtt_data?.topic_id;
+      const mqtt = data?.mqtt_data?.data;
+      if ((topicId === 'BASE/P001' || topicId === 'BASE/P003') && mqtt) {
+        const gdetArr = (mqtt.gdet || '').split(',').map(Number);
+        const fdetArr = (mqtt.fdet || '').split(',').map(Number);
+        const barrArr = (mqtt.barr || '').split(',').map(Number);
+
+        const gasStatus =
+          gdetArr.length && gdetArr.some((v: number) => v === 1)
+            ? 'warning'
+            : gdetArr.length && gdetArr.every((v: number) => v === 0)
+            ? 'normal'
+            : 'inactive';
+
+        const fireStatus =
+          fdetArr.length && fdetArr.some((v: number) => v === 1)
+            ? 'warning'
+            : fdetArr.length && fdetArr.every((v: number) => v === 0)
+            ? 'normal'
+            : 'inactive';
+
+        // id에 따라 센서별 임계값 키 결정
+        const vibrationKeys =
+          topicId === 'BASE/P001'
+            ? [
+                'vibration-1',
+                'vibration-2',
+                'vibration-3',
+                'vibration-4',
+                'vibration-5',
+                'vibration-6',
+                'vibration-7',
+                'vibration-8',
+                'vibration-9',
+              ]
+            : topicId === 'BASE/P003'
+            ? ['vibration2-1', 'vibration2-2', 'vibration2-3']
+            : [];
+
+        const vibrationStatuses = vibrationKeys.map((key, idx) => {
+          const plcValue = barrArr[idx];
+          const realValue = convertPLCtoRealValue(plcValue, key);
+          const threshold = VIBRATION_THRESHOLDS[key]?.value;
+          if (typeof realValue !== 'number' || isNaN(realValue))
+            return 'inactive';
+          if (typeof threshold === 'number' && realValue >= threshold)
+            return 'warning';
+          if (typeof threshold === 'number' && realValue < threshold)
+            return 'normal';
+          return 'inactive';
+        });
+
+        // 전체 진동 상태: 하나라도 warning이면 warning, 모두 normal이면 normal, 그 외 inactive
+        let vibrationStatus: 'inactive' | 'normal' | 'warning' = 'inactive';
+        if (vibrationStatuses.includes('warning')) {
+          vibrationStatus = 'warning';
+        } else if (
+          vibrationStatuses.length &&
+          vibrationStatuses.every((s) => s === 'normal')
+        ) {
+          vibrationStatus = 'normal';
         }
-      } catch (e) {
-        // 에러 무시 또는 필요시 setFacilityStatusList 초기화
+
+        // topic_id에 따라 id 매핑
+        const id = topicId === 'BASE/P001' ? 1 : 2;
+
+        setFacilityStatusList((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  gasStatus,
+                  fireStatus,
+                  vibrationStatus,
+                }
+              : item
+          )
+        );
       }
     }
-    fetchStatus();
-    // 필요시 주기적 갱신: setInterval 등
-  }, []);
+  );
 
   // 실시간 상태를 facilityStatusList에서 병합
   const mergedList = DUMMY_LIST.map((facility) => {
@@ -593,12 +666,10 @@ const SearchBarWrapper = styled.div`
 const SearchBar = styled.div`
   width: 800px;
   position: relative;
-
   @media (max-width: 1024px) {
     width: 100%;
     max-width: 600px;
   }
-
   input {
     width: 100%;
     height: 50px;
@@ -609,17 +680,14 @@ const SearchBar = styled.div`
     color: #d7d7d7;
     font-size: 16px;
     text-align: center;
-
     @media (max-width: 768px) {
       height: 40px;
       font-size: 14px;
     }
-
     &::placeholder {
       color: #d7d7d7;
       text-align: center;
     }
-
     &:focus {
       outline: none;
       border-color: #0066ff;
@@ -631,7 +699,6 @@ const ContentSection = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 40px 20px;
-
   @media (max-width: 768px) {
     padding: 0 15px;
   }
@@ -640,16 +707,23 @@ const ContentSection = styled.div`
 const MapSection = styled.div`
   margin-bottom: 40px;
   position: relative;
-
   @media (max-width: 768px) {
     margin-bottom: 30px;
+  }
+`;
+
+const MapContent = styled.div`
+  display: flex;
+  gap: 20px;
+  position: relative;
+  @media (max-width: 1024px) {
+    flex-direction: column;
   }
 `;
 
 const FacilityInfo = styled.div`
   width: 378px;
   height: 630px;
-
   @media (max-width: 1024px) {
     width: 100%;
     height: auto;
@@ -664,11 +738,9 @@ const MapView = styled.div`
   background: white;
   border-radius: 16px;
   overflow: hidden;
-
   @media (max-width: 1024px) {
     min-height: 500px;
   }
-
   @media (max-width: 768px) {
     min-height: 300px;
   }
@@ -679,12 +751,19 @@ const ListSection = styled.div`
   border-radius: 16px;
   padding: 17px 30px 30px 30px;
   margin-top: 40px;
-
   @media (max-width: 768px) {
     padding: 15px;
     margin-top: 30px;
     overflow-x: auto;
   }
+`;
+
+const UpdateTime = styled.div`
+  font-family: 'Pretendard';
+  font-size: 13px;
+  color: #666666;
+  text-align: right;
+  padding: 0 0 12px 0;
 `;
 
 const ListHeader = styled.div`
@@ -694,7 +773,6 @@ const ListHeader = styled.div`
   border-bottom: 1px solid #c5c5c5;
   border-radius: 8px;
   min-width: 800px;
-
   @media (max-width: 768px) {
     padding: 10px 0;
     min-width: auto;
@@ -708,7 +786,6 @@ const HeaderItem = styled.div<{ hideOnMobile?: boolean }>`
   font-family: 'Pretendard';
   font-weight: 600;
   font-size: 14px;
-
   @media (max-width: 768px) {
     font-size: 12px;
     display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
@@ -718,7 +795,6 @@ const HeaderItem = styled.div<{ hideOnMobile?: boolean }>`
 const ListContent = styled.div`
   margin-top: 10px;
   min-width: 800px;
-
   @media (max-width: 768px) {
     min-width: auto;
   }
@@ -736,7 +812,6 @@ const GNB = styled.nav`
   user-select: none;
   position: relative;
   z-index: 10;
-
   @media (max-width: 768px) {
     display: none;
   }
@@ -748,7 +823,6 @@ const Logo = styled.div`
   gap: 1rem;
   user-select: none;
   height: 36px;
-
   span {
     font-family: 'Pretendard';
     font-weight: 600;
@@ -756,7 +830,6 @@ const Logo = styled.div`
     color: #ffffff;
     line-height: 36px;
   }
-
   @media (max-width: 768px) {
     gap: 0.5rem;
   }
@@ -772,7 +845,6 @@ const MenuContainer = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
-
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
@@ -784,12 +856,10 @@ const MainMenu = styled.div`
   display: flex;
   gap: 10px;
   user-select: none;
-
   @media (max-width: 768px) {
     flex-wrap: wrap;
     justify-content: center;
   }
-
   a {
     display: flex;
     align-items: center;
@@ -804,12 +874,10 @@ const MainMenu = styled.div`
     border-radius: 24px;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(1px);
-
     svg {
       width: 18px;
       height: 18px;
     }
-
     &:hover {
       background: rgba(255, 255, 255, 0.2);
       transform: scale(1.05);
@@ -821,11 +889,9 @@ const UserMenu = styled.div`
   display: flex;
   gap: 10px;
   user-select: none;
-
   @media (max-width: 768px) {
     margin-top: 1rem;
   }
-
   button,
   a {
     display: flex;
@@ -842,12 +908,10 @@ const UserMenu = styled.div`
     transition: all 0.2s ease;
     padding: 8px 16px;
     border-radius: 24px;
-
     svg {
       width: 18px;
       height: 18px;
     }
-
     &:hover {
       background: rgba(255, 255, 255, 0.2);
       transform: scale(1.05);
@@ -855,21 +919,24 @@ const UserMenu = styled.div`
   }
 `;
 
-const UpdateTime = styled.div`
-  font-family: 'Pretendard';
-  font-size: 13px;
-  color: #666666;
-  text-align: right;
-  padding: 0 0 12px 0;
-`;
-
-const MapContent = styled.div`
+const ClearButton = styled.button`
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
   display: flex;
-  gap: 20px;
-  position: relative;
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  &:hover {
+    opacity: 0.7;
+  }
+  &:focus {
+    outline: none;
   }
 `;
 
@@ -887,20 +954,16 @@ const AutoCompleteList = styled.ul`
   max-height: 300px;
   overflow-y: auto;
   z-index: 100;
-
   @media (max-width: 768px) {
     max-height: 250px;
     margin-top: 6px;
   }
-
   &::-webkit-scrollbar {
     width: 8px;
   }
-
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
@@ -911,11 +974,9 @@ const AutoCompleteItem = styled.li`
   padding: 12px 20px;
   cursor: pointer;
   transition: background-color 0.2s;
-
   @media (max-width: 768px) {
     padding: 10px 15px;
   }
-
   &:hover {
     background: rgba(255, 255, 255, 0.1);
   }
@@ -925,7 +986,6 @@ const ItemName = styled.div`
   color: #ffffff;
   font-size: 16px;
   margin-bottom: 4px;
-
   @media (max-width: 768px) {
     font-size: 14px;
   }
@@ -934,31 +994,7 @@ const ItemName = styled.div`
 const ItemAddress = styled.div`
   color: #d7d7d7;
   font-size: 14px;
-
   @media (max-width: 768px) {
     font-size: 12px;
-  }
-`;
-
-const ClearButton = styled.button`
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.7;
-  }
-
-  &:focus {
-    outline: none;
   }
 `;

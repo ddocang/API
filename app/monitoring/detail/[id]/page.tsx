@@ -1330,25 +1330,28 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         .from('realtime_data')
         .select('last_update_time, barr')
         .eq('topic_id', 'BASE/P001')
-        .order('last_update_time', { ascending: true })
+        .order('last_update_time', { ascending: false })
         .limit(100); // 원하는 개수만큼
       console.log('supabase data:', data, error);
       if (!error && data) {
         // 센서별로 데이터 가공
         const sensors = FACILITY_DETAIL.sensors.vibration.map((sensor, idx) => {
-          const sensorData = data.map((row) => {
-            const barrArr = String(row.barr || '').split(',');
-            const value = isNaN(Number(barrArr[idx]))
-              ? 0
-              : parseInt(barrArr[idx] || '0', 10);
-            // UTC 문자열로 변환
-            const utcString = row.last_update_time.replace(' ', 'T') + 'Z';
-            return {
-              time: utcString,
-              value,
-              timestamp: new Date(utcString).getTime(),
-            };
-          });
+          // sensorData를 reverse()로 뒤집어서 시간순 정렬
+          const sensorData = data
+            .map((row) => {
+              const barrArr = String(row.barr || '').split(',');
+              const value = isNaN(Number(barrArr[idx]))
+                ? 0
+                : parseInt(barrArr[idx] || '0', 10);
+              const date = new Date(row.last_update_time);
+              const time = date.toLocaleTimeString('ko-KR', { hour12: false });
+              return {
+                time,
+                value,
+                timestamp: date.getTime(),
+              };
+            })
+            .reverse();
           return {
             ...sensor,
             value:
@@ -2140,7 +2143,24 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                           ) {
                             return (
                               <CustomTooltip>
-                                {label && <div className="time">{label}</div>}
+                                {label && (
+                                  <div className="time">
+                                    {/* label이 시:분:초 형식이 아니면 Date로 변환 */}
+                                    {typeof label === 'string' &&
+                                    /^\d{2}:\d{2}:\d{2}$/.test(label)
+                                      ? label
+                                      : (() => {
+                                          const date = new Date(label);
+                                          if (!isNaN(date.getTime())) {
+                                            return date.toLocaleTimeString(
+                                              'ko-KR',
+                                              { hour12: false }
+                                            );
+                                          }
+                                          return String(label);
+                                        })()}
+                                  </div>
+                                )}
                                 {payload && payload[0] && (
                                   <div className="value">
                                     {(() => {

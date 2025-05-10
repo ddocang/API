@@ -21,7 +21,7 @@ export default async function handler(
       .from('realtime_data')
       .select('last_update_time, barr')
       .eq('topic_id', 'BASE/P001')
-      .order('last_update_time', { ascending: true })
+      .order('last_update_time', { ascending: false })
       .limit(100);
     if (error) {
       return res.status(500).json({ error: error.message });
