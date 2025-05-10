@@ -81,9 +81,9 @@ import {
 } from '@/hooks/useVibrationThresholds';
 import VibrationThresholdModal from '@/components/VibrationThresholdModal';
 import { VIBRATION_SENSORS } from './constants/sensors';
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
+const supabase = createSupabaseClient(
   'https://wxsmvftivxerlchikwpl.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4c212ZnRpdnhlcmxjaGlrd3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0MTQ2MzUsImV4cCI6MjA1Njk5MDYzNX0.uv3ZYHgjppKya4V79xfaSUd0C91ehOj5gnzoWznLw7M'
 );
@@ -1366,6 +1366,29 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       }
     }
     fetchInitialVibrationData();
+  }, []);
+
+  // 클라이언트에서 Supabase 직접 호출 테스트
+  useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ 클라이언트 Supabase 환경변수 미설정');
+      return;
+    }
+    const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
+    supabase
+      .from('realtime_data')
+      .select('*')
+      .order('last_update_time', { ascending: false })
+      .limit(5)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('❌ 클라이언트 Supabase fetch 에러:', error);
+        } else {
+          console.log('✅ 클라이언트 Supabase fetch 데이터:', data);
+        }
+      });
   }, []);
 
   return (
