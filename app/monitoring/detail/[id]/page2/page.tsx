@@ -1404,9 +1404,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   margin: '0 12px',
                   padding: '8px 16px',
                   background: 'transparent',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: 8,
-                  color: '#111827',
+                  border: 'none',
+                  color: document.documentElement.classList.contains('dark')
+                    ? 'rgba(255,255,255,0.7)'
+                    : '#475569',
                   fontFamily: 'Pretendard',
                   fontSize: 15,
                   fontWeight: 400,
@@ -1418,14 +1419,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 }}
                 onClick={() => setShowVibrationThresholdModal(true)}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'rgba(96, 165, 250, 0.18)';
-                  e.currentTarget.style.color = '#2563eb';
-                  e.currentTarget.style.borderColor = '#2563eb';
+                  const isDark =
+                    document.documentElement.classList.contains('dark');
+                  e.currentTarget.style.color = isDark ? '#fff' : '#2563eb';
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#111827';
-                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  const isDark =
+                    document.documentElement.classList.contains('dark');
+                  e.currentTarget.style.color = isDark
+                    ? 'rgba(255,255,255,0.7)'
+                    : '#475569';
                 }}
               >
                 {/* 경고+설정 아이콘 */}
