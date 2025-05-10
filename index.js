@@ -1,11 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const WebSocket = require('ws');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Supabase 클라이언트 생성
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 // WebSocket 클라이언트 연결 (외부 실시간 서버 주소 사용)
 const ws = new WebSocket(
@@ -16,13 +23,30 @@ ws.on('open', () => {
   console.log('✅ WebSocket 연결 성공');
 });
 
-ws.on('message', (data) => {
+ws.on('message', async (data) => {
   try {
     const parsed = JSON.parse(data);
-    console.log('실시간 데이터 수신:', parsed);
-    // TODO: 여기서 DB 저장 등 원하는 처리
+    // BASE/P001, BASE/P003만 저장
+    if (
+      parsed?.mqtt_data?.topic_id === 'BASE/P001' ||
+      parsed?.mqtt_data?.topic_id === 'BASE/P003'
+    ) {
+      const filtered = {
+        topic_id: parsed?.mqtt_data?.topic_id,
+        last_update_time: parsed?.mqtt_data?.data?.last_update_time,
+        barr: parsed?.mqtt_data?.data?.barr,
+        gdet: parsed?.mqtt_data?.data?.gdet,
+        fdet: parsed?.mqtt_data?.data?.fdet,
+      };
+      const { error } = await supabase.from('realtime_data').insert([filtered]);
+      if (error) {
+        console.error('Supabase 저장 에러:', error);
+      } else {
+        console.log('Supabase 저장 성공:', filtered);
+      }
+    }
   } catch (e) {
-    console.error('파싱 에러:', e);
+    console.error('파싱/저장 에러:', e);
   }
 });
 
