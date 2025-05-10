@@ -397,6 +397,11 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   '진동',
                   `${converted.toFixed(2)} ${unit}`
                 );
+                // Toast 알림 추가
+                setDangerToast({
+                  sensor: sensor.name,
+                  value: `${converted.toFixed(2)} ${unit}`,
+                });
               }
               return {
                 ...sensor,
@@ -1309,6 +1314,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       detailedData: [],
     } as unknown as VibrationSensor;
   }
+
+  // Toast 알림 상태 추가
+  const [dangerToast, setDangerToast] = useState<{
+    sensor: string;
+    value: string;
+  } | null>(null);
 
   return (
     <div>
@@ -2576,6 +2587,50 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             animation: 'danger-overlay-blink 0.7s infinite alternate',
           }}
         />
+      )}
+      {dangerToast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '55%',
+            left: '50%',
+            transform: 'translate(-50%, 0)',
+            background: 'linear-gradient(90deg, #ff2d55 0%, #ffb347 100%)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: 18,
+            padding: '18px 36px',
+            borderRadius: 16,
+            boxShadow: '0 4px 24px rgba(255,45,85,0.18)',
+            zIndex: 9999,
+            letterSpacing: 1,
+            minWidth: 320,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ flex: 1, textAlign: 'center' }}>
+            ⚠️ {dangerToast.sensor}에서 위험 감지! ({dangerToast.value})
+          </span>
+          <button
+            onClick={() => setDangerToast(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: 24,
+              fontWeight: 900,
+              marginLeft: 16,
+              cursor: 'pointer',
+              lineHeight: 1,
+              padding: 0,
+            }}
+            aria-label="닫기"
+          >
+            ×
+          </button>
+        </div>
       )}
     </div>
   );

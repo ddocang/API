@@ -417,6 +417,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     '진동',
                     `${converted.toFixed(2)} ${unit}`
                   );
+                  setDangerToast({
+                    sensor: sensor.name,
+                    value: `${converted.toFixed(2)} ${unit}`,
+                  });
                 }
                 return {
                   ...sensor,
@@ -1291,6 +1295,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     name: s.name,
   }));
 
+  // Toast 알림 상태 추가
+  const [dangerToast, setDangerToast] = useState<{
+    sensor: string;
+    value: string;
+  } | null>(null);
+
   return (
     <div>
       {/* 경보음 듣기 허용 팝업 */}
@@ -1854,6 +1864,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                           width: 'auto',
                           minWidth: 120,
                           whiteSpace: 'nowrap',
+                          color:
+                            signalText === '위험'
+                              ? '#ef4444'
+                              : signalText === '정상'
+                              ? '#22c55e'
+                              : undefined,
+                          fontWeight: signalText === '위험' ? 700 : undefined,
                         }}
                       >
                         {(() => {
@@ -1893,7 +1910,8 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               </>
                             );
                           }
-                          return realtimeValue;
+                          // 가스/화재 센서도 위험값만 색상 적용
+                          return <>{realtimeValue}</>;
                         })()}
                       </SensorValue>
                       <span></span>
@@ -2506,6 +2524,50 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           setThresholds={setVibrationThresholdInputs}
           sensors={vibrationSensorList}
         />
+      )}
+      {dangerToast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '55%',
+            left: '50%',
+            transform: 'translate(-50%, 0)',
+            background: 'linear-gradient(90deg, #ff2d55 0%, #ffb347 100%)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: 18,
+            padding: '18px 36px',
+            borderRadius: 16,
+            boxShadow: '0 4px 24px rgba(255,45,85,0.18)',
+            zIndex: 9999,
+            letterSpacing: 1,
+            minWidth: 320,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ flex: 1, textAlign: 'center' }}>
+            ⚠️ {dangerToast.sensor}에서 위험 감지! ({dangerToast.value})
+          </span>
+          <button
+            onClick={() => setDangerToast(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: 24,
+              fontWeight: 900,
+              marginLeft: 16,
+              cursor: 'pointer',
+              lineHeight: 1,
+              padding: 0,
+            }}
+            aria-label="닫기"
+          >
+            ×
+          </button>
+        </div>
       )}
     </div>
   );

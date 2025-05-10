@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getVibrationUnit } from '@/hooks/useVibrationThresholds';
 
 interface SensorInfo {
@@ -22,6 +22,58 @@ export default function VibrationThresholdModal({
   sensors,
 }: Props) {
   const [inputs, setInputs] = useState<Record<string, number>>(thresholds);
+
+  // 드래그 관련 state
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // 팝업 열릴 때 중앙 정렬
+  useEffect(() => {
+    if (open) {
+      const width = 400;
+      const height = 320;
+      setPosition({
+        x: window.innerWidth / 2 - width / 2,
+        y: window.innerHeight / 2 - height / 2,
+      });
+    }
+  }, [open]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragging(true);
+    dragStart.current = {
+      x: e.clientX - (position?.x ?? 0),
+      y: e.clientY - (position?.y ?? 0),
+    };
+    document.body.style.userSelect = 'none';
+  };
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!dragging) return;
+    setPosition({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y,
+    });
+  };
+  const handleMouseUp = () => {
+    setDragging(false);
+    document.body.style.userSelect = '';
+  };
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging]);
 
   useEffect(() => {
     setInputs(thresholds);
@@ -64,9 +116,24 @@ export default function VibrationThresholdModal({
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
           textAlign: 'center',
           minWidth: 340,
+          position: 'fixed',
+          left: position ? position.x : '50%',
+          top: position ? position.y : '50%',
+          transform: position ? undefined : 'translate(-50%, -50%)',
+          cursor: dragging ? 'move' : 'default',
         }}
       >
-        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
+        {/* 헤더(타이틀 바)에서만 드래그 */}
+        <div
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            marginBottom: 16,
+            cursor: 'move',
+            userSelect: 'none',
+          }}
+          onMouseDown={handleMouseDown}
+        >
           진동 위험값(임계값) 설정
         </div>
         <div
