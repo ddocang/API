@@ -134,7 +134,7 @@ const TubeTrailerPage = () => {
     <PageContainer>
       <TopBanner
         params={params}
-        pathname={pathname}
+        pathname={pathname ?? ''}
         isMobile={false}
         lastUpdateTime={lastUpdateTime}
         setIsLogOpen={setIsLogOpen}

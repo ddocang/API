@@ -85,7 +85,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   'https://wxsmvftivxerlchikwpl.supabase.co',
-  '공개용 anon key'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4c212ZnRpdnhlcmxjaGlrd3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0MTQ2MzUsImV4cCI6MjA1Njk5MDYzNX0.uv3ZYHgjppKya4V79xfaSUd0C91ehOj5gnzoWznLw7M'
 );
 
 interface SensorBase {
@@ -1536,7 +1536,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 passHref
                 legacyBehavior
               >
-                <NavLinkStyle active={pathname.includes('tube-trailer')}>
+                <NavLinkStyle
+                  active={(pathname ?? '').includes('tube-trailer')}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
