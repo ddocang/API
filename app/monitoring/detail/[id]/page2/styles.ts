@@ -124,16 +124,33 @@ export const MapView = styled.div`
   }
 
   .sensor-icon.danger {
-    filter: drop-shadow(0 0 24px #ff2d55) brightness(2) !important;
-    animation: danger-blink 0.7s infinite alternate !important;
+    filter: drop-shadow(0 0 32px #ff2d55) drop-shadow(0 0 16px #fff700)
+      brightness(2.5) !important;
+    animation: danger-blink 0.5s infinite alternate,
+      danger-scale 0.5s infinite alternate !important;
+    transform: scale(1.18) rotate(-5deg);
+    outline: 4px solid #fff700;
+    outline-offset: 2px;
+    z-index: 20;
   }
 
   @keyframes danger-blink {
     0% {
-      filter: drop-shadow(0 0 24px #ff2d55) brightness(2);
+      filter: drop-shadow(0 0 32px #ff2d55) drop-shadow(0 0 16px #fff700)
+        brightness(2.5);
     }
     100% {
-      filter: drop-shadow(0 0 48px #ff2d55) brightness(3);
+      filter: drop-shadow(0 0 64px #ff2d55) drop-shadow(0 0 32px #fff700)
+        brightness(3.5);
+    }
+  }
+
+  @keyframes danger-scale {
+    0% {
+      transform: scale(1.18) rotate(-5deg);
+    }
+    100% {
+      transform: scale(1.28) rotate(5deg);
     }
   }
 
@@ -141,6 +158,30 @@ export const MapView = styled.div`
     filter: grayscale(1) opacity(0.3) !important;
     pointer-events: none;
     transition: filter 0.3s;
+  }
+
+  .danger-glow {
+    filter: drop-shadow(0 0 24px #ff2d55) drop-shadow(0 0 12px #fff700);
+    animation: danger-glow 0.7s infinite alternate;
+  }
+  @keyframes danger-glow {
+    0% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  .danger-shake {
+    animation: danger-shake 0.5s infinite alternate;
+  }
+  @keyframes danger-shake {
+    0% {
+      transform: translateX(-2px) rotate(-5deg);
+    }
+    100% {
+      transform: translateX(2px) rotate(5deg);
+    }
   }
 `;
 

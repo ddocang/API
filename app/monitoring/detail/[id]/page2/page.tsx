@@ -77,6 +77,12 @@ import { ThemeProvider } from '@/app/contexts/ThemeContext';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import styled from '@emotion/styled';
 import { createPortal } from 'react-dom';
+import {
+  getVibrationThreshold,
+  getVibrationUnit,
+  getVibrationSensorKey,
+} from '@/hooks/useVibrationThresholds';
+import VibrationThresholdModal from '@/components/VibrationThresholdModal';
 
 // 진동 그래프 세로 배치용 컨테이너
 const VibrationGraphContainerColumn = styled(VibrationGraphContainer)`
@@ -167,19 +173,19 @@ const FIRE_SENSORS = [
 // 진동 감지기 정보 배열
 const VIBRATION_SENSORS = [
   {
-    id: 'vibration-1',
+    id: 'vibration2-1',
     x: convertX(385),
     y: convertY(155),
     name: '진동감지기1',
   },
   {
-    id: 'vibration-2',
+    id: 'vibration2-2',
     x: convertX(585),
     y: convertY(130),
     name: '진동감지기2',
   },
   {
-    id: 'vibration-3',
+    id: 'vibration2-3',
     x: convertX(685),
     y: convertY(130),
     name: '진동감지기3',
@@ -364,10 +370,33 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                 timestamp: now.getTime(),
                 value: value,
               };
+              // 변환값 및 임계값 기준으로 위험 판정
+              const converted = plcToMms(value, sensor.name);
+              const threshold = getVibrationThreshold(
+                getVibrationSensorKey(sensor)
+              );
               const status =
-                value >= VIBRATION_DANGER_THRESHOLD ? 'danger' : 'normal';
+                !isNaN(converted) && converted >= threshold
+                  ? 'danger'
+                  : 'normal';
               if (status === 'danger') {
-                addLogItem(sensor, status, '진동', value.toString());
+                console.log(
+                  '⚠️ 위험 감지:',
+                  sensor.name,
+                  'converted:',
+                  converted,
+                  'threshold:',
+                  threshold
+                );
+                // 상세1과 동일하게 로그 추가
+                let unit = 'mm/s';
+                if (sensor.name === '진동감지기1') unit = 'm/s²'; // 필요시 센서별 단위 분기
+                addLogItem(
+                  sensor,
+                  status,
+                  '진동',
+                  `${converted.toFixed(2)} ${unit}`
+                );
               }
               return {
                 ...sensor,
@@ -492,20 +521,75 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     setIsDetailedGraphOpen(false);
     setSelectedSensor(null);
   };
+  // 1️⃣ 센서별 변환 함수 (상세1과 동일하게 id/name 기반)
+  const plcToMms = (value: number, sensorId?: string | number) => {
+    const clamped = Math.max(0, Math.min(4000, Number(value)));
+    // 진동감지기1 (가속도, 0~19.6m/s²)
+    if (
+      sensorId === '진동감지기1' ||
+      sensorId === 'vibration2-1' ||
+      sensorId === 12 ||
+      sensorId === '12'
+    ) {
+      return (clamped / 4000) * 19.6;
+    }
+    // 진동감지기2, 3 (0~50mm/s)
+    if (
+      sensorId === '진동감지기2' ||
+      sensorId === 'vibration2-2' ||
+      sensorId === 13 ||
+      sensorId === '13' ||
+      sensorId === '진동감지기3' ||
+      sensorId === 'vibration2-3' ||
+      sensorId === 14 ||
+      sensorId === '14'
+    ) {
+      return (clamped / 4000) * 50;
+    }
+    // 예외: 혹시 모를 기타 센서
+    return clamped * 0.025;
+  };
 
-  // getSensorStatus를 useMemo 위로 이동
+  // 위험 판정 함수: 항상 sensor.id 기준으로만 비교
   const getSensorStatus = (
-    sensorId: string
+    sensorOrId: any
   ): 'normal' | 'warning' | 'danger' => {
-    const type = sensorId.split('-')[0];
-    if (type === 'vibration') {
-      const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
-      const sensor = vibrationSensors[sensorIndex];
-      return (sensor?.status || 'normal') as 'normal' | 'warning' | 'danger';
+    if (!sensorOrId) return 'normal';
+    let sensor: VibrationSensor | GasSensor | FireSensor | undefined =
+      undefined;
+    if (typeof sensorOrId === 'string') {
+      // id로 센서 객체 찾기 (vibrationSensors, FACILITY_DETAIL.sensors.gas/fire에서)
+      sensor =
+        vibrationSensors.find((s) => String(s.id) === sensorOrId) ||
+        FACILITY_DETAIL.sensors.gas.find((s) => String(s.id) === sensorOrId) ||
+        FACILITY_DETAIL.sensors.fire.find((s) => String(s.id) === sensorOrId);
+      if (!sensor) return 'normal';
     } else {
-      // 가스, 화재 센서는 항상 'normal' 반환 (랜덤 danger 제거)
+      sensor = sensorOrId;
+      if (!sensor) return 'normal';
+      if (!('name' in sensor) || !('status' in sensor)) return 'normal';
+    }
+    // 진동센서(vibration, vibration2 모두)
+    if (
+      'name' in sensor &&
+      (sensor.name.startsWith('진동감지기') ||
+        String(sensor.id).startsWith('vibration'))
+    ) {
+      const threshold = getVibrationThreshold(getVibrationSensorKey(sensor));
+      if (
+        'value' in sensor &&
+        typeof sensor.value !== 'undefined' &&
+        sensor.value !== null &&
+        sensor.value !== ''
+      ) {
+        const plcVal = Number(sensor.value);
+        const converted = plcToMms(plcVal, sensor.name);
+        if (!isNaN(converted) && converted >= threshold) return 'danger';
+      }
       return 'normal';
     }
+    // ... 기존 가스/화재 센서 로직 ...
+    return 'normal';
   };
 
   const filteredSensors = useMemo(() => {
@@ -531,7 +615,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           : a.name.startsWith('화재감지기')
           ? `fire-${a.id - 15}`
           : a.name.startsWith('진동감지기')
-          ? `vibration-${a.id - 21}`
+          ? String(a.id)
           : ''
       );
       const bStatus = getSensorStatus(
@@ -540,7 +624,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           : b.name.startsWith('화재감지기')
           ? `fire-${b.id - 15}`
           : b.name.startsWith('진동감지기')
-          ? `vibration-${b.id - 21}`
+          ? String(b.id)
           : ''
       );
       if (aStatus === 'danger' && bStatus !== 'danger') return -1;
@@ -551,10 +635,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
 
   const getSensorInfo = (sensorId: string) => {
     const type = sensorId.split('-')[0];
-    if (type === 'vibration') {
+    // 진동센서(vibration, vibration2 모두)
+    if (type === 'vibration' || type === 'vibration2') {
       const sensorIndex = parseInt(sensorId.split('-')[1]) - 1;
       const sensor = vibrationSensors[sensorIndex];
-      // 진동 신호 판정
       let signalText = '--';
       let realtimeValue = '--';
       if (
@@ -564,10 +648,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         sensor.value !== ''
       ) {
         realtimeValue = sensor.value;
-        const numValue = Number(sensor.value);
-        if (!isNaN(numValue)) {
-          if (numValue >= VIBRATION_DANGER_THRESHOLD) signalText = '위험';
-          else signalText = '정상';
+        const plcVal = Number(sensor.value);
+        const converted = plcToMms(plcVal, sensor.name);
+        const threshold = getVibrationThreshold(
+          sensor.id ? String(sensor.id) : sensorId
+        );
+        if (!isNaN(converted)) {
+          signalText = converted >= threshold ? '위험' : '정상';
         }
       }
       return {
@@ -680,15 +767,41 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     };
   }, []);
 
+  // hasDanger: 항상 sensor.status 기준
+  const hasDanger = useMemo(() => {
+    return vibrationSensors.some((sensor) => sensor.status === 'danger');
+  }, [vibrationSensors]);
+
   // 필터링된 센서 아이콘 계산
   const filteredSensorIcons = useMemo(() => {
+    let sensors: { id: string; x: number; y: number; name: string }[] = [];
     if (selectedSensorType === 'all') {
-      return [...GAS_SENSORS, ...FIRE_SENSORS, ...VIBRATION_SENSORS];
+      sensors = [...GAS_SENSORS, ...FIRE_SENSORS, ...VIBRATION_SENSORS];
+    } else if (selectedSensorType === 'gas') {
+      sensors = GAS_SENSORS;
+    } else if (selectedSensorType === 'fire') {
+      sensors = FIRE_SENSORS;
+    } else {
+      sensors = VIBRATION_SENSORS;
     }
-    if (selectedSensorType === 'gas') return GAS_SENSORS;
-    if (selectedSensorType === 'fire') return FIRE_SENSORS;
-    return VIBRATION_SENSORS;
-  }, [selectedSensorType]);
+    // 센서 상태 비교 시 id 매핑을 일치시켜 danger 상태가 정확히 반영되도록 수정
+    const dangerIcons = sensors.filter((sensor) => {
+      // 진동센서만 id 매핑으로 status 판정
+      if (sensor.name.startsWith('진동감지기')) {
+        const matched = vibrationSensors.find(
+          (vs) => getVibrationSensorKey(vs) === sensor.id
+        );
+        const status = matched?.status ?? 'normal';
+        return status === 'danger';
+      }
+      // 가스/화재 센서는 getSensorStatus로 판정
+      return getSensorStatus(getFullSensor(sensor)) === 'danger';
+    });
+    if (dangerIcons.length > 0) {
+      return dangerIcons;
+    }
+    return sensors;
+  }, [selectedSensorType, vibrationSensors, gasStatusArr, fireStatusArr]);
 
   // 컴포넌트가 마운트될 때 한 번만 애니메이션 딜레이 계산
   useEffect(() => {
@@ -989,25 +1102,6 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   // 모바일 여부
   const isMobile = useMediaQuery('(max-width: 768px)');
 
-  // 상세그래프 AreaChart에 넘길 데이터 가공: 데이터가 1개면 가짜 점 추가
-  const chartData = useMemo(() => {
-    if (!selectedSensor?.detailedData) return [];
-    const data = selectedSensor.detailedData;
-    if (data.length === 1) {
-      // 데이터가 1개면 1초 뒤 같은 값으로 한 점 추가
-      return [data[0], { ...data[0], timestamp: data[0].timestamp + 1000 }];
-    }
-    return data;
-  }, [selectedSensor]);
-
-  // 위험 센서가 하나라도 있는지 체크
-  const hasDanger = useMemo(() => {
-    return filteredSensors.some((sensor) => {
-      const status = signalTextForSensor(sensor);
-      return status === '위험';
-    });
-  }, [filteredSensors]);
-
   // 센서별 signalText 계산 함수(중복 로직 함수화)
   function signalTextForSensor(sensor: any) {
     let signalText = '--';
@@ -1038,9 +1132,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         sensor.value !== null &&
         sensor.value !== ''
       ) {
-        const numValue = Number(sensor.value);
-        if (!isNaN(numValue)) {
-          signalText = numValue >= VIBRATION_DANGER_THRESHOLD ? '위험' : '정상';
+        const plcVal = Number(sensor.value);
+        const converted = plcToMms(plcVal, sensor.name);
+        // 센서 id를 정확히 구해서 임계값과 비교
+        const sensorId = getSensorDomId(sensor);
+        const threshold = getVibrationThreshold(sensorId);
+        if (!isNaN(converted)) {
+          signalText = converted >= threshold ? '위험' : '정상';
         }
       }
     }
@@ -1048,9 +1146,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
   }
 
   // 위험상황일 때 danger 센서 id 배열 구하기
-  const dangerSensorIds = filteredSensorIcons
-    .filter((sensor) => getSensorStatus(sensor.id) === 'danger')
-    .map((sensor) => sensor.id);
+  const dangerSensorIds = useMemo(() => {
+    return (filteredSensorIcons as any[])
+      .filter(
+        (sensor) => getSensorStatus(getFullSensor(sensor as any)) === 'danger'
+      )
+      .map((sensor) => sensor.id);
+  }, [filteredSensorIcons, vibrationSensors]);
 
   const [showAlarmPermission, setShowAlarmPermission] = useState(true);
   const [alarmAllowed, setAlarmAllowed] = useState(false);
@@ -1091,24 +1193,122 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     }
   }, [showTooltip, selectedSensorId]);
 
-  // 1️⃣ 센서별 변환 함수 (name 기반)
-  const plcToDisplayValue = (value: number, sensorName: string) => {
-    if (sensorName === '진동감지기1') {
-      // 0~4000 → 0~2g → 0~19.6m/s²
-      const clamped = Math.max(0, Math.min(4000, value));
-      return (clamped / 4000) * 2 * 9.8;
-    }
-    // 2, 3번: 0~50mm/s
-    const clamped = Math.max(0, Math.min(4000, value));
-    return (clamped / 4000) * 50;
-  };
-
   // 상태 추가
   const [showVibrationThresholdModal, setShowVibrationThresholdModal] =
     useState(false);
-  const [vibrationThresholdInput, setVibrationThresholdInput] = useState(
-    VIBRATION_DANGER_THRESHOLD
+
+  // 팝업 AreaChart에 넘길 데이터 (상세1과 동일하게 변환값 적용)
+  const chartData = useMemo(() => {
+    if (!selectedSensor?.detailedData) return [];
+    const id = selectedSensor.id;
+    return selectedSensor.detailedData.map((d) => ({
+      ...d,
+      value: plcToMms(d.value, id),
+    }));
+  }, [selectedSensor]);
+
+  // 진동 임계값 입력 팝업에서 사용할 센서 리스트 준비
+  const vibrationSensorList = VIBRATION_SENSORS.map((s) => ({
+    id: s.id,
+    name: s.name,
+  }));
+
+  // 진동 임계값 입력값 상태 관리 (localStorage 연동)
+  const [vibrationThresholdInputs, setVibrationThresholdInputs] = useState(
+    () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const saved = localStorage.getItem('vibrationThresholdInputs');
+          if (saved) return JSON.parse(saved);
+        } catch {}
+      }
+      // 기본값은 hooks의 VIBRATION_THRESHOLDS에서 가져옴
+      return vibrationSensorList.reduce((acc, cur) => {
+        acc[cur.id] = getVibrationThreshold(cur.id);
+        return acc;
+      }, {} as Record<string, number>);
+    }
   );
+
+  // 임계값 변경시 localStorage 저장
+  const handleSetThresholds = (next: Record<string, number>) => {
+    setVibrationThresholdInputs(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vibrationThresholdInputs', JSON.stringify(next));
+    }
+  };
+
+  // id 매핑 함수 추가
+  function getVibrationSensorKey(sensor: { id: number; name: string }) {
+    if (sensor.id === 12 || sensor.name === '진동감지기1')
+      return 'vibration2-1';
+    if (sensor.id === 13 || sensor.name === '진동감지기2')
+      return 'vibration2-2';
+    if (sensor.id === 14 || sensor.name === '진동감지기3')
+      return 'vibration2-3';
+    return String(sensor.id);
+  }
+
+  // 센서 아이콘 정보에서 전체 센서 객체로 변환하는 헬퍼 함수
+  function getFullSensor(
+    iconSensor: any
+  ): VibrationSensor | GasSensor | FireSensor {
+    if (!iconSensor)
+      return {
+        id: '',
+        name: '',
+        value: '',
+        status: '',
+        data: [],
+        detailedData: [],
+      } as unknown as VibrationSensor;
+    if (iconSensor.name && iconSensor.name.startsWith('진동감지기')) {
+      const found = vibrationSensors.find(
+        (s) => String(s.id) === String(iconSensor.id)
+      );
+      if (found) return found;
+      // 더미 VibrationSensor 객체 반환 (타입 안전성)
+      return {
+        id: iconSensor.id ?? '',
+        name: iconSensor.name ?? '',
+        value: '',
+        status: '',
+        data: [],
+        detailedData: [],
+      } as unknown as VibrationSensor;
+    } else if (iconSensor.name && iconSensor.name.startsWith('가스감지기')) {
+      const found = FACILITY_DETAIL.sensors.gas.find(
+        (s) => String(s.id) === String(iconSensor.id)
+      );
+      if (found) return found;
+      return {
+        id: iconSensor.id ?? '',
+        name: iconSensor.name ?? '',
+        status: '',
+        value: '',
+      } as unknown as GasSensor;
+    } else if (iconSensor.name && iconSensor.name.startsWith('화재감지기')) {
+      const found = FACILITY_DETAIL.sensors.fire.find(
+        (s) => String(s.id) === String(iconSensor.id)
+      );
+      if (found) return found;
+      return {
+        id: iconSensor.id ?? '',
+        name: iconSensor.name ?? '',
+        status: '',
+        value: '',
+      } as unknown as FireSensor;
+    }
+    // 타입 단언으로 타입 에러 우회
+    return {
+      id: iconSensor.id ?? '',
+      name: iconSensor.name ?? '',
+      value: '',
+      status: '',
+      data: [],
+      detailedData: [],
+    } as unknown as VibrationSensor;
+  }
 
   return (
     <div>
@@ -1187,33 +1387,64 @@ function DetailPageContent({ params }: { params: { id: string } }) {
           {!isMobile && (
             <MainMenu>
               <ThemeToggleButton />
-              {/* 진동 위험값 설정 버튼 추가 */}
+              {/* 진동 위험값 설정 버튼 - 상단배너 다른 버튼들과 동일한 색상/스타일 */}
               <button
                 style={{
                   margin: '0 12px',
                   padding: '8px 16px',
-                  background: '#fff',
-                  border: '1px solid #FB8B24',
+                  background: 'transparent',
+                  border: '1px solid #E2E8F0',
                   borderRadius: 8,
-                  color: '#FB8B24',
-                  fontWeight: 600,
+                  color: '#111827',
+                  fontFamily: 'Pretendard',
                   fontSize: 15,
+                  fontWeight: 400,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
+                  transition: 'all 0.2s',
                 }}
                 onClick={() => setShowVibrationThresholdModal(true)}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(96, 165, 250, 0.18)';
+                  e.currentTarget.style.color = '#2563eb';
+                  e.currentTarget.style.borderColor = '#2563eb';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#111827';
+                  e.currentTarget.style.borderColor = '#E2E8F0';
+                }}
               >
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                {/* 경고+설정 아이콘 */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 20h20L12 2z" fill="#FB8B24" opacity="0.18" />
                   <path
-                    d="M12 3v18m9-9H3"
+                    d="M12 8v4"
                     stroke="#FB8B24"
                     strokeWidth="2"
                     strokeLinecap="round"
                   />
+                  <circle cx="12" cy="16" r="1.2" fill="#FB8B24" />
+                  <g>
+                    <circle
+                      cx="18"
+                      cy="6"
+                      r="2"
+                      fill="#fff"
+                      stroke="#FB8B24"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M18 4.5v3M16.5 6h3"
+                      stroke="#FB8B24"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                    />
+                  </g>
                 </svg>
-                진동 위험값 설정
+                진동값보기
               </button>
               <Link href="/" passHref legacyBehavior>
                 <NavLinkStyle active={pathname === '/'}>
@@ -1322,8 +1553,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     height="80%"
                     preserveAspectRatio="xMidYMid meet"
                   />
-                  {filteredSensorIcons.map((sensor) => {
-                    const isDanger = getSensorStatus(sensor.id) === 'danger';
+                  {filteredSensorIcons.map((sensor: any) => {
+                    const fullSensor = getFullSensor(sensor);
+                    const isDanger = getSensorStatus(fullSensor) === 'danger';
                     const isDimmed = dangerSensorIds.length > 0 && !isDanger;
                     // 센서별 위치 정보
                     const { x, y } = sensor;
@@ -1342,15 +1574,48 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         style={{ cursor: 'pointer' }}
                         transform={`translate(${x},${y})`}
                       >
+                        {/* 1. danger 상태면 glow 원 먼저 */}
+                        {isDanger && (
+                          <circle
+                            cx={0}
+                            cy={0}
+                            r={38}
+                            fill="none"
+                            stroke="#ff2d55"
+                            strokeWidth={3}
+                            opacity="0.25"
+                            className="danger-glow"
+                          />
+                        )}
+                        {/* 2. 아이콘 이미지는 항상 glow 위에 */}
                         <image
                           href={`/images/monitoring/detail/${
-                            sensor.id.split('-')[0]
-                          }_box.svg`}
+                            sensor.id.startsWith('vibration2-')
+                              ? 'vibration_box'
+                              : sensor.id.split('-')[0] + '_box'
+                          }.svg`}
                           width="70"
                           height="70"
                           x={-35}
                           y={-35}
+                          style={{ filter: 'drop-shadow(0 0 4px #fff)' }}
                         />
+                        {/* 3. danger 상태면 느낌표 등 강조 요소 */}
+                        {isDanger && (
+                          <text
+                            x="0"
+                            y="-45"
+                            textAnchor="middle"
+                            fontSize="36"
+                            fontWeight="bold"
+                            fill="#fff700"
+                            stroke="#ff2d55"
+                            strokeWidth="2"
+                            className="danger-shake"
+                          >
+                            !
+                          </text>
+                        )}
                       </g>
                     );
                   })}
@@ -1408,7 +1673,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                                 const plcRaw =
                                   vibrationSensors[vIdx]?.value ?? '';
                                 if (!isNaN(plcVal) && plcRaw !== '') {
-                                  const val = plcToDisplayValue(
+                                  const val = plcToMms(
                                     plcVal,
                                     tooltipSensor.name
                                   );
@@ -1472,6 +1737,25 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     document.body
                   )}
               </MapContainer>
+              {hasDanger && (
+                <>
+                  {/* 지도 위 워터마크 삭제됨 */}
+                  {/* 지도 전체 오버레이 */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      background: 'rgba(255,0,0,0.18)',
+                      zIndex: 9,
+                      pointerEvents: 'none',
+                      animation: 'danger-overlay-blink 0.7s infinite alternate',
+                    }}
+                  />
+                </>
+              )}
             </MapView>
             <SensorCard>
               <ListHeader>
@@ -1534,6 +1818,22 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               </ListHeader>
               <SensorList>
                 {filteredSensors.map((sensor, index) => {
+                  const id = sensor.name.startsWith('가스감지기')
+                    ? `gas-${sensor.id}`
+                    : sensor.name.startsWith('화재감지기')
+                    ? `fire-${sensor.id - 15}`
+                    : sensor.name.startsWith('진동감지기')
+                    ? String(sensor.id)
+                    : '';
+                  const status = getSensorStatus(getFullSensor(sensor as any));
+                  console.log(
+                    '센서카드',
+                    sensor.name,
+                    'id:',
+                    id,
+                    'status:',
+                    status
+                  );
                   let realtimeValue = '--';
                   let signalText = '--';
                   let connectionText = '연결안됨';
@@ -1555,7 +1855,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       // PLC값 → 변환값 + 단위
                       const plcVal = Number(vibrationSensors[vIdx].value);
                       plcRawValue = vibrationSensors[vIdx].value;
-                      const val = plcToDisplayValue(plcVal, sensor.name);
+                      const val = plcToMms(plcVal, sensor.name);
                       displayValue =
                         typeof val === 'number' ? val.toFixed(2) : '--';
                       displayUnit =
@@ -1611,11 +1911,13 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                       sensor.value !== ''
                     ) {
                       realtimeValue = sensor.value;
-                      const numValue = Number(sensor.value);
-                      if (!isNaN(numValue)) {
-                        if (numValue >= VIBRATION_DANGER_THRESHOLD)
-                          signalText = '위험';
-                        else signalText = '정상';
+                      const plcVal = Number(sensor.value);
+                      const converted = plcToMms(plcVal, sensor.name);
+                      // 센서 id를 정확히 구해서 임계값과 비교
+                      const sensorId = getSensorDomId(sensor);
+                      const threshold = getVibrationThreshold(sensorId);
+                      if (!isNaN(converted)) {
+                        signalText = converted >= threshold ? '위험' : '정상';
                       }
                     } else {
                       realtimeValue = '--';
@@ -1625,18 +1927,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     <SensorItem
                       key={sensor.id}
                       onClick={() => handleSensorListItemClick(sensor)}
-                      className={(() => {
-                        const status = getSensorStatus(
-                          sensor.name.startsWith('가스감지기')
-                            ? `gas-${sensor.id}`
-                            : sensor.name.startsWith('화재감지기')
-                            ? `fire-${sensor.id - 15}`
-                            : sensor.name.startsWith('진동감지기')
-                            ? `vibration-${sensor.id - 21}`
-                            : ''
-                        );
-                        return status === 'danger' ? 'danger' : '';
-                      })()}
+                      className={status === 'danger' ? 'danger' : ''}
                     >
                       <SensorNo>{index + 1}</SensorNo>
                       <SensorType>
@@ -1713,7 +2004,10 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                   realtimeValue = vibrationSensor.value;
                 }
                 return (
-                  <VibrationGraphCard key={vibrationSensor.id}>
+                  <VibrationGraphCard
+                    key={vibrationSensor.id}
+                    onClick={() => handleGraphClick(vibrationSensor)}
+                  >
                     <h4
                       style={{
                         display: 'flex',
@@ -1746,7 +2040,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                           ? (() => {
                               const isVibration1 =
                                 vibrationSensor.name === '진동감지기1';
-                              const val = plcToDisplayValue(
+                              const val = plcToMms(
                                 vibrationSensor.data[
                                   vibrationSensor.data.length - 1
                                 ].value,
@@ -1818,7 +2112,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               Math.max(
                                 ...vibrationSensor.data.map(
                                   (d: VibrationDataPoint) =>
-                                    plcToDisplayValue(
+                                    plcToMms(
                                       d.value,
                                       vibrationSensor.name // name 기준으로 변경
                                     )
@@ -1829,7 +2123,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                             tickLine={false}
                             axisLine={{ stroke: colors.chart.axis.line }}
                             tickFormatter={(value) =>
-                              plcToDisplayValue(
+                              plcToMms(
                                 value,
                                 vibrationSensor.name // name 기준으로 변경
                               ).toFixed(2)
@@ -1856,7 +2150,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                                 payload.length &&
                                 payload[0].value !== undefined
                               ) {
-                                const val = plcToDisplayValue(
+                                const val = plcToMms(
                                   parseFloat(payload[0].value as any),
                                   vibrationSensor.name // name 기준으로 변경
                                 );
@@ -2018,25 +2312,36 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     minTickGap={50}
                   />
                   <YAxis
-                    domain={
-                      zoomDomain?.y ||
-                      (() => {
-                        const values = selectedSensor.detailedData.map(
-                          (d) => d.value
-                        );
-                        if (values.length === 0) return [0, 1];
-                        const min = Math.min(...values);
-                        const max = Math.max(...values);
-                        if (min === max) {
-                          // 값이 모두 같으면 위아래로 1씩 여유
-                          return [min - 1, max + 1];
-                        }
-                        return [min, max];
-                      })()
-                    }
+                    domain={(() => {
+                      const values = selectedSensor.detailedData.map((d) =>
+                        plcToMms(d.value, selectedSensor.id)
+                      );
+                      const validValues = values.filter(
+                        (v) => typeof v === 'number' && !isNaN(v) && isFinite(v)
+                      );
+                      if (validValues.length === 0) return [0, 1];
+                      const min = Math.min(...validValues);
+                      const max = Math.max(...validValues);
+                      if (!isFinite(min) || !isFinite(max) || min === max)
+                        return [0, min + 1];
+                      return [min, max];
+                    })()}
                     allowDataOverflow
-                    tickFormatter={(value) => value.toFixed(0)}
+                    tickFormatter={(value) => value.toFixed(2)}
                     stroke="rgba(255, 255, 255, 0.5)"
+                    label={{
+                      value:
+                        selectedSensor.name === '진동감지기1'
+                          ? 'Acceleration (m/s²)'
+                          : 'Velocity (mm/s)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: 13,
+                        fill: '#cbd5e1',
+                      },
+                    }}
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
@@ -2047,6 +2352,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                         payload[0].value !== undefined
                       ) {
                         const date = new Date(label);
+                        const isAccel = selectedSensor.name === '진동감지기1';
                         return (
                           <CustomTooltip>
                             <div className="time">
@@ -2058,7 +2364,16 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                               })}
                             </div>
                             <div className="value">
-                              {parseInt(payload[0].value as any)}
+                              {(() => {
+                                const val = plcToMms(
+                                  parseFloat(payload[0].value as any),
+                                  selectedSensor.id
+                                );
+                                return typeof val === 'number'
+                                  ? val.toFixed(2)
+                                  : '--';
+                              })()}{' '}
+                              {isAccel ? 'm/s²' : 'mm/s'}
                             </div>
                           </CustomTooltip>
                         );
@@ -2080,13 +2395,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     style={{
                       filter: 'url(#areaGlow)',
                     }}
-                  >
-                    <LabelList
-                      dataKey="value"
-                      position="top"
-                      formatter={(v: any) => v?.toString()}
-                    />
-                  </Area>
+                  />
                   {isZooming && refAreaLeft && refAreaRight && (
                     <ReferenceArea
                       x1={refAreaLeft}
@@ -2102,9 +2411,44 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             <GraphStatsBar>
               <span className="stat">From: {graphStats.fromTime}</span>
               <span className="stat">To: {graphStats.toTime}</span>
-              <span className="stat">최대: {graphStats.maxValue}</span>
-              <span className="stat">최소: {graphStats.minValue}</span>
-              <span className="stat">평균: {graphStats.avgValue}</span>
+              <span className="stat">
+                최대:{' '}
+                {(() => {
+                  const isAccel = selectedSensor.name === '진동감지기1';
+                  return `${plcToMms(
+                    Math.max(
+                      ...selectedSensor.detailedData.map((d) => d.value)
+                    ),
+                    selectedSensor.id
+                  ).toFixed(2)} ${isAccel ? 'm/s²' : 'mm/s'}`;
+                })()}
+              </span>
+              <span className="stat">
+                최소:{' '}
+                {(() => {
+                  const isAccel = selectedSensor.name === '진동감지기1';
+                  return `${plcToMms(
+                    Math.min(
+                      ...selectedSensor.detailedData.map((d) => d.value)
+                    ),
+                    selectedSensor.id
+                  ).toFixed(2)} ${isAccel ? 'm/s²' : 'mm/s'}`;
+                })()}
+              </span>
+              <span className="stat">
+                평균:{' '}
+                {(() => {
+                  const isAccel = selectedSensor.name === '진동감지기1';
+                  const avg =
+                    selectedSensor.detailedData.reduce(
+                      (a, b) => a + b.value,
+                      0
+                    ) / selectedSensor.detailedData.length;
+                  return `${plcToMms(avg, selectedSensor.id).toFixed(2)} ${
+                    isAccel ? 'm/s²' : 'mm/s'
+                  }`;
+                })()}
+              </span>
               <span className="legend">
                 <span className="dot normal" /> 정상
                 <span className="dot danger" /> 위험 (500 이상)
@@ -2121,6 +2465,9 @@ function DetailPageContent({ params }: { params: { id: string } }) {
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
+              width="24"
+              height="24"
+              style={{ marginRight: 8, verticalAlign: 'middle' }}
             >
               <path
                 fillRule="evenodd"
@@ -2135,14 +2482,38 @@ function DetailPageContent({ params }: { params: { id: string } }) {
         <LogContent>
           {logItems.map((item, index) => (
             <LogItem key={index} severity={item.status}>
-              <span className="time">{item.time}</span>
-              <span className="content">{item.sensorName}</span>
-              <span className="status">
+              <span
+                className="status"
+                style={{ minWidth: 64, textAlign: 'center', marginRight: 20 }}
+              >
                 {item.status === 'warning' ? '경고' : '위험'}
               </span>
-              {item.value !== undefined && (
-                <span className="value">{item.value}</span>
-              )}
+              <span className="time">{item.time}</span>
+              <span className="content">{item.sensorName}</span>
+              {item.value !== undefined &&
+                (() => {
+                  // 값과 단위 분리 (예: '31.41 mm/s' 또는 '15.2 m/s²')
+                  const match = String(item.value).match(
+                    /([\d.\-eE]+)\s*([a-zA-Z\/²μ]+)?/
+                  );
+                  if (match) {
+                    const valuePart = match[1];
+                    const unitPart = match[2] || '';
+                    return (
+                      <span className="value">
+                        <span style={{ color: '#ef4444', fontWeight: 700 }}>
+                          {valuePart}
+                        </span>
+                        {unitPart ? (
+                          <span style={{ color: '#222', marginLeft: 2 }}>
+                            {unitPart}
+                          </span>
+                        ) : null}
+                      </span>
+                    );
+                  }
+                  return <span className="value">{item.value}</span>;
+                })()}
             </LogItem>
           ))}
           {logItems.length === 0 && (
@@ -2165,7 +2536,33 @@ function DetailPageContent({ params }: { params: { id: string } }) {
       <audio ref={audioRef} src="/alarm.mp3" loop style={{ display: 'none' }} />
 
       {/* 진동 위험값 설정 모달 */}
-      {showVibrationThresholdModal && (
+      <VibrationThresholdModal
+        open={showVibrationThresholdModal}
+        onClose={() => setShowVibrationThresholdModal(false)}
+        thresholds={vibrationThresholdInputs}
+        setThresholds={handleSetThresholds}
+        sensors={vibrationSensorList}
+      />
+      {hasDanger && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 64,
+            color: 'rgba(255,0,0,0.7)',
+            fontWeight: 900,
+            zIndex: 9999,
+            pointerEvents: 'none',
+            textShadow: '0 0 16px #fff, 0 0 32px #f00',
+            animation: 'danger-text-blink 1s infinite alternate',
+          }}
+        >
+          ⚠️ 위험 ⚠️
+        </div>
+      )}
+      {hasDanger && (
         <div
           style={{
             position: 'fixed',
@@ -2173,86 +2570,12 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             left: 0,
             width: '100vw',
             height: '100vh',
-            background: 'rgba(0,0,0,0.45)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            background: 'rgba(255,0,0,0.15)',
+            zIndex: 9998,
+            pointerEvents: 'none',
+            animation: 'danger-overlay-blink 0.7s infinite alternate',
           }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: 16,
-              padding: '32px 28px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-              textAlign: 'center',
-              minWidth: 320,
-            }}
-          >
-            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-              진동 위험값 설정
-            </div>
-            <div style={{ fontSize: 15, color: '#555', marginBottom: 18 }}>
-              진동감지기 위험 임계값을 입력하세요.
-              <br />
-              (현재: {VIBRATION_DANGER_THRESHOLD})
-            </div>
-            <input
-              type="number"
-              value={vibrationThresholdInput}
-              min={0}
-              max={10000}
-              step={1}
-              onChange={(e) =>
-                setVibrationThresholdInput(Number(e.target.value))
-              }
-              style={{
-                fontSize: 18,
-                padding: '8px 16px',
-                border: '1px solid #FB8B24',
-                borderRadius: 6,
-                width: 120,
-                marginBottom: 18,
-                textAlign: 'center',
-              }}
-            />
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button
-                style={{
-                  background: '#FB8B24',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: 16,
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 28px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  window.location.reload(); // 새로고침으로 위험값 반영(간단 처리)
-                }}
-              >
-                저장
-              </button>
-              <button
-                style={{
-                  background: '#eee',
-                  color: '#333',
-                  fontWeight: 600,
-                  fontSize: 16,
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 28px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => setShowVibrationThresholdModal(false)}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       )}
     </div>
   );

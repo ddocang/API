@@ -1797,27 +1797,27 @@ export const LogPopup = styled.div<{ isOpen: boolean }>`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 800px;
-  max-height: 80vh;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 1000;
-  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  width: 480px;
+  max-width: 96vw;
+  max-height: 80vh;
+  display: flex;
   flex-direction: column;
+  opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
+  visibility: ${({ isOpen }) => (isOpen ? 'visible' : 'hidden')};
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2000;
+  border: 1.5px solid #bae6fd;
+  backdrop-filter: blur(16px);
+  color: #1e293b;
+  padding: 0;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  backdrop-filter: blur(10px);
-
   html.dark & {
-    background: ${colors.background.primary};
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  }
-
-  @media (max-width: 900px) {
-    width: 90%;
-    max-height: 70vh;
+    background: #23272f;
+    border: 1px solid #334155;
+    color: #f8fafc;
   }
 `;
 
@@ -1825,209 +1825,112 @@ export const LogHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-
+  padding: 18px 32px 8px 32px;
+  background: transparent;
+  border-bottom: none;
+  gap: 12px;
+  position: relative;
   h2 {
     font-family: 'Pretendard';
-    font-size: 24px;
-    font-weight: 600;
-    color: #1e293b;
+    font-weight: 700;
+    font-size: 22px;
+    color: #ff2d55;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 12px;
-
-    svg {
-      width: 24px;
-      height: 24px;
-      color: ${colors.status.danger.text};
-    }
+    gap: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: none;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+    justify-content: center;
   }
-
-  html.dark & {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
-    h2 {
-      color: #fff;
-    }
-  }
-
-  @media (max-width: 768px) {
-    padding: 20px 24px;
-    h2 {
-      font-size: 20px;
-      svg {
-        width: 20px;
-        height: 20px;
-      }
-    }
+  html.dark & h2 {
+    color: #ffd600;
   }
 `;
 
 export const LogContent = styled.div`
   flex: 1;
+  width: 100%;
+  padding: 0 32px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   overflow-y: auto;
-  padding: 24px 32px;
-  background: #fff;
-  color: #1e293b;
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-    &:hover {
-      background: #94a3b8;
-    }
-  }
-
-  html.dark & {
-    background: ${colors.background.primary};
-    color: #fff;
-    &::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      &:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
-    }
-  }
-
-  @media (max-width: 768px) {
-    padding: 20px 24px;
-  }
+  min-height: 120px;
 `;
 
-export const LogItem = styled.div<{ severity: 'warning' | 'danger' }>`
+export const LogItem = styled.div<{ severity: string }>`
   display: flex;
   align-items: center;
-  padding: 16px 20px;
-  background: ${(props) =>
-    props.severity === 'warning'
-      ? 'rgba(242, 192, 53, 0.12)'
-      : 'rgba(216, 17, 89, 0.10)'};
-  border: 1px solid
-    ${(props) =>
-      props.severity === 'warning'
-        ? 'rgba(242, 192, 53, 0.28)'
-        : 'rgba(216, 17, 89, 0.22)'};
-  border-radius: 12px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
-
-  &:last-child {
-    margin-bottom: 0;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 15px;
+  font-family: 'Pretendard';
+  border-bottom: 1px solid #e5e7eb;
+  color: ${({ severity }) =>
+    severity === 'danger'
+      ? '#ff2d55'
+      : severity === 'warning'
+      ? '#f59e42'
+      : '#334155'};
+  font-weight: ${({ severity }) =>
+    severity === 'danger' ? 700 : severity === 'warning' ? 600 : 500};
+  .status {
+    font-weight: 700;
+    min-width: 64px;
+    text-align: center;
+    color: ${({ severity }) =>
+      severity === 'danger'
+        ? '#ff2d55'
+        : severity === 'warning'
+        ? '#f59e42'
+        : '#334155'};
   }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px
-      ${(props) =>
-        props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.18)'
-          : 'rgba(216, 17, 89, 0.18)'};
-  }
-
   .time {
-    font-family: 'Pretendard';
+    min-width: 80px;
+    color: #64748b;
     font-size: 14px;
-    color: #b0b0b0;
-    margin-right: 20px;
-    white-space: nowrap;
-  }
-
-  .content {
-    flex: 1;
-    font-family: 'Pretendard';
-    font-size: 15px;
-    color: #1e293b;
     font-weight: 500;
   }
-
-  .status {
-    font-family: 'Pretendard';
-    font-size: 13px;
+  .content {
+    flex: 1;
     font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background: ${(props) =>
-      props.severity === 'warning'
-        ? 'rgba(242, 192, 53, 0.18)'
-        : 'rgba(216, 17, 89, 0.18)'};
-    color: ${(props) =>
-      props.severity === 'warning'
-        ? colors.sensor.vibration
-        : colors.sensor.fire};
-    margin-left: 16px;
-    white-space: nowrap;
-    border: 1px solid
-      ${(props) =>
-        props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.32)'
-          : 'rgba(216, 17, 89, 0.32)'};
+    color: #222;
   }
-
+  .value {
+    min-width: 60px;
+    text-align: right;
+    color: #2563eb;
+    font-weight: 600;
+  }
   html.dark & {
-    background: ${(props) =>
-      props.severity === 'warning'
-        ? 'rgba(242, 192, 53, 0.08)'
-        : 'rgba(216, 17, 89, 0.08)'};
-    border: 1px solid
-      ${(props) =>
-        props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.18)'
-          : 'rgba(216, 17, 89, 0.18)'};
-    .time {
-      color: #888;
+    border-bottom: 1px solid #334155;
+    color: ${({ severity }) =>
+      severity === 'danger'
+        ? '#ff2d55'
+        : severity === 'warning'
+        ? '#ffd600'
+        : '#cbd5e1'};
+    .status {
+      color: ${({ severity }) =>
+        severity === 'danger'
+          ? '#ff2d55'
+          : severity === 'warning'
+          ? '#ffd600'
+          : '#cbd5e1'};
     }
     .content {
-      color: #fff;
+      color: #f8fafc;
     }
-    .status {
-      background: ${(props) =>
-        props.severity === 'warning'
-          ? 'rgba(242, 192, 53, 0.13)'
-          : 'rgba(216, 17, 89, 0.13)'};
-      color: ${(props) =>
-        props.severity === 'warning'
-          ? colors.sensor.vibration
-          : colors.sensor.fire};
-      border: 1px solid
-        ${(props) =>
-          props.severity === 'warning'
-            ? 'rgba(242, 192, 53, 0.22)'
-            : 'rgba(216, 17, 89, 0.22)'};
-    }
-  }
-
-  @media (max-width: 768px) {
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 8px;
-    .time {
-      font-size: 12px;
-      margin-right: 12px;
-    }
-    .content {
-      font-size: 14px;
-      width: 100%;
-      order: -1;
-      margin-bottom: 4px;
-    }
-    .status {
-      font-size: 12px;
-      padding: 4px 10px;
-      margin-left: auto;
+    .value {
+      color: #60a5fa;
     }
   }
 `;

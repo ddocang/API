@@ -27,12 +27,12 @@ export const FIRE_SENSORS = [
 ];
 
 export const VIBRATION_SENSORS = [
-  { id: 'vibration-1', x: 260, y: 303, name: '진동감지기1' },
-  { id: 'vibration-2', x: 277, y: 360, name: '진동감지기2' },
-  { id: 'vibration-3', x: 295, y: 303, name: '진동감지기3' },
-  { id: 'vibration-4', x: 390, y: 303, name: '진동감지기4' },
-  { id: 'vibration-5', x: 407, y: 360, name: '진동감지기5' },
-  { id: 'vibration-6', x: 427, y: 303, name: '진동감지기6' },
+  { id: 'vibration-1', x: 260, y: 313, name: '진동감지기1' },
+  { id: 'vibration-2', x: 277, y: 365, name: '진동감지기2' },
+  { id: 'vibration-3', x: 295, y: 313, name: '진동감지기3' },
+  { id: 'vibration-4', x: 390, y: 313, name: '진동감지기4' },
+  { id: 'vibration-5', x: 407, y: 365, name: '진동감지기5' },
+  { id: 'vibration-6', x: 427, y: 313, name: '진동감지기6' },
   { id: 'vibration-7', x: 523, y: 118, name: '진동감지기7' },
   { id: 'vibration-8', x: 523, y: 193, name: '진동감지기8' },
   { id: 'vibration-9', x: 559, y: 133, name: '진동감지기9' },
