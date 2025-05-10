@@ -81,6 +81,12 @@ import {
 } from '@/hooks/useVibrationThresholds';
 import VibrationThresholdModal from '@/components/VibrationThresholdModal';
 import { VIBRATION_SENSORS } from './constants/sensors';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://wxsmvftivxerlchikwpl.supabase.co',
+  '공개용 anon key'
+);
 
 interface SensorBase {
   id: number;
@@ -1300,6 +1306,64 @@ function DetailPageContent({ params }: { params: { id: string } }) {
     sensor: string;
     value: string;
   } | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data, error } = await supabase
+        .from('realtime_data')
+        .select('*')
+        .order('last_update_time', { ascending: false })
+        .limit(10);
+      if (!error && data) {
+        // 기존 WebSocket 데이터 처리 로직을 여기에 적용
+        // 예시: setVibrationSensors, setGasStatus, setFireStatus 등
+      }
+    }
+    fetchData();
+  }, []);
+
+  // 1️⃣ Supabase에서 과거 진동 데이터 불러와서 그래프에 반영
+  useEffect(() => {
+    async function fetchInitialVibrationData() {
+      console.log('Supabase fetch 시작!');
+      const { data, error } = await supabase
+        .from('realtime_data')
+        .select('last_update_time, barr')
+        .eq('topic_id', 'BASE/P001')
+        .order('last_update_time', { ascending: true })
+        .limit(100); // 원하는 개수만큼
+      console.log('supabase data:', data, error);
+      if (!error && data) {
+        // 센서별로 데이터 가공
+        const sensors = FACILITY_DETAIL.sensors.vibration.map((sensor, idx) => {
+          const sensorData = data.map((row) => {
+            const barrArr = String(row.barr || '').split(',');
+            const value = isNaN(Number(barrArr[idx]))
+              ? 0
+              : parseInt(barrArr[idx] || '0', 10);
+            // UTC 문자열로 변환
+            const utcString = row.last_update_time.replace(' ', 'T') + 'Z';
+            return {
+              time: utcString,
+              value,
+              timestamp: new Date(utcString).getTime(),
+            };
+          });
+          return {
+            ...sensor,
+            value:
+              sensorData.length > 0
+                ? String(sensorData[sensorData.length - 1].value)
+                : '0',
+            data: sensorData.map((d) => ({ time: d.time, value: d.value })),
+            detailedData: sensorData,
+          };
+        });
+        setVibrationSensors(sensors);
+      }
+    }
+    fetchInitialVibrationData();
+  }, []);
 
   return (
     <div>

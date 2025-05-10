@@ -8,7 +8,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Footer from '../../components/main/sections/Footer';
 import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
-import useWebSocket from '@/hooks/useWebSocket';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://wxsmvftivxerlchikwpl.supabase.co',
+  '공개용 anon key'
+);
 
 // 더미 데이터
 const DUMMY_FACILITY = {
@@ -156,181 +161,20 @@ export default function MonitoringPage() {
     }, 200);
   };
 
-  // 상세페이지와 동일한 WebSocket 데이터 수신 및 상태 갱신
-  useWebSocket(
-    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev',
-    (data: any) => {
-      // 예시: topic_id로 시설 구분, barr/gdet/fdet로 상태 추출
-      if (!data?.mqtt_data?.topic_id) {
-        setFacilityStatusList((prev) =>
-          prev.map((f) => ({
-            ...f,
-            gasStatus: 'inactive',
-            fireStatus: 'inactive',
-            vibrationStatus: 'inactive',
-          }))
-        );
-        return;
-      }
-      // 예시: topic_id에서 id 추출 (BASE/P001 → 1)
-      const id = (() => {
-        const match = data.mqtt_data.topic_id.match(/BASE\/P(\d+)/);
-        return match ? parseInt(match[1], 10) : null;
-      })();
-      if (!id) return;
-
-      // 삼척 교동 수소 스테이션(P001)만 아래 로직 적용
-      if (data.mqtt_data.topic_id === 'BASE/P001') {
-        // 진동
-        let vibrationStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.barr) {
-          const barrArr = data.mqtt_data.data.barr
-            .split(',')
-            .slice(0, 9)
-            .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 1000)
-            ? 'normal'
-            : 'warning';
-        }
-        // 가스
-        let gasStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.gdet) {
-          const gdetArr = Array.isArray(data.mqtt_data.data.gdet)
-            ? data.mqtt_data.data.gdet
-            : typeof data.mqtt_data.data.gdet === 'string'
-            ? data.mqtt_data.data.gdet.split(',').map(Number)
-            : [];
-          gasStatus = gdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-        // 화재
-        let fireStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.fdet) {
-          const fdetArr = Array.isArray(data.mqtt_data.data.fdet)
-            ? data.mqtt_data.data.fdet
-            : typeof data.mqtt_data.data.fdet === 'string'
-            ? data.mqtt_data.data.fdet.split(',').map(Number)
-            : [];
-          fireStatus = fdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-        setFacilityStatusList((prev) => {
-          return prev.map((f) => {
-            if (f.id === 1) {
-              return {
-                ...f,
-                gasStatus: gasStatus,
-                fireStatus: fireStatus,
-                vibrationStatus: vibrationStatus,
-              };
-            }
-            return f;
-          });
-        });
-        return;
-      }
-
-      // 삼척 수소충전소(P003, id: 2) 처리
-      if (data.mqtt_data.topic_id === 'BASE/P003') {
-        // 진동 상태 계산 (앞 3개만)
-        let vibrationStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.barr) {
-          const barrArr = data.mqtt_data.data.barr
-            .split(',')
-            .slice(0, 3)
-            .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 1000)
-            ? 'normal'
-            : 'warning';
-        }
-
-        // 가스 상태 계산
-        let gasStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.gdet) {
-          const gdetArr = Array.isArray(data.mqtt_data.data.gdet)
-            ? data.mqtt_data.data.gdet
-            : typeof data.mqtt_data.data.gdet === 'string'
-            ? data.mqtt_data.data.gdet.split(',').map(Number)
-            : [];
-          gasStatus = gdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-
-        // 화재 상태 계산
-        let fireStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.fdet) {
-          const fdetArr = Array.isArray(data.mqtt_data.data.fdet)
-            ? data.mqtt_data.data.fdet
-            : typeof data.mqtt_data.data.fdet === 'string'
-            ? data.mqtt_data.data.fdet.split(',').map(Number)
-            : [];
-          fireStatus = fdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-
-        setFacilityStatusList((prev) =>
-          prev.map((f) =>
-            f.id === 2 ? { ...f, gasStatus, fireStatus, vibrationStatus } : f
-          )
-        );
-        return;
-      }
-
-      // P001이 아닌 경우만 기존 로직 실행
-      if (
-        data.mqtt_data.topic_id !== 'BASE/P001' &&
-        data.mqtt_data.topic_id !== 'BASE/P003'
-      ) {
-        // 진동 상태 계산
-        let vibrationStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.barr) {
-          const barrArr = data.mqtt_data.data.barr
-            .split(',')
-            .slice(0, 9)
-            .map((v: string) => parseInt(v));
-          vibrationStatus = barrArr.every((v: number) => v < 1000)
-            ? 'normal'
-            : 'warning';
-        }
-
-        // 가스 상태 계산
-        let gasStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.gdet) {
-          const gdetArr = Array.isArray(data.mqtt_data.data.gdet)
-            ? data.mqtt_data.data.gdet
-            : typeof data.mqtt_data.data.gdet === 'string'
-            ? data.mqtt_data.data.gdet.split(',').map(Number)
-            : [];
-          gasStatus = gdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-
-        // 화재 상태 계산
-        let fireStatus: 'normal' | 'warning' | 'inactive' = 'inactive';
-        if (data.mqtt_data.data?.fdet) {
-          const fdetArr = Array.isArray(data.mqtt_data.data.fdet)
-            ? data.mqtt_data.data.fdet
-            : typeof data.mqtt_data.data.fdet === 'string'
-            ? data.mqtt_data.data.fdet.split(',').map(Number)
-            : [];
-          fireStatus = fdetArr.every((v: number) => v === 0)
-            ? 'normal'
-            : 'warning';
-        }
-
-        setFacilityStatusList((prev) =>
-          prev.map((f) =>
-            f.id === id ? { ...f, gasStatus, fireStatus, vibrationStatus } : f
-          )
-        );
+  useEffect(() => {
+    async function fetchData() {
+      const { data, error } = await supabase
+        .from('realtime_data')
+        .select('*')
+        .order('last_update_time', { ascending: false })
+        .limit(10);
+      if (!error && data) {
+        // 기존 WebSocket 데이터 처리 로직을 여기에 적용
+        // 예시: setFacilityStatusList, setVibrationSensors 등
       }
     }
-  );
+    fetchData();
+  }, []);
 
   // 실시간 상태를 facilityStatusList에서 병합
   const mergedList = DUMMY_LIST.map((facility) => {
