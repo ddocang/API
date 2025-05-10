@@ -2001,207 +2001,193 @@ function DetailPageContent({ params }: { params: { id: string } }) {
             </SensorCard>
           </LeftColumnWide>
           <VibrationGraphContainerNarrow>
-            {filteredSensors
-              .filter((sensor) => sensor.name.startsWith('진동감지기'))
-              .slice(0, 3)
-              .map((sensor, idx) => {
-                const vibrationSensor = sensor as VibrationSensor;
-                let realtimeValue = '--';
-                if (
-                  vibrationSensor.value !== undefined &&
-                  vibrationSensor.value !== null &&
-                  vibrationSensor.value !== ''
-                ) {
-                  realtimeValue = vibrationSensor.value;
-                }
-                return (
-                  <VibrationGraphCard
-                    key={vibrationSensor.id}
-                    onClick={() => handleGraphClick(vibrationSensor)}
+            {vibrationSensors.map((vibrationSensor, idx) => {
+              let realtimeValue = '--';
+              if (
+                vibrationSensor.value !== undefined &&
+                vibrationSensor.value !== null &&
+                vibrationSensor.value !== ''
+              ) {
+                realtimeValue = vibrationSensor.value;
+              }
+              return (
+                <VibrationGraphCard
+                  key={vibrationSensor.id}
+                  onClick={() => handleGraphClick(vibrationSensor)}
+                >
+                  <h4
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                      height: 40,
+                    }}
                   >
-                    <h4
+                    <span style={{ fontWeight: 700 }}>
+                      {vibrationSensor.name}
+                      {/* 센서별 범위 표시 */}
+                      {vibrationSensor.name === '진동감지기1'
+                        ? ' (0~19.6m/s²)'
+                        : ' (0~50mm/s)'}
+                    </span>
+                    <span
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '100%',
-                        height: 40,
+                        fontWeight: 700,
+                        color:
+                          colorAssignments[vibrationSensor.id.toString()].line,
+                        fontSize: '1.1em',
+                        lineHeight: 1,
+                        textAlign: 'center',
+                        flex: 1,
+                        marginLeft: 4,
                       }}
                     >
-                      <span style={{ fontWeight: 700 }}>
-                        {vibrationSensor.name}
-                        {/* 센서별 범위 표시 */}
-                        {vibrationSensor.name === '진동감지기1'
-                          ? ' (0~19.6m/s²)'
-                          : ' (0~50mm/s)'}
-                      </span>
-                      <span
-                        style={{
-                          fontWeight: 700,
-                          color:
-                            colorAssignments[vibrationSensor.id.toString()]
-                              .line,
-                          fontSize: '1.1em',
-                          lineHeight: 1,
-                          textAlign: 'center',
-                          flex: 1,
-                          marginLeft: 4,
+                      {vibrationSensor.data.length > 0
+                        ? (() => {
+                            const isVibration1 =
+                              vibrationSensor.name === '진동감지기1';
+                            const val = plcToMms(
+                              vibrationSensor.data[
+                                vibrationSensor.data.length - 1
+                              ].value,
+                              vibrationSensor.name // name 기준으로 변경
+                            );
+                            const unit = isVibration1 ? 'm/s²' : 'mm/s';
+                            return `${
+                              typeof val === 'number' ? val.toFixed(2) : '--'
+                            } ${unit}`;
+                          })()
+                        : '--'}
+                    </span>
+                    <span className="status">정상</span>
+                  </h4>
+                  <div className="graph-container">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={vibrationSensor.data}
+                        margin={{
+                          top: 5,
+                          right: 10,
+                          left: -20,
+                          bottom: 0,
                         }}
                       >
-                        {vibrationSensor.data.length > 0
-                          ? (() => {
-                              const isVibration1 =
-                                vibrationSensor.name === '진동감지기1';
-                              const val = plcToMms(
-                                vibrationSensor.data[
-                                  vibrationSensor.data.length - 1
-                                ].value,
-                                vibrationSensor.name // name 기준으로 변경
-                              );
-                              const unit = isVibration1 ? 'm/s²' : 'mm/s';
-                              return `${
-                                typeof val === 'number' ? val.toFixed(2) : '--'
-                              } ${unit}`;
-                            })()
-                          : '--'}
-                      </span>
-                      <span className="status">정상</span>
-                    </h4>
-                    <div className="graph-container">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                          data={vibrationSensor.data}
-                          margin={{
-                            top: 5,
-                            right: 10,
-                            left: -20,
-                            bottom: 0,
-                          }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id={`gradient-${vibrationSensor.id}`}
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
-                            >
-                              <stop
-                                offset="5%"
-                                stopColor={
-                                  colorAssignments[
-                                    vibrationSensor.id.toString()
-                                  ].line
-                                }
-                                stopOpacity={0.3}
-                              />
-                              <stop
-                                offset="95%"
-                                stopColor={
-                                  colorAssignments[
-                                    vibrationSensor.id.toString()
-                                  ].line
-                                }
-                                stopOpacity={0}
-                              />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                            stroke={colors.chart.grid.line}
-                            opacity={colors.chart.grid.opacity}
-                          />
-                          <XAxis
-                            dataKey="time"
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={{ stroke: colors.chart.axis.line }}
-                          />
-                          <YAxis
-                            domain={[
-                              0,
-                              Math.max(
-                                ...vibrationSensor.data.map(
-                                  (d: VibrationDataPoint) =>
-                                    plcToMms(
-                                      d.value,
-                                      vibrationSensor.name // name 기준으로 변경
-                                    )
-                                )
-                              ),
-                            ]}
-                            tick={{ fontSize: 12 }}
-                            tickLine={false}
-                            axisLine={{ stroke: colors.chart.axis.line }}
-                            tickFormatter={(value) =>
-                              plcToMms(
-                                value,
-                                vibrationSensor.name // name 기준으로 변경
-                              ).toFixed(2)
-                            }
-                            label={{
-                              value:
-                                vibrationSensor.name === '진동감지기1'
-                                  ? 'Acceleration (m/s²)'
-                                  : 'Velocity (mm/s)',
-                              angle: -90,
-                              position: 'insideLeft',
-                              style: {
-                                textAnchor: 'middle',
-                                fontSize: 13,
-                                fill: '#64748b',
-                              },
-                            }}
-                          />
-                          <Tooltip
-                            content={({ active, payload, label }) => {
-                              if (
-                                active &&
-                                payload &&
-                                payload.length &&
-                                payload[0].value !== undefined
-                              ) {
-                                const val = plcToMms(
-                                  parseFloat(payload[0].value as any),
-                                  vibrationSensor.name // name 기준으로 변경
-                                );
-                                const unit =
-                                  vibrationSensor.name === '진동감지기1'
-                                    ? 'm/s²'
-                                    : 'mm/s';
-                                return (
-                                  <CustomTooltip>
-                                    <div className="time">{label}</div>
-                                    <div className="value">
-                                      {typeof val === 'number'
-                                        ? val.toFixed(2)
-                                        : '--'}{' '}
-                                      {unit}
-                                    </div>
-                                  </CustomTooltip>
-                                );
+                        <defs>
+                          <linearGradient
+                            id={`gradient-${vibrationSensor.id}`}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor={
+                                colorAssignments[vibrationSensor.id.toString()]
+                                  .line
                               }
-                              return null;
-                            }}
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke={
-                              colorAssignments[vibrationSensor.id.toString()]
-                                .line
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor={
+                                colorAssignments[vibrationSensor.id.toString()]
+                                  .line
+                              }
+                              stopOpacity={0}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke={colors.chart.grid.line}
+                          opacity={colors.chart.grid.opacity}
+                        />
+                        <XAxis
+                          dataKey="time"
+                          tick={{ fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={{ stroke: colors.chart.axis.line }}
+                        />
+                        <YAxis
+                          domain={[
+                            0,
+                            Math.max(
+                              ...vibrationSensor.data.map(
+                                (d: VibrationDataPoint) =>
+                                  plcToMms(d.value, vibrationSensor.name)
+                              )
+                            ),
+                          ]}
+                          tick={{ fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={{ stroke: colors.chart.axis.line }}
+                          tickFormatter={(value) =>
+                            plcToMms(value, vibrationSensor.name).toFixed(2)
+                          }
+                          label={{
+                            value:
+                              vibrationSensor.name === '진동감지기1'
+                                ? 'Acceleration (m/s²)'
+                                : 'Velocity (mm/s)',
+                            angle: -90,
+                            position: 'insideLeft',
+                            style: {
+                              textAnchor: 'middle',
+                              fontSize: 13,
+                              fill: '#64748b',
+                            },
+                          }}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (
+                              active &&
+                              payload &&
+                              payload.length &&
+                              payload[0].value !== undefined
+                            ) {
+                              const val = plcToMms(
+                                parseFloat(payload[0].value as any),
+                                vibrationSensor.name
+                              );
+                              const unit =
+                                vibrationSensor.name === '진동감지기1'
+                                  ? 'm/s²'
+                                  : 'mm/s';
+                              return (
+                                <CustomTooltip>
+                                  <div className="time">{label}</div>
+                                  <div className="value">
+                                    {typeof val === 'number'
+                                      ? val.toFixed(2)
+                                      : '--'}{' '}
+                                    {unit}
+                                  </div>
+                                </CustomTooltip>
+                              );
                             }
-                            strokeWidth={2}
-                            fill={`url(#gradient-${vibrationSensor.id})`}
-                            fillOpacity={1}
-                            isAnimationActive={false}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </VibrationGraphCard>
-                );
-              })}
+                            return null;
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          stroke={
+                            colorAssignments[vibrationSensor.id.toString()].line
+                          }
+                          strokeWidth={2}
+                          fill={`url(#gradient-${vibrationSensor.id})`}
+                          fillOpacity={1}
+                          isAnimationActive={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </VibrationGraphCard>
+              );
+            })}
           </VibrationGraphContainerNarrow>
         </MapSection>
       </ContentSection>
