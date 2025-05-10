@@ -8,12 +8,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Footer from '../../components/main/sections/Footer';
 import { BiShieldAlt2, BiGasPump, BiLogIn, BiUserPlus } from 'react-icons/bi';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  'https://wxsmvftivxerlchikwpl.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4c212ZnRpdnhlcmxjaGlrd3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0MTQ2MzUsImV4cCI6MjA1Njk5MDYzNX0.uv3ZYHgjppKya4V79xfaSUd0C91ehOj5gnzoWznLw7M'
-);
 
 // 더미 데이터
 const DUMMY_FACILITY = {
@@ -96,6 +90,62 @@ type FacilityStatus = {
   vibrationStatus: 'normal' | 'warning' | 'inactive';
 };
 
+// 진동 데이터 타입 정의
+interface VibrationData {
+  last_update_time: string;
+  barr: string;
+}
+
+function VibrationDataFetcher() {
+  const [data, setData] = useState<VibrationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchVibrationData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/supabase-vibration');
+        const json = await res.json();
+        if (res.ok) {
+          setData(json.data);
+        } else {
+          setError(json.error || 'API 오류');
+        }
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVibrationData();
+  }, []);
+
+  if (loading) return <div>진동 데이터 로딩 중...</div>;
+  if (error) return <div>진동 데이터 에러: {error}</div>;
+
+  return (
+    <div
+      style={{
+        margin: '20px 0',
+        padding: 12,
+        background: '#f7f7f7',
+        borderRadius: 8,
+      }}
+    >
+      <h3>진동 데이터 (API Route 연동)</h3>
+      <ul style={{ maxHeight: 200, overflowY: 'auto', fontSize: 14 }}>
+        {data.map((item, idx) => (
+          <li key={idx}>
+            {item.last_update_time} - {item.barr}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function MonitoringPage() {
   const [selectedFacility, setSelectedFacility] = useState(DUMMY_LIST[0]);
   const [facilityStatusList, setFacilityStatusList] = useState<
@@ -161,19 +211,33 @@ export default function MonitoringPage() {
     }, 200);
   };
 
+  // 실시간 상태 fetch (API Route)
   useEffect(() => {
-    async function fetchData() {
-      const { data, error } = await supabase
-        .from('realtime_data')
-        .select('*')
-        .order('last_update_time', { ascending: false })
-        .limit(10);
-      if (!error && data) {
-        // 기존 WebSocket 데이터 처리 로직을 여기에 적용
-        // 예시: setFacilityStatusList, setVibrationSensors 등
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/supabase-status');
+        const json = await res.json();
+        if (res.ok && json.data) {
+          // 예시: id=2(삼척 수소충전소)에만 실시간 데이터 반영
+          setFacilityStatusList((prev) =>
+            prev.map((item) =>
+              item.id === 2
+                ? {
+                    ...item,
+                    gasStatus: json.data.gas_status || 'inactive',
+                    fireStatus: json.data.fire_status || 'inactive',
+                    vibrationStatus: json.data.vibration_status || 'inactive',
+                  }
+                : item
+            )
+          );
+        }
+      } catch (e) {
+        // 에러 무시 또는 필요시 setFacilityStatusList 초기화
       }
     }
-    fetchData();
+    fetchStatus();
+    // 필요시 주기적 갱신: setInterval 등
   }, []);
 
   // 실시간 상태를 facilityStatusList에서 병합
@@ -427,6 +491,9 @@ export default function MonitoringPage() {
       </ContentSection>
 
       <Footer />
+
+      {/* 진동 데이터 API Route 연동 결과 표시 */}
+      <VibrationDataFetcher />
     </Container>
   );
 }
