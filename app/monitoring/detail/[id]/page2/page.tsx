@@ -2443,7 +2443,7 @@ function DetailPageContent({ params }: { params: { id: string } }) {
                     fill="url(#gradient-detailed)"
                     fillOpacity={1}
                     isAnimationActive={false}
-                    dot={true}
+                    dot={false}
                     strokeLinejoin="round"
                     strokeLinecap="round"
                     style={{
