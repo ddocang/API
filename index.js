@@ -31,10 +31,19 @@ ws.on('message', async (data) => {
       parsed?.mqtt_data?.topic_id === 'BASE/P001' ||
       parsed?.mqtt_data?.topic_id === 'BASE/P003'
     ) {
+      let barr = parsed?.mqtt_data?.data?.barr;
+      if (typeof barr === 'string') {
+        const arr = barr.split(',');
+        if (parsed?.mqtt_data?.topic_id === 'BASE/P001') {
+          barr = arr.slice(0, 9).join(',');
+        } else if (parsed?.mqtt_data?.topic_id === 'BASE/P003') {
+          barr = arr.slice(0, 3).join(',');
+        }
+      }
       const filtered = {
         topic_id: parsed?.mqtt_data?.topic_id,
         last_update_time: parsed?.mqtt_data?.data?.last_update_time,
-        barr: parsed?.mqtt_data?.data?.barr,
+        barr,
         gdet: parsed?.mqtt_data?.data?.gdet,
         fdet: parsed?.mqtt_data?.data?.fdet,
       };
