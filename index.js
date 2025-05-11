@@ -15,57 +15,68 @@ const supabase = createClient(
 );
 
 // WebSocket 클라이언트 연결 (외부 실시간 서버 주소 사용)
-const ws = new WebSocket(
-  'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev'
-);
+let ws;
+function connectWebSocket() {
+  ws = new WebSocket(
+    'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev'
+  );
 
-ws.on('open', () => {
-  console.log('✅ WebSocket 연결 성공');
-});
+  ws.on('open', () => {
+    console.log('✅ WebSocket 연결 성공');
+  });
 
-ws.on('message', async (data) => {
-  try {
-    const parsed = JSON.parse(data);
-    // BASE/P001, BASE/P003만 저장
-    if (
-      parsed?.mqtt_data?.topic_id === 'BASE/P001' ||
-      parsed?.mqtt_data?.topic_id === 'BASE/P003'
-    ) {
-      let barr = parsed?.mqtt_data?.data?.barr;
-      if (typeof barr === 'string') {
-        const arr = barr.split(',');
-        if (parsed?.mqtt_data?.topic_id === 'BASE/P001') {
-          barr = arr.slice(0, 9).join(',');
-        } else if (parsed?.mqtt_data?.topic_id === 'BASE/P003') {
-          barr = arr.slice(0, 3).join(',');
+  ws.on('message', async (data) => {
+    try {
+      const parsed = JSON.parse(data);
+      // BASE/P001, BASE/P003만 저장
+      if (
+        parsed?.mqtt_data?.topic_id === 'BASE/P001' ||
+        parsed?.mqtt_data?.topic_id === 'BASE/P003'
+      ) {
+        let barr = parsed?.mqtt_data?.data?.barr;
+        if (typeof barr === 'string') {
+          const arr = barr.split(',');
+          if (parsed?.mqtt_data?.topic_id === 'BASE/P001') {
+            barr = arr.slice(0, 9).join(',');
+          } else if (parsed?.mqtt_data?.topic_id === 'BASE/P003') {
+            barr = arr.slice(0, 3).join(',');
+          }
+        }
+        const filtered = {
+          topic_id: parsed?.mqtt_data?.topic_id,
+          last_update_time: parsed?.mqtt_data?.data?.last_update_time,
+          barr,
+          gdet: parsed?.mqtt_data?.data?.gdet,
+          fdet: parsed?.mqtt_data?.data?.fdet,
+        };
+        const { error } = await supabase
+          .from('realtime_data')
+          .insert([filtered]);
+        if (error) {
+          console.error('Supabase 저장 에러:', error);
+        } else {
+          console.log('Supabase 저장 성공:', filtered);
         }
       }
-      const filtered = {
-        topic_id: parsed?.mqtt_data?.topic_id,
-        last_update_time: parsed?.mqtt_data?.data?.last_update_time,
-        barr,
-        gdet: parsed?.mqtt_data?.data?.gdet,
-        fdet: parsed?.mqtt_data?.data?.fdet,
-      };
-      const { error } = await supabase.from('realtime_data').insert([filtered]);
-      if (error) {
-        console.error('Supabase 저장 에러:', error);
-      } else {
-        console.log('Supabase 저장 성공:', filtered);
-      }
+    } catch (e) {
+      console.error('파싱/저장 에러:', e);
     }
-  } catch (e) {
-    console.error('파싱/저장 에러:', e);
-  }
-});
+  });
 
-ws.on('close', () => {
-  console.log('🔒 WebSocket 연결 종료');
-});
+  ws.on('close', () => {
+    console.log('🔒 WebSocket 연결 종료, 5초 후 재연결 시도');
+    setTimeout(connectWebSocket, 5000);
+  });
 
-ws.on('error', (err) => {
-  console.error('❌ WebSocket 오류:', err);
-});
+  ws.on('error', (err) => {
+    console.error('❌ WebSocket 오류:', err);
+    try {
+      ws.close();
+    } catch (e) {}
+  });
+}
+
+connectWebSocket();
 
 // API 엔드포인트 예시
 app.get('/', (req, res) => {
