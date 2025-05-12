@@ -564,9 +564,6 @@ export default function MonitoringPage() {
       </ContentSection>
 
       <Footer />
-
-      {/* 진동 데이터 API Route 연동 결과 표시 */}
-      <VibrationDataFetcher />
     </Container>
   );
 }
