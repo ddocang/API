@@ -21,8 +21,15 @@ function connectWebSocket() {
     'wss://iwxu7qs5h3.execute-api.ap-northeast-2.amazonaws.com/dev'
   );
 
+  // 하트비트용 Interval ID
+  let heartbeatInterval;
+
   ws.on('open', () => {
-    console.log('✅ WebSocket 연결 성공');
+    console.log('✅ WebSocket 연결 성공:', new Date().toISOString());
+    // 30초마다 하트비트 로그 찍기
+    heartbeatInterval = setInterval(() => {
+      console.log('💓 heartbeat:', new Date().toISOString());
+    }, 30000);
   });
 
   ws.on('message', async (data) => {
@@ -53,23 +60,25 @@ function connectWebSocket() {
           .from('realtime_data')
           .insert([filtered]);
         if (error) {
-          console.error('Supabase 저장 에러:', error);
+          // console.error('Supabase 저장 에러:', error);
         } else {
-          console.log('Supabase 저장 성공:', filtered);
+          // console.log('Supabase 저장 성공:', filtered);
         }
       }
     } catch (e) {
-      console.error('파싱/저장 에러:', e);
+      // console.error('파싱/저장 에러:', e);
     }
   });
 
   ws.on('close', () => {
-    console.log('🔒 WebSocket 연결 종료, 5초 후 재연결 시도');
+    console.log('🔒 WebSocket 연결 종료:', new Date().toISOString());
+    clearInterval(heartbeatInterval);
     setTimeout(connectWebSocket, 5000);
   });
 
   ws.on('error', (err) => {
     console.error('❌ WebSocket 오류:', err);
+    clearInterval(heartbeatInterval);
     try {
       ws.close();
     } catch (e) {}
@@ -89,5 +98,5 @@ app.get('/healthz', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`서버가 ${PORT}번 포트에서 실행 중`);
+  // console.log(`서버가 ${PORT}번 포트에서 실행 중`);
 });
